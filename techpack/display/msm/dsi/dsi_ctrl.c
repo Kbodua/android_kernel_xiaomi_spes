@@ -1517,6 +1517,39 @@ static void dsi_ctrl_validate_msg_flags(struct dsi_ctrl *dsi_ctrl,
 		*flags &= ~DSI_CTRL_CMD_ASYNC_WAIT;
 }
 
+/**
+ * dsi_ctrl_clear_slave_dma_status -   API to clear slave DMA status
+ * @dsi_ctrl:                   DSI controller handle.
+ * @flags:                      Modifiers
+ */
+static void dsi_ctrl_clear_slave_dma_status(struct dsi_ctrl *dsi_ctrl, u32 flags)
+{
+	struct dsi_ctrl_hw_ops dsi_hw_ops;
+	u32 status = 0;
+
+	if (!dsi_ctrl) {
+		DSI_CTRL_ERR(dsi_ctrl, "Invalid params\n");
+		return;
+	}
+
+	/* Return if this is not the last command */
+	if (!(flags & DSI_CTRL_CMD_LAST_COMMAND))
+		return;
+
+	SDE_EVT32(dsi_ctrl->cell_index, SDE_EVTLOG_FUNC_ENTRY);
+
+	dsi_hw_ops = dsi_ctrl->hw.ops;
+
+	status = dsi_hw_ops.poll_slave_dma_status(&dsi_ctrl->hw);
+
+	if (status) {
+		status |= (DSI_CMD_MODE_DMA_DONE | DSI_BTA_DONE);
+		dsi_hw_ops.clear_interrupt_status(&dsi_ctrl->hw,
+						status);
+		SDE_EVT32(dsi_ctrl->cell_index, status);
+	}
+}
+
 static int dsi_message_tx(struct dsi_ctrl *dsi_ctrl,
 			  const struct mipi_dsi_msg *msg,
 			  u32 *flags)
@@ -1551,6 +1584,9 @@ static int dsi_message_tx(struct dsi_ctrl *dsi_ctrl,
 	DSI_CTRL_DEBUG(dsi_ctrl, "cmd tx type=%02x cmd=%02x len=%d last=%d\n",
 		 msg->type, msg->tx_len ? *((u8 *)msg->tx_buf) : 0, msg->tx_len,
 		 (msg->flags & MIPI_DSI_MSG_LASTCOMMAND) != 0);
+
+	if (!(*flags & DSI_CTRL_CMD_BROADCAST_MASTER))
+		dsi_ctrl_clear_slave_dma_status(dsi_ctrl, *flags);
 
 	if (*flags & DSI_CTRL_CMD_NON_EMBEDDED_MODE) {
 		cmd_mem.offset = dsi_ctrl->cmd_buffer_iova;
