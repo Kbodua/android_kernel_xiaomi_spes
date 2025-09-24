@@ -100,30 +100,30 @@ static int extcon_init(struct rt_pd_manager_data *rpmd)
 	if (IS_ERR(rpmd->extcon)) {
 		ret = PTR_ERR(rpmd->extcon);
 		dev_err(rpmd->dev, "%s extcon dev alloc fail(%d)\n",
-				__func__, ret);
+				   __func__, ret);
 		goto out;
 	}
 
 	ret = devm_extcon_dev_register(rpmd->dev, rpmd->extcon);
 	if (ret) {
 		dev_err(rpmd->dev, "%s extcon dev reg fail(%d)\n",
-				__func__, ret);
+				   __func__, ret);
 		goto out;
 	}
 
 	/* Support reporting polarity and speed via properties */
 	extcon_set_property_capability(rpmd->extcon, EXTCON_USB,
-				EXTCON_PROP_USB_TYPEC_POLARITY);
+				       EXTCON_PROP_USB_TYPEC_POLARITY);
 	extcon_set_property_capability(rpmd->extcon, EXTCON_USB,
-				EXTCON_PROP_USB_SS);
+				       EXTCON_PROP_USB_SS);
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0))
 	extcon_set_property_capability(rpmd->extcon, EXTCON_USB,
-				EXTCON_PROP_USB_TYPEC_MED_HIGH_CURRENT);
+				       EXTCON_PROP_USB_TYPEC_MED_HIGH_CURRENT);
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)) */
 	extcon_set_property_capability(rpmd->extcon, EXTCON_USB_HOST,
-				EXTCON_PROP_USB_TYPEC_POLARITY);
+				       EXTCON_PROP_USB_TYPEC_POLARITY);
 	extcon_set_property_capability(rpmd->extcon, EXTCON_USB_HOST,
-				EXTCON_PROP_USB_SS);
+				       EXTCON_PROP_USB_SS);
 out:
 	return ret;
 }
@@ -139,11 +139,11 @@ static inline void start_usb_host(struct rt_pd_manager_data *rpmd)
 
 	val.intval = tcpm_inquire_cc_polarity(rpmd->tcpc);
 	extcon_set_property(rpmd->extcon, EXTCON_USB_HOST,
-				EXTCON_PROP_USB_TYPEC_POLARITY, val);
+			    EXTCON_PROP_USB_TYPEC_POLARITY, val);
 
 	val.intval = 1;
 	extcon_set_property(rpmd->extcon, EXTCON_USB_HOST,
-				EXTCON_PROP_USB_SS, val);
+			    EXTCON_PROP_USB_SS, val);
 
 	extcon_set_state_sync(rpmd->extcon, EXTCON_USB_HOST, true);
 }
@@ -162,7 +162,7 @@ static inline void start_usb_peripheral(struct rt_pd_manager_data *rpmd)
 
 	val.intval = tcpm_inquire_cc_polarity(rpmd->tcpc);
 	extcon_set_property(rpmd->extcon, EXTCON_USB,
-				EXTCON_PROP_USB_TYPEC_POLARITY, val);
+			    EXTCON_PROP_USB_TYPEC_POLARITY, val);
 
 	val.intval = 1;
 	extcon_set_property(rpmd->extcon, EXTCON_USB, EXTCON_PROP_USB_SS, val);
@@ -170,7 +170,7 @@ static inline void start_usb_peripheral(struct rt_pd_manager_data *rpmd)
 	rp = tcpm_inquire_typec_remote_rp_curr(rpmd->tcpc);
 	val.intval = rp > 500 ? 1 : 0;
 	extcon_set_property(rpmd->extcon, EXTCON_USB,
-				EXTCON_PROP_USB_TYPEC_MED_HIGH_CURRENT, val);
+			    EXTCON_PROP_USB_TYPEC_MED_HIGH_CURRENT, val);
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)) */
 	extcon_set_state_sync(rpmd->extcon, EXTCON_USB, true);
 }
@@ -186,7 +186,7 @@ static void usb_dwork_handler(struct work_struct *work)
 
 	if (usb_dr < DR_IDLE || usb_dr >= DR_MAX) {
 		dev_err(rpmd->dev, "%s invalid usb_dr = %d\n",
-				__func__, usb_dr);
+				   __func__, usb_dr);
 		return;
 	}
 
@@ -201,21 +201,23 @@ static void usb_dwork_handler(struct work_struct *work)
 	case DR_DEVICE:
 		ret = smblib_get_prop(rpmd,
 			POWER_SUPPLY_PROP_REAL_TYPE, &val);
-		//ret = 0;
-		//val.intval = POWER_SUPPLY_TYPE_UNKNOWN;
+	//	ret = 0;
+	//	val.intval = POWER_SUPPLY_TYPE_UNKNOWN;
 		dev_info(rpmd->dev, "%s polling_cnt = %d, ret = %d type = %d\n",
-				__func__, ++rpmd->usb_type_polling_cnt, ret, val.intval);
+				    __func__, ++rpmd->usb_type_polling_cnt,
+				    ret, val.intval);
 		if (ret < 0 || val.intval == POWER_SUPPLY_TYPE_UNKNOWN) {
-			if (rpmd->usb_type_polling_cnt < USB_TYPE_POLLING_CNT_MAX)
+			if (rpmd->usb_type_polling_cnt <
+			    USB_TYPE_POLLING_CNT_MAX)
 				schedule_delayed_work(&rpmd->usb_dwork,
-						msecs_to_jiffies(USB_TYPE_POLLING_INTERVAL));
+						msecs_to_jiffies(
+						USB_TYPE_POLLING_INTERVAL));
 			break;
 		} else if (val.intval != POWER_SUPPLY_TYPE_USB &&
-				val.intval != POWER_SUPPLY_TYPE_USB_CDP &&
-				val.intval != POWER_SUPPLY_TYPE_USB_FLOAT &&
-				val.intval != POWER_SUPPLY_TYPE_USB_PD) {
+			   val.intval != POWER_SUPPLY_TYPE_USB_CDP &&
+			   val.intval != POWER_SUPPLY_TYPE_USB_FLOAT &&
+			   val.intval != POWER_SUPPLY_TYPE_USB_PD)
 			break;
-		}
 	case DR_HOST_TO_DEVICE:
 		stop_usb_host(rpmd);
 		start_usb_peripheral(rpmd);
@@ -263,15 +265,12 @@ static void pd_sink_set_vol_and_cur(struct rt_pd_manager_data *rpmd,
 	if (val.intval < micro_5v)
 		val.intval = micro_5v;
 	if (test_bit(0, &sel))
-		smblib_set_prop(rpmd,
-				POWER_SUPPLY_PROP_PD_VOLTAGE_MIN, &val);
+		smblib_set_prop(rpmd, POWER_SUPPLY_PROP_PD_VOLTAGE_MIN, &val);
 	if (test_bit(1, &sel))
-		smblib_set_prop(rpmd,
-				POWER_SUPPLY_PROP_PD_VOLTAGE_MAX, &val);
+		smblib_set_prop(rpmd, POWER_SUPPLY_PROP_PD_VOLTAGE_MAX, &val);
 
 	val.intval = ma * 1000;
-	smblib_set_prop(rpmd,
-			POWER_SUPPLY_PROP_PD_CURRENT_MAX, &val);
+	smblib_set_prop(rpmd, POWER_SUPPLY_PROP_PD_CURRENT_MAX, &val);
 }
 static int pd_tcp_notifier_call(struct notifier_block *nb,
 				unsigned long event, void *data)
@@ -290,11 +289,11 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		rpmd->sink_mv_new = noti->vbus_state.mv;
 		rpmd->sink_ma_new = noti->vbus_state.ma;
 		dev_info(rpmd->dev, "%s sink vbus %dmV %dmA type(0x%02X)\n",
-				__func__, rpmd->sink_mv_new,
-				rpmd->sink_ma_new, noti->vbus_state.type);
+				    __func__, rpmd->sink_mv_new,
+				    rpmd->sink_ma_new, noti->vbus_state.type);
 
 		if ((rpmd->sink_mv_new != rpmd->sink_mv_old) ||
-			(rpmd->sink_ma_new != rpmd->sink_ma_old)) {
+		    (rpmd->sink_ma_new != rpmd->sink_ma_old)) {
 			rpmd->sink_mv_old = rpmd->sink_mv_new;
 			rpmd->sink_ma_old = rpmd->sink_ma_new;
 			if (rpmd->sink_mv_new && rpmd->sink_ma_new) {
@@ -305,24 +304,26 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		}
 		if (noti->vbus_state.type & TCP_VBUS_CTRL_PD_DETECT)
 			pd_sink_set_vol_and_cur(rpmd, rpmd->sink_mv_new,
-					rpmd->sink_ma_new, noti->vbus_state.type);
+					  rpmd->sink_ma_new,
+					  noti->vbus_state.type);
 		break;
 	case TCP_NOTIFY_SOURCE_VBUS:
 		dev_info(rpmd->dev, "%s source vbus %dmV %dmA type(0x%02X)\n",
-				__func__, noti->vbus_state.mv,
-				noti->vbus_state.ma, noti->vbus_state.type);
+							__func__, noti->vbus_state.mv,
+							noti->vbus_state.ma, noti->vbus_state.type);
 		/* enable/disable OTG power output */
 		break;
 	case TCP_NOTIFY_TYPEC_STATE:
 		old_state = noti->typec_state.old_state;
 		new_state = noti->typec_state.new_state;
 		if (old_state == TYPEC_UNATTACHED &&
-			(new_state == TYPEC_ATTACHED_SNK ||
-			new_state == TYPEC_ATTACHED_NORP_SRC ||
-			new_state == TYPEC_ATTACHED_CUSTOM_SRC ||
-			new_state == TYPEC_ATTACHED_DBGACC_SNK)) {
-			dev_info(rpmd->dev, "%s Charger plug in, polarity = %d\n",
-					__func__, noti->typec_state.polarity);
+		    (new_state == TYPEC_ATTACHED_SNK ||
+		     new_state == TYPEC_ATTACHED_NORP_SRC ||
+		     new_state == TYPEC_ATTACHED_CUSTOM_SRC ||
+		     new_state == TYPEC_ATTACHED_DBGACC_SNK)) {
+			dev_info(rpmd->dev,
+				 "%s Charger plug in, polarity = %d\n",
+				 __func__, noti->typec_state.polarity);
 			/*
 			 * start charger type detection,
 			 * and enable device connection
@@ -331,17 +332,19 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			rpmd->usb_dr = DR_DEVICE;
 			rpmd->usb_type_polling_cnt = 0;
 			schedule_delayed_work(&rpmd->usb_dwork,
-					msecs_to_jiffies(USB_TYPE_POLLING_INTERVAL));
+					      msecs_to_jiffies(
+					      USB_TYPE_POLLING_INTERVAL));
 			typec_set_data_role(rpmd->typec_port, TYPEC_DEVICE);
 			typec_set_pwr_role(rpmd->typec_port, TYPEC_SINK);
 			typec_set_pwr_opmode(rpmd->typec_port,
-					noti->typec_state.rp_level - TYPEC_CC_VOLT_SNK_DFT);
+					     noti->typec_state.rp_level -
+					     TYPEC_CC_VOLT_SNK_DFT);
 			typec_set_vconn_role(rpmd->typec_port, TYPEC_SINK);
 		} else if ((old_state == TYPEC_ATTACHED_SNK ||
-				old_state == TYPEC_ATTACHED_NORP_SRC ||
-				old_state == TYPEC_ATTACHED_CUSTOM_SRC ||
-				old_state == TYPEC_ATTACHED_DBGACC_SNK) &&
-				new_state == TYPEC_UNATTACHED) {
+			    old_state == TYPEC_ATTACHED_NORP_SRC ||
+			    old_state == TYPEC_ATTACHED_CUSTOM_SRC ||
+			    old_state == TYPEC_ATTACHED_DBGACC_SNK) &&
+			    new_state == TYPEC_UNATTACHED) {
 			dev_info(rpmd->dev, "%s Charger plug out\n", __func__);
 			/*
 			 * report charger plug-out,
@@ -351,10 +354,11 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			rpmd->usb_dr = DR_IDLE;
 			schedule_delayed_work(&rpmd->usb_dwork, 0);
 		} else if (old_state == TYPEC_UNATTACHED &&
-				(new_state == TYPEC_ATTACHED_SRC ||
-				new_state == TYPEC_ATTACHED_DEBUG)) {
-			dev_info(rpmd->dev, "%s OTG plug in, polarity = %d\n",
-					__func__, noti->typec_state.polarity);
+			   (new_state == TYPEC_ATTACHED_SRC ||
+			    new_state == TYPEC_ATTACHED_DEBUG)) {
+			dev_info(rpmd->dev,
+				 "%s OTG plug in, polarity = %d\n",
+				 __func__, noti->typec_state.polarity);
 			val.intval = noti->typec_state.polarity;
 			smblib_set_prop(rpmd, POWER_SUPPLY_PROP_TYPEC_CC_ORIENTATION, &val);
 			/* enable host connection */
@@ -378,19 +382,19 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			typec_set_pwr_opmode(rpmd->typec_port, opmode);
 			typec_set_vconn_role(rpmd->typec_port, TYPEC_SOURCE);
 		} else if ((old_state == TYPEC_ATTACHED_SRC ||
-				old_state == TYPEC_ATTACHED_DEBUG) &&
-				new_state == TYPEC_UNATTACHED) {
+			    old_state == TYPEC_ATTACHED_DEBUG) &&
+			    new_state == TYPEC_UNATTACHED) {
 			dev_info(rpmd->dev, "%s OTG plug out\n", __func__);
 			/* disable host connection */
 			cancel_delayed_work_sync(&rpmd->usb_dwork);
 			rpmd->usb_dr = DR_IDLE;
 			schedule_delayed_work(&rpmd->usb_dwork, 0);
 		} else if (old_state == TYPEC_UNATTACHED &&
-				new_state == TYPEC_ATTACHED_AUDIO) {
+			   new_state == TYPEC_ATTACHED_AUDIO) {
 			dev_info(rpmd->dev, "%s Audio plug in\n", __func__);
 			/* enable AudioAccessory connection */
 		} else if (old_state == TYPEC_ATTACHED_AUDIO &&
-				new_state == TYPEC_UNATTACHED) {
+			   new_state == TYPEC_UNATTACHED) {
 			dev_info(rpmd->dev, "%s Audio plug out\n", __func__);
 			/* disable AudioAccessory connection */
 		}
@@ -406,26 +410,26 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			rpmd->partner = NULL;
 			if (rpmd->typec_caps.prefer_role == TYPEC_SOURCE) {
 				typec_set_data_role(rpmd->typec_port,
-						TYPEC_HOST);
+						    TYPEC_HOST);
 				typec_set_pwr_role(rpmd->typec_port,
-						TYPEC_SOURCE);
+						   TYPEC_SOURCE);
 				typec_set_pwr_opmode(rpmd->typec_port,
-						TYPEC_PWR_MODE_USB);
+						     TYPEC_PWR_MODE_USB);
 				typec_set_vconn_role(rpmd->typec_port,
-						TYPEC_SOURCE);
+						     TYPEC_SOURCE);
 			} else {
 				typec_set_data_role(rpmd->typec_port,
-						TYPEC_DEVICE);
+						    TYPEC_DEVICE);
 				typec_set_pwr_role(rpmd->typec_port,
-						TYPEC_SINK);
+						   TYPEC_SINK);
 				typec_set_pwr_opmode(rpmd->typec_port,
-						TYPEC_PWR_MODE_USB);
+						     TYPEC_PWR_MODE_USB);
 				typec_set_vconn_role(rpmd->typec_port,
-						TYPEC_SINK);
+						     TYPEC_SINK);
 			}
 		} else if (!rpmd->partner) {
 			memset(&rpmd->partner_identity, 0,
-					sizeof(rpmd->partner_identity));
+			       sizeof(rpmd->partner_identity));
 			rpmd->partner_desc.usb_pd = false;
 			switch (new_state) {
 			case TYPEC_ATTACHED_AUDIO:
@@ -447,37 +451,38 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 					&rpmd->partner_desc);
 			if (IS_ERR(rpmd->partner)) {
 				ret = PTR_ERR(rpmd->partner);
-				dev_notice(rpmd->dev, "%s typec register partner fail(%d)\n",
-						__func__, ret);
+				dev_notice(rpmd->dev,
+				"%s typec register partner fail(%d)\n",
+					   __func__, ret);
 			}
 		}
 
 		if (new_state == TYPEC_ATTACHED_SNK) {
 			switch (noti->typec_state.rp_level) {
-			/* SNK_RP_3P0 */
-			case TYPEC_CC_VOLT_SNK_3_0:
-				break;
-			/* SNK_RP_1P5 */
-			case TYPEC_CC_VOLT_SNK_1_5:
-				break;
-			/* SNK_RP_STD */
-			case TYPEC_CC_VOLT_SNK_DFT:
-			default:
-				break;
+				/* SNK_RP_3P0 */
+				case TYPEC_CC_VOLT_SNK_3_0:
+					break;
+				/* SNK_RP_1P5 */
+				case TYPEC_CC_VOLT_SNK_1_5:
+					break;
+				/* SNK_RP_STD */
+				case TYPEC_CC_VOLT_SNK_DFT:
+				default:
+					break;
 			}
 		} else if (new_state == TYPEC_ATTACHED_CUSTOM_SRC ||
-				new_state == TYPEC_ATTACHED_DBGACC_SNK) {
+			   new_state == TYPEC_ATTACHED_DBGACC_SNK) {
 			switch (noti->typec_state.rp_level) {
-			/* DAM_3000 */
-			case TYPEC_CC_VOLT_SNK_3_0:
-				break;
-			/* DAM_1500 */
-			case TYPEC_CC_VOLT_SNK_1_5:
-				break;
-			/* DAM_500 */
-			case TYPEC_CC_VOLT_SNK_DFT:
-			default:
-				break;
+				/* DAM_3000 */
+				case TYPEC_CC_VOLT_SNK_3_0:
+					break;
+				/* DAM_1500 */
+				case TYPEC_CC_VOLT_SNK_1_5:
+					break;
+				/* DAM_500 */
+				case TYPEC_CC_VOLT_SNK_DFT:
+				default:
+					break;
 			}
 		} else if (new_state == TYPEC_ATTACHED_NORP_SRC) {
 			/* Both CCs are open */
@@ -485,10 +490,10 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		break;
 	case TCP_NOTIFY_PR_SWAP:
 		dev_info(rpmd->dev, "%s power role swap, new role = %d\n",
-				__func__, noti->swap_state.new_role);
+				    __func__, noti->swap_state.new_role);
 		if (noti->swap_state.new_role == PD_ROLE_SINK) {
 			dev_info(rpmd->dev, "%s swap power role to sink\n",
-					__func__);
+					    __func__);
 			/*
 			 * report charger plug-in without charger type detection
 			 * to not interfering with USB2.0 communication
@@ -499,17 +504,18 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			typec_set_pwr_role(rpmd->typec_port, TYPEC_SINK);
 		} else if (noti->swap_state.new_role == PD_ROLE_SOURCE) {
 			dev_info(rpmd->dev, "%s swap power role to source\n",
-					__func__);
+					    __func__);
 			/* report charger plug-out */
+
 			typec_set_pwr_role(rpmd->typec_port, TYPEC_SOURCE);
 		}
 		break;
 	case TCP_NOTIFY_DR_SWAP:
 		dev_info(rpmd->dev, "%s data role swap, new role = %d\n",
-				__func__, noti->swap_state.new_role);
+				    __func__, noti->swap_state.new_role);
 		if (noti->swap_state.new_role == PD_ROLE_UFP) {
 			dev_info(rpmd->dev, "%s swap data role to device\n",
-					__func__);
+					    __func__);
 			/*
 			 * disable host connection,
 			 * and enable device connection
@@ -520,7 +526,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			typec_set_data_role(rpmd->typec_port, TYPEC_DEVICE);
 		} else if (noti->swap_state.new_role == PD_ROLE_DFP) {
 			dev_info(rpmd->dev, "%s swap data role to host\n",
-					__func__);
+					    __func__);
 			/*
 			 * disable device connection,
 			 * and enable host connection
@@ -533,25 +539,25 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		break;
 	case TCP_NOTIFY_VCONN_SWAP:
 		dev_info(rpmd->dev, "%s vconn role swap, new role = %d\n",
-				__func__, noti->swap_state.new_role);
+				    __func__, noti->swap_state.new_role);
 		if (noti->swap_state.new_role) {
 			dev_info(rpmd->dev, "%s swap vconn role to on\n",
-					__func__);
+					    __func__);
 			typec_set_vconn_role(rpmd->typec_port, TYPEC_SOURCE);
 		} else {
 			dev_info(rpmd->dev, "%s swap vconn role to off\n",
-					__func__);
+					    __func__);
 			typec_set_vconn_role(rpmd->typec_port, TYPEC_SINK);
 		}
 		break;
 	case TCP_NOTIFY_EXT_DISCHARGE:
 		dev_info(rpmd->dev, "%s ext discharge = %d\n",
-				__func__, noti->en_state.en);
+				    __func__, noti->en_state.en);
 		/* enable/disable VBUS discharge */
 		break;
 	case TCP_NOTIFY_PD_STATE:
 		dev_info(rpmd->dev, "%s pd state = %d\n",
-				__func__, noti->pd_state.connected);
+				    __func__, noti->pd_state.connected);
 		switch (noti->pd_state.connected) {
 		case PD_CONNECT_NONE:
 			break;
@@ -562,28 +568,29 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		case PD_CONNECT_PE_READY_SNK_APDO:
 			ret = tcpm_inquire_dpm_flags(rpmd->tcpc);
 			val.intval = ret & DPM_FLAGS_PARTNER_USB_SUSPEND ?
-					1 : 0;
+				     1 : 0;
 			smblib_set_prop(rpmd,
 				POWER_SUPPLY_PROP_PD_USB_SUSPEND_SUPPORTED,
 					&val);
 			/* update chg->pd_active */
 			val.intval = noti->pd_state.connected ==
-					PD_CONNECT_PE_READY_SNK_APDO ?
-					POWER_SUPPLY_PD_PPS_ACTIVE :
-					POWER_SUPPLY_PD_ACTIVE;
+				     PD_CONNECT_PE_READY_SNK_APDO ?
+				     POWER_SUPPLY_PD_PPS_ACTIVE :
+				     POWER_SUPPLY_PD_ACTIVE;
 			smblib_set_prop(rpmd, POWER_SUPPLY_PROP_PD_ACTIVE,
 					&val);
 			pd_sink_set_vol_and_cur(rpmd, rpmd->sink_mv_old,
-					rpmd->sink_ma_old,
-					TCP_VBUS_CTRL_PD_STANDBY);
+						rpmd->sink_ma_old,
+						TCP_VBUS_CTRL_PD_STANDBY);
 		case PD_CONNECT_PE_READY_SRC:
 		case PD_CONNECT_PE_READY_SRC_PD30:
+
 			typec_set_pwr_opmode(rpmd->typec_port,
-					TYPEC_PWR_MODE_PD);
+					     TYPEC_PWR_MODE_PD);
 			if (!rpmd->partner)
 				break;
 			ret = tcpm_inquire_pd_partner_inform(rpmd->tcpc,
-					partner_vdos);
+							     partner_vdos);
 			if (ret != TCPM_SUCCESS)
 				break;
 			rpmd->partner_identity.id_header = partner_vdos[0];
@@ -603,9 +610,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			val.intval = 0;
 			break;
 		}
-		smblib_set_prop(rpmd,
-			POWER_SUPPLY_PROP_PD_IN_HARD_RESET,
-				&val);
+		smblib_set_prop(rpmd, POWER_SUPPLY_PROP_PD_IN_HARD_RESET, &val);
 		break;
 	default:
 		break;
@@ -680,7 +685,7 @@ static int tcpc_typec_dr_set(const struct typec_capability *cap,
 		ret = tcpm_dpm_pd_data_swap(rpmd->tcpc, data_role, NULL);
 		if (ret != TCPM_SUCCESS) {
 			dev_err(rpmd->dev, "%s data role swap fail(%d)\n",
-					__func__, ret);
+					   __func__, ret);
 			return -EPERM;
 		}
 	}
@@ -726,7 +731,7 @@ static int tcpc_typec_pr_set(const struct typec_capability *cap,
 			ret = tcpm_typec_role_swap(rpmd->tcpc);
 		if (ret != TCPM_SUCCESS) {
 			dev_err(rpmd->dev, "%s power role swap fail(%d)\n",
-					__func__, ret);
+					   __func__, ret);
 			return -EPERM;
 		}
 	}
@@ -770,7 +775,7 @@ static int tcpc_typec_vconn_set(const struct typec_capability *cap,
 		ret = tcpm_dpm_pd_vconn_swap(rpmd->tcpc, vconn_role, NULL);
 		if (ret != TCPM_SUCCESS) {
 			dev_err(rpmd->dev, "%s vconn role swap fail(%d)\n",
-					__func__, ret);
+					   __func__, ret);
 			return -EPERM;
 		}
 	}
@@ -795,7 +800,7 @@ static int tcpc_typec_port_type_set(const struct typec_capability *cap,
 	uint8_t typec_role = TYPEC_ROLE_UNKNOWN;
 
 	dev_info(rpmd->dev, "%s type = %d, as_sink = %d\n",
-			__func__, type, as_sink);
+			    __func__, type, as_sink);
 
 	switch (type) {
 	case TYPEC_PORT_SNK:
@@ -868,7 +873,7 @@ static int typec_init(struct rt_pd_manager_data *rpmd)
 	if (IS_ERR(rpmd->typec_port)) {
 		ret = PTR_ERR(rpmd->typec_port);
 		dev_err(rpmd->dev, "%s typec register port fail(%d)\n",
-				__func__, ret);
+				   __func__, ret);
 		goto out;
 	}
 
@@ -884,20 +889,18 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 	struct rt_pd_manager_data *rpmd = NULL;
 
 	dev_info(&pdev->dev, "%s (%s) probe_cnt = %d\n",
-			__func__, RT_PD_MANAGER_VERSION, ++probe_cnt);
+			     __func__, RT_PD_MANAGER_VERSION, ++probe_cnt);
 
 	switch (nopmi_get_charger_ic_type()) {
 	case NOPMI_CHARGER_IC_NONE:
-		pr_err("2012.09.04 wsy %s: probe retry probe_cnt=%d, PROBE_CNT_MAX=%d\n",
-				__func__, probe_cnt, PROBE_CNT_MAX);
+		pr_err("%s: probe retry, probe_cnt=%d, PROBE_CNT_MAX=%d\n", __func__, probe_cnt, PROBE_CNT_MAX);
 		if (probe_cnt >= PROBE_CNT_MAX) {
-			pr_err("2012.09.04 wsy %s: probe stop retry probe_cnt=%d, PROBE_CNT_MAX=%d\n",
-					__func__, probe_cnt, PROBE_CNT_MAX);
+			pr_err("%s: probe stop retry, probe_cnt=%d, PROBE_CNT_MAX=%d\n", __func__, probe_cnt, PROBE_CNT_MAX);
 			return 0;
 		}
 		return -EPROBE_DEFER;
 	case NOPMI_CHARGER_IC_MAXIM:
-		pr_err("2012.09.04 wsy %s: curr charge not support\n", __func__);
+		pr_err("%s: curr charger IC not support\n", __func__);
 		return -ENODEV;
 	default:
 		break;
@@ -957,10 +960,10 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 
 	rpmd->pd_nb.notifier_call = pd_tcp_notifier_call;
 	ret = register_tcp_dev_notifier(rpmd->tcpc, &rpmd->pd_nb,
-			TCP_NOTIFY_TYPE_ALL);
+					TCP_NOTIFY_TYPE_ALL);
 	if (ret < 0) {
 		dev_err(rpmd->dev, "%s register tcpc notifier fail(%d)\n",
-				__func__, ret);
+				   __func__, ret);
 		ret = -EPROBE_DEFER;
 		if (probe_cnt >= PROBE_CNT_MAX)
 			goto out;
@@ -970,7 +973,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 out:
 	platform_set_drvdata(pdev, rpmd);
 	dev_info(rpmd->dev, "%s %s!!\n", __func__, ret == -EPROBE_DEFER ?
-			"Over probe cnt max" : "OK");
+			    "Over probe cnt max" : "OK");
 	return 0;
 
 err_reg_tcpc_notifier:
@@ -992,10 +995,10 @@ static int rt_pd_manager_remove(struct platform_device *pdev)
 		return -EINVAL;
 
 	ret = unregister_tcp_dev_notifier(rpmd->tcpc, &rpmd->pd_nb,
-			TCP_NOTIFY_TYPE_ALL);
+					  TCP_NOTIFY_TYPE_ALL);
 	if (ret < 0)
 		dev_err(rpmd->dev, "%s unregister tcpc notifier fail(%d)\n",
-				__func__, ret);
+				   __func__, ret);
 	typec_unregister_port(rpmd->typec_port);
 
 	return ret;

@@ -17,40 +17,40 @@
 
 #define MAX77729_CCPD_NAME	"MAX77729"
 
-#undef __CONST_FFS
+#undef  __CONST_FFS
 #define __CONST_FFS(_x) \
 	((_x) & 0x0F ? \
-	((_x) & 0x03 ? ((_x) & 0x01 ? 0 : 1) : ((_x) & 0x04 ? 2 : 3)) : \
-	((_x) & 0x30 ? ((_x) & 0x10 ? 4 : 5) : ((_x) & 0x40 ? 6 : 7)))
+	 ((_x) & 0x03 ? ((_x) & 0x01 ? 0 : 1) : ((_x) & 0x04 ? 2 : 3)) : \
+	 ((_x) & 0x30 ? ((_x) & 0x10 ? 4 : 5) : ((_x) & 0x40 ? 6 : 7)))
 
 #undef FFS
 #define FFS(_x) \
 	((_x) ? __CONST_FFS(_x) : 0)
 
-#undef BIT_RSVD
-#define BIT_RSVD 0
+#undef  BIT_RSVD
+#define BIT_RSVD  0
 
-#undef BITS
+#undef  BITS
 #define BITS(_end, _start) \
 	((BIT(_end) - BIT(_start)) + BIT(_end))
 
-#undef __BITS_GET
+#undef  __BITS_GET
 #define __BITS_GET(_word, _mask, _shift) \
 	(((_word) & (_mask)) >> (_shift))
 
-#undef BITS_GET
+#undef  BITS_GET
 #define BITS_GET(_word, _bit) \
 	__BITS_GET(_word, _bit, FFS(_bit))
 
-#undef __BITS_SET
+#undef  __BITS_SET
 #define __BITS_SET(_word, _mask, _shift, _val) \
 	(((_word) & ~(_mask)) | (((_val) << (_shift)) & (_mask)))
 
-#undef BITS_SET
+#undef  BITS_SET
 #define BITS_SET(_word, _bit, _val) \
 	__BITS_SET(_word, _bit, FFS(_bit), _val)
 
-#undef BITS_MATCH
+#undef  BITS_MATCH
 #define BITS_MATCH(_word, _bit) \
 	(((_word) & (_bit)) == (_bit))
 
@@ -60,10 +60,10 @@
 #define	REG_UIC_HW_REV			0x00
 #define	REG_UIC_FW_REV			0x01
 
-#define	REG_UIC_INT			0x02
-#define	REG_CC_INT			0x03
-#define	REG_PD_INT			0x04
-#define	REG_VDM_INT			0x05
+#define	REG_UIC_INT				0x02
+#define	REG_CC_INT				0x03
+#define	REG_PD_INT				0x04
+#define	REG_VDM_INT				0x05
 
 #define	REG_USBC_STATUS1		0x06
 #define	REG_USBC_STATUS2		0x07
@@ -83,7 +83,7 @@
 #define	REG_PD_INT_M			0x10
 #define	REG_VDM_INT_M			0x11
 
-#define REG_OPCODE			0x21
+#define REG_OPCODE				0x21
 #define REG_OPCODE_DATA			0x22
 #define REG_OPCDE_RES			0x51
 
@@ -101,12 +101,12 @@
  * REG_UIC_INT Interrupts
  */
 #define BIT_APCmdResI			BIT(7)
-#define BIT_SYSMsgI			BIT(6)
+#define BIT_SYSMsgI				BIT(6)
 #define BIT_VBUSDetI			BIT(5)
-#define BIT_VbADCI			BIT(4)
-#define BIT_DCDTmoI			BIT(3)
-#define BIT_CHGTypI			BIT(1)
-#define BIT_UIDADCI			BIT(0)
+#define BIT_VbADCI				BIT(4)
+#define BIT_DCDTmoI				BIT(3)
+#define BIT_CHGTypI				BIT(1)
+#define BIT_UIDADCI				BIT(0)
 
 /*
  * REG_CC_INT Interrupts
@@ -118,64 +118,64 @@
 #define BIT_CCPinStatI			BIT(3)
 #define	BIT_CCIStatI			BIT(2)
 #define	BIT_CCVcnStatI			BIT(1)
-#define	BIT_CCStatI			BIT(0)
+#define	BIT_CCStatI				BIT(0)
 
 /*
  * REG_PD_INT Interrupts
  */
-#define BIT_PDMsgI			BIT(7)
+#define BIT_PDMsgI				BIT(7)
 #define BIT_DataRole			BIT(5)
-#define BIT_SSAccI			BIT(1)
-#define BIT_FCTIDI			BIT(0)
+#define BIT_SSAccI				BIT(1)
+#define BIT_FCTIDI				BIT(0)
 
 /*
  * REG_USBC_STATUS1
  */
-#define BIT_VBADC			BITS(7, 4)
-#define BIT_UIDADC			BITS(2, 0)
+#define BIT_VBADC				BITS(7, 4)
+#define BIT_UIDADC				BITS(2, 0)
 
 /*
  * REG_USBC_STATUS2
  */
-#define BIT_SYSMsg			BITS(7, 0)
+#define BIT_SYSMsg				BITS(7, 0)
 
 /*
  * REG_BC_STATUS
  */
-#define BIT_VBUSDet			BIT(7)
+#define BIT_VBUSDet				BIT(7)
 #define BIT_PrChgTyp			BITS(5, 3)
-#define BIT_DCDTmo			BIT(2)
-#define BIT_ChgTyp			BITS(1, 0)
+#define BIT_DCDTmo				BIT(2)
+#define BIT_ChgTyp				BITS(1, 0)
 
 /*
  * REG_CC_STATUS1
  */
 #define BIT_CCPinStat			BITS(7, 6)
-#define BIT_CCIStat			BITS(5, 4)
+#define BIT_CCIStat				BITS(5, 4)
 #define BIT_CCVcnStat			BIT(3)
-#define BIT_CCStat			BITS(2, 0)
+#define BIT_CCStat				BITS(2, 0)
 
 /*
  * REG_CC_STATUS2
  */
 #define BIT_CCSBUSHORT			BITS(7, 6)
 #define BIT_VCONNOCP			BIT(5)
-#define BIT_VCONNSC			BIT(4)
-#define BIT_VSAFE0V			BIT(3)
+#define BIT_VCONNSC				BIT(4)
+#define BIT_VSAFE0V				BIT(3)
 #define BIT_AttachSrcErr		BIT(2)
-#define BIT_Altmode			BIT(0)
+#define BIT_Altmode				BIT(0)
 
 /*
  * REG_PD_STATUS0
  */
-#define BIT_PDMsg			BITS(7, 0)
+#define BIT_PDMsg				BITS(7, 0)
 
 /*
  * REG_PD_STATUS1
  */
 #define BIT_PD_DataRole			BIT(7)
 #define BIT_PD_PSRDY			BIT(4)
-#define BIT_FCT_ID			BITS(3, 0)
+#define BIT_FCT_ID				BITS(3, 0)
 
 
 /** opcode reg **/
@@ -187,9 +187,9 @@
 #define BIT_CCSrcCur			BITS(6, 5)
 #define BIT_CCSrcSnk			BIT(4)
 #define BIT_CCSnkSrc			BIT(3)
-#define BIT_CCDbgEn			BIT(2)
-#define BIT_CCAudEn			BIT(1)
-#define BIT_CCDetEn			BIT(0)
+#define BIT_CCDbgEn				BIT(2)
+#define BIT_CCAudEn				BIT(1)
+#define BIT_CCDetEn				BIT(0)
 
 
 
@@ -212,32 +212,32 @@ enum max77729_vcon_role {
 /*
  * F/W update
  */
-#define FW_CMD_READ		0x3
-#define FW_CMD_READ_SIZE	6 /* cmd(1) + len(1) + data(4) */
+#define FW_CMD_READ			0x3
+#define FW_CMD_READ_SIZE	6	/* cmd(1) + len(1) + data(4) */
 
 #define FW_CMD_WRITE		0x1
-#define FW_CMD_WRITE_SIZE	36 /* cmd(1) + len(1) + data(34) */
+#define FW_CMD_WRITE_SIZE	36	/* cmd(1) + len(1) + data(34) */
 
-#define FW_CMD_END		0x0
+#define FW_CMD_END			0x0
 
 #define FW_HEADER_SIZE		8
-#define FW_VERIFY_DATA_SIZE	3
+#define FW_VERIFY_DATA_SIZE 3
 
-#define FW_VERIFY_TRY_COUNT		10
-#define FW_SECURE_MODE_TRY_COUNT	10
+#define FW_VERIFY_TRY_COUNT 10
+#define FW_SECURE_MODE_TRY_COUNT 10
 
-#define FW_WAIT_TIMEOUT		(1000 * 5) /* 5 sec */
+#define FW_WAIT_TIMEOUT			(1000 * 5) /* 5 sec */
 #define I2C_SMBUS_BLOCK_HALF	(I2C_SMBUS_BLOCK_MAX / 2)
 
-#define GET_CONTROL3_LOCK_ERROR_EN(_x)	((_x & (0x1 << 1)) >> 1)
+#define GET_CONTROL3_LOCK_ERROR_EN(_x)		((_x & (0x1 << 1)) >> 1)
 
 typedef struct {
-	u32 magic; /* magic number */
-	u8 major; /* major version */
-	u8 minor:3; /* minor version */
-	u8 product_id:5; /* product id */
-	u8 id; /* id */
-	u8 rev; /* rev */
+	u32 magic;     /* magic number */
+	u8 major;         /* major version */
+	u8 minor:3;       /* minor version */
+	u8 product_id:5;  /* product id */
+	u8 id;            /* id */
+	u8 rev;           /* rev */
 } max77729_fw_header;
 #define MAX77729_SIGN 0xCEF166C1
 
@@ -363,8 +363,8 @@ enum max77729_pdmsg {
 	Source_PD_PSRdy_Sent = 0x04,
 	Source_PD_Error_Recovery = 0x05,
 	Source_PD_SenderResponseTimer_Timeout = 0x06,
-	PD_DR_Swap_Request_Received = 0x07,
-	PD_PR_Swap_Request_Received = 0x08,
+	PD_DR_Swap_Request_Received	= 0x07,
+	PD_PR_Swap_Request_Received	= 0x08,
 	PD_VCONN_Swap_Request_Received = 0x09,
 	Received_PD_Message_in_illegal_state = 0x0A,
 	SRC_CAP_RECEIVED = 0x0B,
@@ -373,8 +373,8 @@ enum max77729_pdmsg {
 	VDM_Attention_message_Received = 0x11,
 	Rejcet_Received = 0x12,
 	Not_Supported_Received = 0x13,
-	Prswap_Snktosrc_Sent = 0x14,
-	Prswap_Srctosnk_Sent = 0x15,
+	Prswap_Snktosrc_Sent	= 0x14,
+	Prswap_Srctosnk_Sent	= 0x15,
 	HARDRESET_RECEIVED = 0x16,
 	Get_Vbus_turn_on = 0x17,
 	Get_Vbus_turn_off = 0x18,
@@ -422,7 +422,7 @@ enum max77729_pdmsg {
 #define MAX77729_AUTOIBUS_FW_AT_OFF	3
 #define MAX77729_AUTOIBUS_FW_OFF	2
 #define MAX77729_AUTOIBUS_AT_OFF	1
-#define MAX77729_AUTOIBUS_ON		0
+#define MAX77729_AUTOIBUS_ON	0
 
 #define OPCODE_WAIT_TIMEOUT (3000) /* 3000ms */
 
@@ -532,9 +532,10 @@ typedef enum {
 
 /* SAMSUNG OPCODE */
 #define REG_NONE 0xff
-#define CCIC_IRQ_INIT_DETECT	(-1)
+#define CCIC_IRQ_INIT_DETECT		(-1)
 
 #define MINOR_VERSION_MASK 0b00000111
 
 #endif
+
 

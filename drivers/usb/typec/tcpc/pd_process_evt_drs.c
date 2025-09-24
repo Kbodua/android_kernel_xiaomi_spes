@@ -50,7 +50,8 @@ DECL_PE_STATE_REACTION(PD_DPM_MSG_NAK);
  * [BLOCK] Porcess PD Ctrl MSG
  */
 
-static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_ctrl_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_event->msg) {
 	case PD_CTRL_GOOD_CRC:
@@ -68,7 +69,8 @@ static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event 
  * [BLOCK] Porcess DPM MSG
  */
 
-static inline bool pd_process_dpm_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_dpm_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_event->msg) {
 	case PD_DPM_ACK:

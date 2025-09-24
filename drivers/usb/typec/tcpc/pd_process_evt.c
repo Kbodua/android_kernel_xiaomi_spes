@@ -47,7 +47,7 @@ static const char * const pd_ctrl_msg_name[] = {
 	"fr_swap",
 	"get_pps",
 	"get_cc",
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 };
 
 static inline void print_ctrl_msg_event(struct tcpc_device *tcpc, uint8_t msg)
@@ -70,7 +70,7 @@ static const char * const pd_data_msg_name[] = {
 	"data5",
 	"data6",
 	"data7",
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 	"data8",
 	"data9",
 	"dataA",
@@ -113,7 +113,7 @@ static inline void print_ext_msg_event(struct tcpc_device *tcpc, uint8_t msg)
 		PE_EVT_INFO("%s\n", pd_ext_msg_name[msg]);
 }
 
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 static const char *const pd_hw_msg_name[] = {
 	"Detached",
@@ -129,7 +129,7 @@ static const char *const pd_hw_msg_name[] = {
 
 #ifdef CONFIG_USB_PD_REV30_COLLISION_AVOID
 	"sink_tx_change",
-#endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 };
 
 static inline void print_hw_msg_event(struct tcpc_device *tcpc, uint8_t msg)
@@ -201,7 +201,7 @@ static const char *const tcp_dpm_evt_name[] = {
 	"get_bat_cap",
 	"get_bat_status",
 	"get_mfrs_info",
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	/* TCP_DPM_EVT_VDM_COMMAND */
 	"disc_cable",
@@ -217,12 +217,12 @@ static const char *const tcp_dpm_evt_name[] = {
 #ifdef CONFIG_USB_PD_ALT_MODE_DFP
 	"dp_status",
 	"dp_config",
-#endif /* CONFIG_USB_PD_ALT_MODE_DFP */
-#endif /* CONFIG_USB_PD_ALT_MODE */
+#endif	/* CONFIG_USB_PD_ALT_MODE_DFP */
+#endif	/* CONFIG_USB_PD_ALT_MODE */
 
 #ifdef CONFIG_USB_PD_CUSTOM_VDM
 	"uvdm",
-#endif /* CONFIG_USB_PD_CUSTOM_VDM */
+#endif	/* CONFIG_USB_PD_CUSTOM_VDM */
 
 	/* TCP_DPM_EVT_IMMEDIATELY */
 	"hard_reset",
@@ -237,7 +237,8 @@ static inline void print_tcp_event(struct tcpc_device *tcpc, uint8_t msg)
 }
 #endif
 
-static inline void print_event(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline void print_event(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 #if PE_EVENT_DBG_ENABLE
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
@@ -255,7 +256,7 @@ static inline void print_event(struct pd_port *pd_port, struct pd_event *pd_even
 	case PD_EVT_EXT_MSG:
 		print_ext_msg_event(tcpc, pd_event->msg);
 		break;
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	case PD_EVT_DPM_MSG:
 		print_dpm_msg_event(tcpc, pd_event->msg);
@@ -327,10 +328,11 @@ static inline bool pd30_process_ready_protocol_error(struct pd_port *pd_port)
 		PE_SRC_CHUNK_RECEIVED : PE_SRC_SEND_NOT_SUPPORTED);
 	return true;
 }
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 
-bool pd_process_protocol_error(struct pd_port *pd_port, struct pd_event *pd_event)
+bool pd_process_protocol_error(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool power_change = false;
 #if PE_INFO_ENABLE
@@ -356,7 +358,7 @@ bool pd_process_protocol_error(struct pd_port *pd_port, struct pd_event *pd_even
 
 #ifdef CONFIG_USB_PD_PR_SWAP
 	case PE_PRS_SRC_SNK_WAIT_SOURCE_ON:
-#endif /* CONFIG_USB_PD_PR_SWAP */
+#endif	/* CONFIG_USB_PD_PR_SWAP */
 		if (pd_event_msg_match(pd_event,
 				PD_EVT_CTRL_MSG, PD_CTRL_PING)) {
 			PE_DBG("Ignore Ping\n");
@@ -370,7 +372,7 @@ bool pd_process_protocol_error(struct pd_port *pd_port, struct pd_event *pd_even
 		if (pd30_process_ready_protocol_error(pd_port))
 			return true;
 		break;
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 	};
 
 	if (pd_port->pe_data.pe_state_flags &
@@ -421,27 +423,29 @@ bool pd_process_tx_failed(struct pd_port *pd_port)
 /*---------------------------------------------------------------------------*/
 
 #ifdef CONFIG_USB_PD_RESET_CABLE
-static inline bool pd_process_cable_ctrl_msg_accept(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_cable_ctrl_msg_accept(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_port->pe_state_curr) {
 #ifdef CONFIG_PD_SRC_RESET_CABLE
 	case PE_SRC_CBL_SEND_SOFT_RESET:
 		vdm_put_dpm_discover_cable_event(pd_port);
 		return false;
-#endif /* CONFIG_PD_SRC_RESET_CABLE */
+#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 
 #ifdef CONFIG_PD_DFP_RESET_CABLE
 	case PE_DFP_CBL_SEND_SOFT_RESET:
 		pe_transit_ready_state(pd_port);
 		return true;
-#endif /* CONFIG_PD_DFP_RESET_CABLE */
+#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 	}
 
 	return false;
 }
-#endif /* CONFIG_USB_PD_RESET_CABLE */
+#endif	/* CONFIG_USB_PD_RESET_CABLE */
 
-static inline bool pd_process_event_cable(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_event_cable(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool ret = false;
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
@@ -449,7 +453,7 @@ static inline bool pd_process_event_cable(struct pd_port *pd_port, struct pd_eve
 #ifdef CONFIG_USB_PD_RESET_CABLE
 	if (pd_event->msg == PD_CTRL_ACCEPT)
 		ret = pd_process_cable_ctrl_msg_accept(pd_port, pd_event);
-#endif /* CONFIG_USB_PD_RESET_CABLE */
+#endif	/* CONFIG_USB_PD_RESET_CABLE */
 
 	if (!ret)
 		PE_DBG("Ignore not SOP Ctrl Msg\n");
@@ -468,7 +472,8 @@ static void pd_copy_msg_data(struct pd_port *pd_port,
 }
 
 #ifdef CONFIG_USB_PD_REV30
-static inline void pd_copy_msg_data_from_ext_evt(struct pd_port *pd_port, struct pd_msg *pd_msg)
+static inline void pd_copy_msg_data_from_ext_evt(
+	struct pd_port *pd_port, struct pd_msg *pd_msg)
 {
 	uint32_t *payload = pd_msg->payload;
 
@@ -479,9 +484,10 @@ static inline void pd_copy_msg_data_from_ext_evt(struct pd_port *pd_port, struct
 
 	pd_copy_msg_data(pd_port, ext_data, size, 1);
 }
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
-static inline void pd_copy_msg_data_from_evt(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline void pd_copy_msg_data_from_evt(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	struct pd_msg *pd_msg = pd_event->pd_msg;
 
@@ -497,7 +503,7 @@ static inline void pd_copy_msg_data_from_evt(struct pd_port *pd_port, struct pd_
 		PD_BUG_ON(pd_msg == NULL);
 		pd_copy_msg_data_from_ext_evt(pd_port, pd_msg);
 		return;
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	default:
 		pd_copy_msg_data(pd_port, NULL, 0, 0);
@@ -544,7 +550,7 @@ static inline bool pe_is_valid_pd_msg_id(struct pd_port *pd_port,
 				return false;
 			}
 			break;
-#endif /* CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP */
+#endif	/* CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP */
 		}
 	}
 
@@ -626,17 +632,18 @@ static inline void pe_translate_pd_msg_event(struct pd_port *pd_port,
 		pd_sync_sop_prime_spec_revision(
 			pd_port, PD_HEADER_REV(msg_hdr));
 	}
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 }
 
-static inline uint8_t pe_get_startup_state(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline uint8_t pe_get_startup_state(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool act_as_sink = true;
 	uint8_t startup_state = 0xff;
 
 #ifdef CONFIG_USB_PD_CUSTOM_DBGACC
 	pd_port->custom_dbgacc = false;
-#endif /* CONFIG_USB_PD_CUSTOM_DBGACC */
+#endif	/* CONFIG_USB_PD_CUSTOM_DBGACC */
 
 	switch (pd_event->msg_sec) {
 	case TYPEC_ATTACHED_DBGACC_SNK:
@@ -644,7 +651,7 @@ static inline uint8_t pe_get_startup_state(struct pd_port *pd_port, struct pd_ev
 		pd_port->custom_dbgacc = true;
 		startup_state = PE_DBG_READY;
 		break;
-#endif /* CONFIG_USB_PD_CUSTOM_DBGACC */
+#endif	/* CONFIG_USB_PD_CUSTOM_DBGACC */
 	case TYPEC_ATTACHED_SNK:
 		startup_state = PE_SNK_STARTUP;
 		break;
@@ -659,13 +666,14 @@ static inline uint8_t pe_get_startup_state(struct pd_port *pd_port, struct pd_ev
 #ifdef CONFIG_USB_PD_ERROR_RECOVERY_ONCE
 	if (pd_port->error_recovery_once > 2)
 		startup_state = PE_ERROR_RECOVERY_ONCE;
-#endif /* CONFIG_USB_PD_ERROR_RECOVERY_ONCE */
+#endif	/* CONFIG_USB_PD_ERROR_RECOVERY_ONCE */
 
 	pd_init_message_hdr(pd_port, act_as_sink);
 	return startup_state;
 }
 
-static inline bool pe_transit_startup_state(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pe_transit_startup_state(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	uint8_t startup_state =
 		pe_get_startup_state(pd_port, pd_event);
@@ -685,14 +693,15 @@ enum {
 	TII_PE_RUNNING = 2,
 };
 
-static inline uint8_t pe_check_trap_in_idle_state(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline uint8_t pe_check_trap_in_idle_state(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
 	switch (pd_port->pe_pd_state) {
 	case PE_IDLE1:
 	case PE_ERROR_RECOVERY:
-		if (pd_event_pe_msg_match(pd_event, PD_PE_IDLE)) {
+		if (pd_event_pe_msg_match(pd_event, PD_PE_IDLE))  {
 			PE_TRANSIT_STATE(pd_port, PE_IDLE2);
 			return TII_TRANSIT_STATE;
 		}
@@ -741,10 +750,11 @@ static inline void pe_init_curr_state(struct pd_port *pd_port)
 #ifdef CONFIG_USB_PD_CUSTOM_DBGACC
 	if (pd_port->custom_dbgacc)
 		pd_port->curr_ready_state = PE_DBG_READY;
-#endif /* CONFIG_USB_PD_CUSTOM_DBGACC */
+#endif	/* CONFIG_USB_PD_CUSTOM_DBGACC */
 }
 
-bool pd_process_event(struct pd_port *pd_port, struct pd_event *pd_event)
+bool pd_process_event(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool ret = false;
 	struct pd_msg *pd_msg = pd_event->pd_msg;
@@ -785,7 +795,7 @@ bool pd_process_event(struct pd_port *pd_port, struct pd_event *pd_event)
 #ifdef CONFIG_USB_PD_CUSTOM_DBGACC
 	if (pd_port->custom_dbgacc)
 		return pd_process_event_dbg(pd_port, pd_event);
-#endif /* CONFIG_USB_PD_CUSTOM_DBGACC */
+#endif	/* CONFIG_USB_PD_CUSTOM_DBGACC */
 
 	if ((pd_event->event_type == PD_EVT_CTRL_MSG) &&
 		(pd_event->msg != PD_CTRL_GOOD_CRC) &&
@@ -800,19 +810,19 @@ bool pd_process_event(struct pd_port *pd_port, struct pd_event *pd_event)
 	case PE_STATE_MACHINE_DR_SWAP:
 		ret = pd_process_event_drs(pd_port, pd_event);
 		break;
-#endif /* CONFIG_USB_PD_DR_SWAP */
+#endif	/* CONFIG_USB_PD_DR_SWAP */
 
 #ifdef CONFIG_USB_PD_PR_SWAP
 	case PE_STATE_MACHINE_PR_SWAP:
 		ret = pd_process_event_prs(pd_port, pd_event);
 		break;
-#endif /* CONFIG_USB_PD_PR_SWAP */
+#endif	/* CONFIG_USB_PD_PR_SWAP */
 
 #ifdef CONFIG_USB_PD_VCONN_SWAP
 	case PE_STATE_MACHINE_VCONN_SWAP:
 		ret = pd_process_event_vcs(pd_port, pd_event);
 		break;
-#endif /* CONFIG_USB_PD_VCONN_SWAP */
+#endif	/* CONFIG_USB_PD_VCONN_SWAP */
 	}
 
 	if (ret)

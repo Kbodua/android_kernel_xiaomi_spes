@@ -39,8 +39,8 @@
 
 #define PE_STATE_FULL_NAME	0
 
-#define TCPC_LOW_RP_DUTY	(100)	/* 10 % */
-#define TCPC_NORMAL_RP_DUTY	(330)	/* 33 % */
+#define TCPC_LOW_RP_DUTY		(100)		/* 10 % */
+#define TCPC_NORMAL_RP_DUTY	(330)		/* 33 % */
 
 /* provide to TCPC interface */
 extern int tcpci_report_usb_port_changed(struct tcpc_device *tcpc);
@@ -49,11 +49,11 @@ extern int tcpc_typec_init(struct tcpc_device *tcpc, uint8_t typec_role);
 extern void tcpc_typec_deinit(struct tcpc_device *tcpc);
 extern int tcpc_dual_role_phy_init(struct tcpc_device *tcpc);
 
-extern struct tcpc_device *tcpc_device_register(struct device *parent,
-		struct tcpc_desc *tcpc_desc,
+extern struct tcpc_device *tcpc_device_register(
+		struct device *parent, struct tcpc_desc *tcpc_desc,
 		struct tcpc_ops *ops, void *drv_data);
-extern void tcpc_device_unregister(struct device *dev,
-		struct tcpc_device *tcpc);
+extern void tcpc_device_unregister(
+			struct device *dev, struct tcpc_device *tcpc);
 
 extern int tcpc_schedule_init_work(struct tcpc_device *tcpc);
 
@@ -62,8 +62,8 @@ extern void tcpci_lock_typec(struct tcpc_device *tcpc);
 extern void tcpci_unlock_typec(struct tcpc_device *tcpc);
 extern int tcpci_alert(struct tcpc_device *tcpc);
 
-extern void tcpci_vbus_level_init(struct tcpc_device *tcpc,
-		uint16_t power_status);
+extern void tcpci_vbus_level_init(
+		struct tcpc_device *tcpc, uint16_t power_status);
 
 static inline int tcpci_check_vbus_valid(struct tcpc_device *tcpc)
 {
@@ -129,13 +129,13 @@ int tcpci_set_bist_carrier_mode(struct tcpc_device *tcpc, uint8_t pattern);
 
 #ifdef CONFIG_USB_PD_RETRY_CRC_DISCARD
 int tcpci_retransmit(struct tcpc_device *tcpc);
-#endif /* CONFIG_USB_PD_RETRY_CRC_DISCARD */
-#endif /* CONFIG_USB_POWER_DELIVERY */
+#endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
+#endif	/* CONFIG_USB_POWER_DELIVERY */
 
 int tcpci_notify_typec_state(struct tcpc_device *tcpc);
 
-int tcpci_notify_role_swap(struct tcpc_device *tcpc,
-	uint8_t event, uint8_t role);
+int tcpci_notify_role_swap(
+	struct tcpc_device *tcpc, uint8_t event, uint8_t role);
 int tcpci_notify_pd_state(struct tcpc_device *tcpc, uint8_t connect);
 
 int tcpci_set_intrst(struct tcpc_device *tcpc, bool en);
@@ -162,38 +162,38 @@ int tcpci_dp_status_update(struct tcpc_device *tcpc, uint32_t dp_status);
 int tcpci_dp_configure(struct tcpc_device *tcpc, uint32_t dp_config);
 int tcpci_dp_attention(struct tcpc_device *tcpc, uint32_t dp_status);
 
-int tcpci_dp_notify_status_update_done(struct tcpc_device *tcpc,
-	uint32_t dp_status, bool ack);
+int tcpci_dp_notify_status_update_done(
+	struct tcpc_device *tcpc, uint32_t dp_status, bool ack);
 
 int tcpci_dp_notify_config_start(struct tcpc_device *tcpc);
 int tcpci_dp_notify_config_done(struct tcpc_device *tcpc,
 	uint32_t local_cfg, uint32_t remote_cfg, bool ack);
-#endif /* CONFIG_USB_PD_ALT_MODE */
+#endif	/* CONFIG_USB_PD_ALT_MODE */
 
 #ifdef CONFIG_USB_PD_CUSTOM_VDM
 int tcpci_notify_uvdm(struct tcpc_device *tcpc, bool ack);
-#endif /* CONFIG_USB_PD_CUSTOM_VDM */
+#endif	/* CONFIG_USB_PD_CUSTOM_VDM */
 
 #ifdef CONFIG_USB_PD_ALT_MODE_RTDC
 int tcpci_dc_notify_en_unlock(struct tcpc_device *tcpc);
-#endif /* CONFIG_USB_PD_ALT_MODE_RTDC */
+#endif	/* CONFIG_USB_PD_ALT_MODE_RTDC */
 
 #ifdef CONFIG_USB_PD_REV30
 
 #ifdef CONFIG_USB_PD_REV30_ALERT_REMOTE
 int tcpci_notify_alert(struct tcpc_device *tcpc, uint32_t ado);
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 
 #ifdef CONFIG_USB_PD_REV30_STATUS_REMOTE
 int tcpci_notify_status(struct tcpc_device *tcpc, struct pd_status *sdb);
-#endif /* CONFIG_USB_PD_REV30_STATUS_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_REMOTE */
 
 #ifdef CONFIG_USB_PD_REV30_BAT_INFO
-int tcpci_notify_request_bat_info(struct tcpc_device *tcpc,
-	enum pd_battery_reference ref);
-#endif /* CONFIG_USB_PD_REV30_BAT_INFO */
-#endif /* CONFIG_USB_PD_REV30 */
+int tcpci_notify_request_bat_info(
+	struct tcpc_device *tcpc, enum pd_battery_reference ref);
+#endif	/* CONFIG_USB_PD_REV30_BAT_INFO */
+#endif	/* CONFIG_USB_PD_REV30 */
 
-#endif /* CONFIG_USB_POWER_DELIVERY */
+#endif	/* CONFIG_USB_POWER_DELIVERY */
 
 #endif /* #ifndef __LINUX_RT_TCPC_H */

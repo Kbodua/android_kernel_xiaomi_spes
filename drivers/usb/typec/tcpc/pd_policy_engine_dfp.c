@@ -157,7 +157,7 @@ void pe_dfp_cbl_send_cable_reset_entry(struct pd_port *pd_port)
 	/* TODO : we don't do cable reset now */
 }
 
-#endif /* CONFIG_PD_DFP_RESET_CABLE */
+#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 
 /*
  * [PD2.0] Display Port
@@ -195,7 +195,7 @@ void pe_dfp_vdm_dp_configuration_naked_entry(struct pd_port *pd_port)
 	pd_dpm_dfp_inform_dp_configuration(pd_port, false);
 }
 
-#endif /* CONFIG_USB_PD_ALT_MODE_DFP */
+#endif	/* CONFIG_USB_PD_ALT_MODE_DFP */
 
 /*
  * UVDM
@@ -218,4 +218,4 @@ void pe_dfp_uvdm_naked_entry(struct pd_port *pd_port)
 	pd_dpm_dfp_inform_uvdm(pd_port, false);
 }
 
-#endif /* CONFIG_USB_PD_CUSTOM_VDM */
+#endif      /* CONFIG_USB_PD_CUSTOM_VDM */

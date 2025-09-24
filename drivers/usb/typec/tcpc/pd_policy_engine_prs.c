@@ -74,7 +74,8 @@ void pe_prs_snk_src_evaluate_pr_swap_entry(struct pd_port *pd_port)
 	pd_dpm_prs_evaluate_swap(pd_port, PD_ROLE_SOURCE);
 }
 
-void pe_prs_snk_src_accept_pr_swap_entry(struct pd_port *pd_port)
+void pe_prs_snk_src_accept_pr_swap_entry(
+			struct pd_port *pd_port)
 {
 	pd_notify_pe_execute_pr_swap(pd_port, true);
 	pd_send_sop_ctrl_msg(pd_port, PD_CTRL_ACCEPT);
@@ -102,7 +103,7 @@ void pe_prs_snk_src_source_on_entry(struct pd_port *pd_port)
 {
 #ifdef CONFIG_USB_PD_RESET_CABLE
 	dpm_reaction_set(pd_port, DPM_REACTION_CAP_RESET_CABLE);
-#endif /* CONFIG_USB_PD_RESET_CABLE */
+#endif	/* CONFIG_USB_PD_RESET_CABLE */
 
 	PE_STATE_HRESET_IF_TX_FAILED(pd_port);
 	pd_dpm_dynamic_enable_vconn(pd_port);

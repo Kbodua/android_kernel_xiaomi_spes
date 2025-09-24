@@ -24,7 +24,8 @@ struct dpm_select_info_t {
 	uint8_t policy;
 };
 
-static inline void dpm_extract_apdo_info(uint32_t pdo, struct dpm_pdo_info_t *info)
+static inline void dpm_extract_apdo_info(
+		uint32_t pdo, struct dpm_pdo_info_t *info)
 {
 #ifdef CONFIG_USB_PD_REV30_PPS_SINK
 	switch (APDO_TYPE(pdo)) {
@@ -41,12 +42,13 @@ static inline void dpm_extract_apdo_info(uint32_t pdo, struct dpm_pdo_info_t *in
 		info->uw = info->ma * info->vmax;
 		return;
 	}
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
 
 	info->type = TCPM_POWER_CAP_VAL_TYPE_UNKNOWN;
 }
 
-void dpm_extract_pdo_info(uint32_t pdo, struct dpm_pdo_info_t *info)
+void dpm_extract_pdo_info(
+			uint32_t pdo, struct dpm_pdo_info_t *info)
 {
 	memset(info, 0, sizeof(struct dpm_pdo_info_t));
 
@@ -64,17 +66,19 @@ void dpm_extract_pdo_info(uint32_t pdo, struct dpm_pdo_info_t *info)
 		info->vmax = PDO_VAR_EXTRACT_MAX_VOLT(pdo);
 		info->uw = info->ma * info->vmax;
 		break;
+
 	case PDO_TYPE_BATTERY:
 		info->uw = PDO_BATT_EXTRACT_OP_POWER(pdo) * 1000;
 		info->vmin = PDO_BATT_EXTRACT_MIN_VOLT(pdo);
 		info->vmax = PDO_BATT_EXTRACT_MAX_VOLT(pdo);
 		info->ma = info->uw / info->vmin;
 		break;
+
 #ifdef CONFIG_USB_PD_REV30_PPS_SINK
 	case PDO_TYPE_APDO:
 		dpm_extract_apdo_info(pdo, info);
 		break;
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
 	}
 }
 
@@ -82,8 +86,8 @@ void dpm_extract_pdo_info(uint32_t pdo, struct dpm_pdo_info_t *info)
 #define MIN(a, b)	((a < b) ? (a) : (b))
 #endif
 
-static inline int dpm_calc_src_cap_power_uw(struct dpm_pdo_info_t *source,
-	struct dpm_pdo_info_t *sink)
+static inline int dpm_calc_src_cap_power_uw(
+	struct dpm_pdo_info_t *source, struct dpm_pdo_info_t *sink)
 {
 	int uw, ma;
 
@@ -108,7 +112,8 @@ static inline int dpm_calc_src_cap_power_uw(struct dpm_pdo_info_t *source,
  * Select PDO from VSafe5V
  */
 
-static bool dpm_select_pdo_from_vsafe5v(struct dpm_select_info_t *select_info,
+static bool dpm_select_pdo_from_vsafe5v(
+	struct dpm_select_info_t *select_info,
 	struct dpm_pdo_info_t *sink, struct dpm_pdo_info_t *source)
 {
 	int uw;
@@ -134,7 +139,8 @@ static bool dpm_select_pdo_from_vsafe5v(struct dpm_select_info_t *select_info,
  */
 
 #ifdef CONFIG_USB_PD_ALT_MODE_RTDC
-static bool dpm_select_pdo_from_direct_charge(struct dpm_select_info_t *select_info,
+static bool dpm_select_pdo_from_direct_charge(
+	struct dpm_select_info_t *select_info,
 	struct dpm_pdo_info_t *sink, struct dpm_pdo_info_t *source)
 {
 	int uw;
@@ -161,13 +167,14 @@ static bool dpm_select_pdo_from_direct_charge(struct dpm_select_info_t *select_i
 
 	return false;
 }
-#endif /* CONFIG_USB_PD_ALT_MODE_RTDC */
+#endif	/* CONFIG_USB_PD_ALT_MODE_RTDC */
 
 /*
  * Select PDO from Custom
  */
 
-static bool dpm_select_pdo_from_custom(struct dpm_select_info_t *select_info,
+static bool dpm_select_pdo_from_custom(
+	struct dpm_select_info_t *select_info,
 	struct dpm_pdo_info_t *sink, struct dpm_pdo_info_t *source)
 {
 	/* TODO */
@@ -193,7 +200,8 @@ static inline bool dpm_is_valid_pdo_pair(struct dpm_pdo_info_t *sink,
 	return sink->ma <= source->ma;
 }
 
-static bool dpm_select_pdo_from_max_power(struct dpm_select_info_t *select_info,
+static bool dpm_select_pdo_from_max_power(
+	struct dpm_select_info_t *select_info,
 	struct dpm_pdo_info_t *sink, struct dpm_pdo_info_t *source)
 {
 	bool overload;
@@ -203,12 +211,12 @@ static bool dpm_select_pdo_from_max_power(struct dpm_select_info_t *select_info,
 	/* Variable for direct charge only */
 	if ((sink->type == DPM_PDO_TYPE_VAR) && (sink->vmin < 5000))
 		return false;
-#endif /* CONFIG_USB_PD_ALT_MODE_RTDC */
+#endif	/* CONFIG_USB_PD_ALT_MODE_RTDC */
 
 #ifdef CONFIG_USB_PD_REV30
 	if (sink->type == DPM_PDO_TYPE_APDO)
 		return false;
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	if (!dpm_is_valid_pdo_pair(sink, source, select_info->policy))
 		return false;
@@ -240,7 +248,8 @@ static bool dpm_select_pdo_from_max_power(struct dpm_select_info_t *select_info,
  */
 
 #ifdef CONFIG_USB_PD_REV30_PPS_SINK
-static bool dpm_select_pdo_from_pps(struct dpm_select_info_t *select_info,
+static bool dpm_select_pdo_from_pps(
+		struct dpm_select_info_t *select_info,
 		struct dpm_pdo_info_t *sink, struct dpm_pdo_info_t *source)
 {
 	bool overload;
@@ -287,18 +296,19 @@ static bool dpm_select_pdo_from_pps(struct dpm_select_info_t *select_info,
 
 	return false;
 }
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
 
 /*
  * Select PDO from defined rule ...
  */
 
-typedef bool (*dpm_select_pdo_fun)(struct dpm_select_info_t *select_info,
+typedef bool (*dpm_select_pdo_fun)(
+	struct dpm_select_info_t *select_info,
 	struct dpm_pdo_info_t *sink, struct dpm_pdo_info_t *source);
 
 bool dpm_find_match_req_info(struct dpm_rdo_info_t *req_info,
-		struct dpm_pdo_info_t *sink,
-		int cnt, uint32_t *src_pdos, int max_uw, uint32_t policy)
+		struct dpm_pdo_info_t *sink, int cnt, uint32_t *src_pdos,
+		int max_uw, uint32_t policy)
 {
 	int i;
 	struct dpm_select_info_t select;
@@ -314,19 +324,23 @@ bool dpm_find_match_req_info(struct dpm_rdo_info_t *req_info,
 	case DPM_CHARGING_POLICY_MAX_POWER:
 		select_pdo_fun = dpm_select_pdo_from_max_power;
 		break;
+
 	case DPM_CHARGING_POLICY_CUSTOM:
 		select_pdo_fun = dpm_select_pdo_from_custom;
 		break;
+
 #ifdef CONFIG_USB_PD_ALT_MODE_RTDC
 	case DPM_CHARGING_POLICY_DIRECT_CHARGE:
 		select_pdo_fun = dpm_select_pdo_from_direct_charge;
 		break;
-#endif /* CONFIG_USB_PD_ALT_MODE_RTDC */
+#endif	/* CONFIG_USB_PD_ALT_MODE_RTDC */
+
 #ifdef CONFIG_USB_PD_REV30_PPS_SINK
 	case DPM_CHARGING_POLICY_PPS:
 		select_pdo_fun = dpm_select_pdo_from_pps;
 		break;
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
+
 	default: /* DPM_CHARGING_POLICY_VSAFE5V */
 		select_pdo_fun = dpm_select_pdo_from_vsafe5v;
 		break;
@@ -365,11 +379,11 @@ bool dpm_find_match_req_info(struct dpm_rdo_info_t *req_info,
 			req_info->vmin = sink->vmin;
 			req_info->vmax = sink->vmax;
 		}
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
 
 		return true;
 	}
 
 	return false;
 }
-#endif /* CONFIG_USB_POWER_DELIVERY */
+#endif	/* CONFIG_USB_POWER_DELIVERY */

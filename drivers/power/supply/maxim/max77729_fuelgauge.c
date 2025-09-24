@@ -2209,8 +2209,8 @@ static int max77729_fg_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
 		val->intval = fuelgauge->raw_capacity *
 			(fuelgauge->battery_data->Capacity * fuelgauge->fg_resistor / 2);
-		val->intval = val->intval / 1000;
-		//val->intval = val->intval; //uAh
+		//val->intval = val->intval / 1000;
+		val->intval = val->intval; //uAh
 		break;
 	case POWER_SUPPLY_PROP_SOH:
 		val->intval = max77729_fg_read_SoH(fuelgauge);

@@ -24,8 +24,8 @@
 
 #ifdef CONFIG_PD_DBG_INFO
 
-#define PD_INFO_BUF_SIZE	(2048*256)
-#define MSG_POLLING_MS	20
+#define PD_INFO_BUF_SIZE	(2048 * 256)
+#define MSG_POLLING_MS		20
 
 #define OUT_BUF_MAX (128)
 static struct {
@@ -118,8 +118,8 @@ int pd_dbg_info(const char *fmt, ...)
 	index = using_buf;
 	used = pd_dbg_buffer[index].used;
 	r = snprintf(pd_dbg_buffer[index].buf + used,
-			PD_INFO_BUF_SIZE - used, "<%5lu.%03lu>",
-			(unsigned long)ts, rem_usec);
+		PD_INFO_BUF_SIZE - used, "<%5lu.%03lu>",
+		(unsigned long)ts, rem_usec);
 	if (r > 0)
 		used += r;
 	r = vsnprintf(pd_dbg_buffer[index].buf + used,
@@ -142,7 +142,7 @@ static struct task_struct *print_out_task;
 
 int pd_dbg_info_init(void)
 {
-	pr_info("%s\n", __func__);
+	pr_info("%s: start.\n", __func__);
 	mutex_init(&buff_lock);
 	init_waitqueue_head(&print_out_wait_que);
 	atomic_set(&pending_print_out, 0);
@@ -164,4 +164,4 @@ MODULE_DESCRIPTION("PD Debug Info Module");
 MODULE_AUTHOR("Patrick Chang <patrick_chang@richtek.com>");
 MODULE_LICENSE("GPL");
 
-#endif /* CONFIG_PD_DBG_INFO */
+#endif	/* CONFIG_PD_DBG_INFO */

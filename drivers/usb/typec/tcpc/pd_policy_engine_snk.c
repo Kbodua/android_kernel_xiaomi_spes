@@ -29,7 +29,7 @@ void pe_snk_startup_entry(struct pd_port *pd_port)
 
 #ifdef CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP
 	uint8_t msg_id_last = pd_port->pe_data.msg_id_rx[TCPC_TX_SOP];
-#endif /* CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP */
+#endif	/* CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP */
 
 	pd_reset_protocol_layer(pd_port, false);
 
@@ -42,7 +42,7 @@ void pe_snk_startup_entry(struct pd_port *pd_port)
 
 #ifdef CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP
 		pd_port->msg_id_pr_swap_last = msg_id_last;
-#endif /* CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP */
+#endif	/* CONFIG_USB_PD_IGNORE_PS_RDY_AFTER_PR_SWAP */
 	}
 
 	pd_set_rx_enable(pd_port, rx_cap);
@@ -60,7 +60,8 @@ void pe_snk_discovery_entry(struct pd_port *pd_port)
 	pd_enable_vbus_valid_detection(pd_port, wait_valid);
 }
 
-void pe_snk_wait_for_capabilities_entry(struct pd_port *pd_port)
+void pe_snk_wait_for_capabilities_entry(
+				struct pd_port *pd_port)
 {
 	/* Default current draw after HardReset */
 	if (pd_check_pe_during_hard_reset(pd_port))
@@ -142,7 +143,7 @@ void pe_snk_transition_sink_entry(struct pd_port *pd_port)
 		if (pd_port->dpm_caps & DPM_CAP_LOCAL_GIVE_BACK)
 			pd_port->request_i_new = pd_port->request_i_op;
 	}
-#endif /* CONFIG_USB_PD_SNK_GOTOMIN */
+#endif	/* CONFIG_USB_PD_SNK_GOTOMIN */
 
 	pd_dpm_snk_standby_power(pd_port);
 }
@@ -180,7 +181,7 @@ void pe_snk_get_source_cap_entry(struct pd_port *pd_port)
 	PE_STATE_WAIT_MSG(pd_port);
 #else
 	PE_STATE_WAIT_TX_SUCCESS(pd_port);
-#endif /* CONFIG_USB_PD_TCPM_CB_2ND */
+#endif	/* CONFIG_USB_PD_TCPM_CB_2ND */
 
 	pd_send_sop_ctrl_msg(pd_port, PD_CTRL_GET_SOURCE_CAP);
 }
@@ -233,7 +234,7 @@ void pe_snk_source_alert_received_entry(struct pd_port *pd_port)
 
 	pd_dpm_inform_alert(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 
 /*
  * [PD3.0] Figure 8-75 Sink Port Sink Alert State Diagram
@@ -245,7 +246,7 @@ void pe_snk_send_sink_alert_entry(struct pd_port *pd_port)
 	PE_STATE_WAIT_TX_SUCCESS(pd_port);
 	pd_dpm_send_alert(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 
 /*
  * [PD3.0] Figure 8-77 Sink Port Get Source Capabilities Extended State Diagram
@@ -263,7 +264,7 @@ void pe_snk_get_source_cap_ext_exit(struct pd_port *pd_port)
 	pd_dpm_inform_source_cap_ext(pd_port);
 }
 
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */
 
 /*
  * [PD3.0] Figure 8-79 Sink Port Get Source Status State Diagram
@@ -281,7 +282,7 @@ void pe_snk_get_source_status_exit(struct pd_port *pd_port)
 	pd_dpm_inform_status(pd_port);
 }
 
-#endif /* CONFIG_USB_PD_REV30_STATUS_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_REMOTE */
 
 /*
  * [PD3.0] Figure 8-82 Sink Give Sink Status State Diagram
@@ -294,7 +295,7 @@ void pe_snk_give_sink_status_entry(struct pd_port *pd_port)
 
 	pd_dpm_send_status(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_STATUS_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_LOCAL */
 
 /*
  * [PD3.0] Figure 8-83 Sink Port Get Source PPS Status State Diagram
@@ -311,6 +312,6 @@ void pe_snk_get_pps_status_exit(struct pd_port *pd_port)
 {
 	pd_dpm_inform_pps_status(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
 
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */

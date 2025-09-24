@@ -30,7 +30,8 @@ DECL_PE_STATE_REACTION(PD_DPM_MSG_ACK);
  * [BLOCK] Porcess PD Ctrl MSG
  */
 
-static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_ctrl_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	uint8_t vconn_state = pd_port->vconn_role ?
 		PE_VCS_WAIT_FOR_VCONN : PE_VCS_TURN_ON_VCONN;
@@ -62,7 +63,8 @@ static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event 
  * [BLOCK] Porcess DPM MSG
  */
 
-static inline bool pd_process_dpm_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_dpm_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_event->msg) {
 	case PD_DPM_ACK:
@@ -82,7 +84,8 @@ static inline bool pd_process_dpm_msg(struct pd_port *pd_port, struct pd_event *
  * [BLOCK] Porcess Timer MSG
  */
 
-static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_timer_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_event->msg) {
 	case PD_TIMER_VCONN_ON:
@@ -120,4 +123,4 @@ bool pd_process_event_vcs(struct pd_port *pd_port, struct pd_event *pd_event)
 		return false;
 	}
 }
-#endif /* CONFIG_USB_PD_VCONN_SWAP */
+#endif	/* CONFIG_USB_PD_VCONN_SWAP */

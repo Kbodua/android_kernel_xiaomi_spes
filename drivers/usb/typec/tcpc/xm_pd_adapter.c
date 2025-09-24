@@ -43,25 +43,31 @@
 #include "inc/tcpm.h"
 
 #define PROBE_CNT_MAX	10
-static int log_level = 2;
+static int log_level = 0;
 int get_apdo_regain;
 
 #define adapter_err(fmt, ...)							\
 do {										\
 	if (log_level >= 0)							\
-		printk(KERN_ERR "[xm_pd_adapter] " fmt, ##__VA_ARGS__);	\
+		pr_err("[xm_pd_adapter]: %s: " fmt, __func__, ##__VA_ARGS__);	\
+	else 							\
+		pr_err("[xm_pd_adapter]: %s: " fmt, __func__, ##__VA_ARGS__);	\
 } while (0)
 
 #define adapter_info(fmt, ...)							\
 do {										\
 	if (log_level >= 1)							\
-		printk(KERN_INFO "[xm_pd_adapter] " fmt, ##__VA_ARGS__);	\
+		pr_err("[xm_pd_adapter]: %s: " fmt, __func__, ##__VA_ARGS__);	\
+	else 							\
+		pr_info("[xm_pd_adapter]: %s: " fmt, __func__, ##__VA_ARGS__);	\
 } while (0)
 
 #define adapter_dbg(fmt, ...)							\
 do {										\
 	if (log_level >= 2)							\
-		printk(KERN_DEBUG "[xm_pd_adapter] " fmt, ##__VA_ARGS__);	\
+		pr_err("[xm_pd_adapter]: %s: " fmt, __func__, ##__VA_ARGS__);	\
+	else 							\
+		pr_debug("[xm_pd_adapter]: %s: " fmt, __func__, ##__VA_ARGS__);	\
 } while (0)
 
 struct xm_pd_adapter_info {
@@ -105,13 +111,13 @@ static void usbpd_mi_vdm_received(struct xm_pd_adapter_info *pinfo, struct tcp_n
 	case USBPD_UVDM_SESSION_SEED:
 		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
 			pinfo->pd_adapter->vdm_data.s_secert[i] = uvdm.uvdm_data[i+1];
-			adapter_info("usbpd s_secert uvdm.uvdm_data[%d]=0x%x", i+1, uvdm.uvdm_data[i+1]);
+			adapter_info("usbpd s_secert uvdm.uvdm_data[%d]=0x%x\n", i+1, uvdm.uvdm_data[i+1]);
 		}
 		break;
 	case USBPD_UVDM_AUTHENTICATION:
 		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
 			pinfo->pd_adapter->vdm_data.digest[i] = uvdm.uvdm_data[i+1];
-			adapter_info("usbpd digest[%d]=0x%x", i+1, uvdm.uvdm_data[i+1]);
+			adapter_info("usbpd digest[%d]=0x%x\n", i+1, uvdm.uvdm_data[i+1]);
 		}
 		break;
 	case USBPD_UVDM_REVERSE_AUTHEN:
@@ -123,6 +129,7 @@ static void usbpd_mi_vdm_received(struct xm_pd_adapter_info *pinfo, struct tcp_n
 	pinfo->pd_adapter->uvdm_state = cmd;
 }
 
+
 static int pd_tcp_notifier_call(struct notifier_block *pnb,
 				unsigned long event, void *data)
 {
@@ -131,7 +138,8 @@ static int pd_tcp_notifier_call(struct notifier_block *pnb,
 
 	pinfo = container_of(pnb, struct xm_pd_adapter_info, pd_nb);
 
-	adapter_info("PD charger event: %d %d\n", (int)event, (int)noti->pd_state.connected);
+	adapter_err("PD charger event: %d %d\n", (int)event,
+		(int)noti->pd_state.connected);
 	switch (event) {
 	case TCP_NOTIFY_PD_STATE:
 		switch (noti->pd_state.connected) {
@@ -152,7 +160,7 @@ static int pd_tcp_notifier_call(struct notifier_block *pnb,
 		};
 		break;
 	case TCP_NOTIFY_UVDM:
-		adapter_info("%s: tcpc received uvdm message.\n", __func__);
+		adapter_info("tcpc received uvdm message.\n");
 		usbpd_mi_vdm_received(pinfo, noti->uvdm_msg);
 		break;
 	}
@@ -171,7 +179,7 @@ static int pd_get_svid(struct adapter_device *dev)
 	if (info == NULL)
 		return -EINVAL;
 
-	adapter_info("%s: enter\n", __func__);
+	adapter_info("enter\n");
 	if (info->adapter_dev->adapter_svid != 0)
 		return 0;
 
@@ -182,14 +190,14 @@ static int pd_get_svid(struct adapter_device *dev)
 			info->adapter_svid_list = kmalloc(sizeof(struct tcpm_svid_list), GFP_KERNEL);
 		}
 		if (info->adapter_svid_list == NULL)
-			adapter_err("[%s] adapter_svid_list is still NULL!\n", __func__);
+			adapter_err("adapter_svid_list is still NULL!\n");
 	}
 
 	ret = tcpm_inquire_pd_partner_inform(info->tcpc, pd_vdos);
 	if (ret == TCPM_SUCCESS) {
 		adapter_info("find adapter id success.\n");
 		for (i = 0; i < 8; i++)
-			adapter_info("VDO[%d]: %08x\n", i, pd_vdos[i]);
+			adapter_info("VDO[%d] : %08x\n", i, pd_vdos[i]);
 
 		info->adapter_dev->adapter_svid = pd_vdos[0] & 0x0000FFFF;
 		info->adapter_dev->adapter_id = pd_vdos[2] & 0x0000FFFF;
@@ -197,17 +205,18 @@ static int pd_get_svid(struct adapter_device *dev)
 		adapter_info("adapter_id = %08x\n", info->adapter_dev->adapter_id);
 
 		ret = tcpm_inquire_pd_partner_svids(info->tcpc, info->adapter_svid_list);
-		adapter_info("[%s] tcpm_inquire_pd_partner_svids, ret=%d!\n", __func__, ret);
+		adapter_info("tcpm_inquire_pd_partner_svids, ret=%d!\n", ret);
 		if (ret == TCPM_SUCCESS) {
 			adapter_info("discover svid number is %d\n", info->adapter_svid_list->cnt);
 			for (i = 0; i < info->adapter_svid_list->cnt; i++) {
-				adapter_info("SVID[%d]: %04x\n", i, info->adapter_svid_list->svids[i]);
+				adapter_info("SVID[%d] : %04x\n", i, info->adapter_svid_list->svids[i]);
 				if (info->adapter_svid_list->svids[i] == USB_PD_MI_SVID)
 					info->adapter_dev->adapter_svid = USB_PD_MI_SVID;
 			}
 		}
 	} else {
-		ret = tcpm_dpm_pd_get_source_cap_ext(info->tcpc, NULL, &cap_ext);
+		ret = tcpm_dpm_pd_get_source_cap_ext(info->tcpc,
+			NULL, &cap_ext);
 		if (ret == TCPM_SUCCESS) {
 			info->adapter_dev->adapter_svid = cap_ext.vid & 0x0000FFFF;
 			info->adapter_dev->adapter_id = cap_ext.pid & 0x0000FFFF;
@@ -218,7 +227,7 @@ static int pd_get_svid(struct adapter_device *dev)
 			adapter_info("adapter_fw_ver = %08x\n", info->adapter_dev->adapter_fw_ver);
 			adapter_info("adapter_hw_ver = %08x\n", info->adapter_dev->adapter_hw_ver);
 		} else {
-			adapter_err("[%s] get adapter message failed!\n", __func__);
+			adapter_err("get adapter message failed!\n");
 			return ret;
 		}
 	}
@@ -254,10 +263,10 @@ void charToint(char *str, int input_len, unsigned int *out, unsigned int *outlen
 		*outlen = *outlen + 1;
 	}
 
-	adapter_info("%s: outlen = %d\n", __func__, *outlen);
+	adapter_info("outlen = %d\n", *outlen);
 	for (i = 0; i < *outlen; i++)
-		adapter_info("%s: out[%d] = %08x\n", __func__, i, out[i]);
-	adapter_info("%s: char to int done.\n", __func__);
+		adapter_info("out[%d] = %08x\n", i, out[i]);
+	adapter_info("char to int done.\n");
 }
 
 static int tcp_dpm_event_cb_uvdm(struct tcpc_device *tcpc, int ret,
@@ -266,9 +275,9 @@ static int tcp_dpm_event_cb_uvdm(struct tcpc_device *tcpc, int ret,
 	int i;
 	struct tcp_dpm_custom_vdm_data vdm_data = event->tcp_dpm_data.vdm_data;
 
-	adapter_info("%s: vdm_data.cnt = %d\n", __func__, vdm_data.cnt);
+	adapter_info("vdm_data.cnt = %d\n", vdm_data.cnt);
 	for (i = 0; i < vdm_data.cnt; i++)
-		adapter_info("%s vdm_data.vdos[%d] = 0x%08x", __func__, i,
+		adapter_info("vdm_data.vdos[%d] = 0x%08x\n", i,
 			vdm_data.vdos[i]);
 	return 0;
 }
@@ -293,11 +302,11 @@ static int pd_request_vdm_cmd(struct adapter_device *dev,
 	if (in_interrupt()) {
 		int_data = kmalloc(40, GFP_ATOMIC);
 		vdm_data = kmalloc(sizeof(*vdm_data), GFP_ATOMIC);
-		adapter_info("%s: kmalloc atomic ok.\n", __func__);
+		adapter_info("kmalloc atomic ok.\n");
 	} else {
 		int_data = kmalloc(40, GFP_KERNEL);
 		vdm_data = kmalloc(sizeof(*vdm_data), GFP_KERNEL);
-		adapter_info("%s: kmalloc kernel ok.\n", __func__);
+		adapter_info("kmalloc kernel ok.\n");
 	}
 	memset(int_data, 0, 40);
 
@@ -356,7 +365,7 @@ static int pd_request_vdm_cmd(struct adapter_device *dev,
 		}
 		break;
 	default:
-		adapter_err("cmd: %d is not support\n", cmd);
+		adapter_err("cmd:%d is not support\n", cmd);
 		break;
 	}
 
@@ -377,7 +386,7 @@ static int pd_get_power_role(struct adapter_device *dev)
 		return -EINVAL;
 
 	info->adapter_dev->role = tcpm_inquire_pd_power_role(info->tcpc);
-	adapter_info("[%s] power role is %d\n", __func__, info->adapter_dev->role);
+	adapter_err("power role is %d\n", info->adapter_dev->role);
 	return 0;
 }
 
@@ -390,7 +399,7 @@ static int pd_get_current_state(struct adapter_device *dev)
 		return -EINVAL;
 
 	info->adapter_dev->current_state = tcpm_inquire_pd_state_curr(info->tcpc);
-	adapter_info("[%s] current state is %d\n", __func__, info->adapter_dev->current_state);
+	adapter_err("current state is %d\n", info->adapter_dev->current_state);
 	return 0;
 }
 
@@ -405,13 +414,13 @@ static int pd_get_pdos(struct adapter_device *dev)
 		return -EINVAL;
 
 	ret = tcpm_inquire_pd_source_cap(info->tcpc, &cap);
-	adapter_info("[%s] tcpm_inquire_pd_source_cap is %d.\n", __func__, ret);
+	adapter_err("tcpm_inquire_pd_source_cap is %d.\n", ret);
 	if (ret)
 		return ret;
 	for (i = 0; i < 7; i++) {
 		info->adapter_dev->received_pdos[i] = cap.pdos[i];
-		adapter_info("[%s]: pdo[%d] { received_pdos is %08x, cap.pdos is %08x }\n",
-				__func__, i, info->adapter_dev->received_pdos[i], cap.pdos[i]);
+		adapter_err("pdo[%d] { received_pdos is %08x, cap.pdos is %08x}\n",
+			i, info->adapter_dev->received_pdos[i], cap.pdos[i]);
 	}
 
 	return 0;
@@ -423,8 +432,8 @@ static int pd_set_pd_verify_process(struct adapter_device *dev, int verify_in_pr
 	//union power_supply_propval val = {0,};
 	//struct power_supply *usb_psy = NULL;
 
-	adapter_info("[%s] pd verify in process: %d\n",
-			__func__, verify_in_process);
+	adapter_err("pd verify in process: %d\n",
+		verify_in_process);
 /*
 	usb_psy = power_supply_get_by_name("usb");
 
@@ -433,7 +442,7 @@ static int pd_set_pd_verify_process(struct adapter_device *dev, int verify_in_pr
 		ret = power_supply_set_property(usb_psy,
 			POWER_SUPPLY_PROP_PD_VERIFY_IN_PROCESS, &val);
 	} else {
-		adapter_err("[%s] usb psy not found!\n", __func__);
+		adapter_err("usb psy not found!\n");
 	}
 */
 	return ret;
@@ -465,16 +474,15 @@ APDO_REGAIN:
 
 		tacap->nr = pd_cap.nr;
 		tacap->selected_cap_idx = pd_cap.selected_cap_idx - 1;
-		adapter_info("[%s] nr:%d idx:%d\n",
-			__func__, pd_cap.nr, pd_cap.selected_cap_idx - 1);
+		adapter_err("nr:%d idx:%d\n", pd_cap.nr, pd_cap.selected_cap_idx - 1);
 		for (i = 0; i < pd_cap.nr; i++) {
 			tacap->ma[i] = pd_cap.ma[i];
 			tacap->max_mv[i] = pd_cap.max_mv[i];
 			tacap->min_mv[i] = pd_cap.min_mv[i];
 			tacap->maxwatt[i] = tacap->max_mv[i] * tacap->ma[i];
 			tacap->type[i] = pd_cap.type[i];
-			adapter_info("[%s]:%d mv:[%d,%d] %d max:%d min:%d type:%d %d\n",
-				__func__, i, tacap->min_mv[i],
+			adapter_err("%d mv:[%d,%d] %d max:%d min:%d type:%d %d\n",
+				i, tacap->min_mv[i],
 				tacap->max_mv[i], tacap->ma[i],
 				tacap->maxwatt[i], tacap->minwatt[i],
 				tacap->type[i], pd_cap.type[i]);
@@ -485,21 +493,21 @@ APDO_REGAIN:
 		if (ret == TCPM_SUCCESS) {
 			while (timeout < 10) {
 				if (get_apdo_regain) {
-					adapter_info("[%s] ready to get pps info!\n", __func__);
+					adapter_err("ready to get pps info!\n");
 					goto APDO_REGAIN;
 				} else {
 					msleep(100);
 					timeout++;
 				}
 			}
-			adapter_info("[%s] ready to get pps info - for test!\n", __func__);
+			adapter_err("ready to get pps info - for test!\n");
 			goto APDO_REGAIN;
 		} else {
-			adapter_err("[%s] tcpm_dpm_pd_get_source_cap failed!\n", __func__);
+			adapter_err("tcpm_dpm_pd_get_source_cap failed!\n");
 			return -EINVAL;
 		}
 	}
-	adapter_info("[%s] tacap->nr is %d\n", __func__, tacap->nr);
+	adapter_err("tacap->nr is %d\n", tacap->nr);
 
 	return 0;
 }
@@ -519,16 +527,16 @@ static int adapter_parse_dt(struct xm_pd_adapter_info *info,
 {
 	struct device_node *np = dev->of_node;
 
-	adapter_info("%s\n", __func__);
+	adapter_err("start.\n");
 
 	if (!np) {
-		adapter_err("%s: no device node\n", __func__);
+		adapter_err("no device node\n");
 		return -EINVAL;
 	}
 
 	if (of_property_read_string(np, "adapter_name",
 		&info->adapter_dev_name) < 0)
-		adapter_err("%s: no adapter name\n", __func__);
+		adapter_err("no adapter name\n");
 
 	return 0;
 }
@@ -539,7 +547,7 @@ static int xm_pd_adapter_probe(struct platform_device *pdev)
 	struct xm_pd_adapter_info *info = NULL;
 	static int probe_cnt = 0;
 
-	adapter_info("%s probe_cnt = %d\n", __func__, ++probe_cnt);
+	adapter_err("start: probe_cnt = %d\n", ++probe_cnt);
 
 	info = devm_kzalloc(&pdev->dev, sizeof(struct xm_pd_adapter_info),
 			GFP_KERNEL);
@@ -560,10 +568,10 @@ static int xm_pd_adapter_probe(struct platform_device *pdev)
 
 	info->tcpc = tcpc_dev_get_by_name("type_c_port0");
 	if (!info->tcpc) {
-		adapter_info("%s: tcpc device not ready, defer\n", __func__);
+		adapter_err("tcpc device not ready, defer\n");
 		ret = -EPROBE_DEFER;
 		if (probe_cnt >= PROBE_CNT_MAX) {
-			adapter_info("%s: failed to get tcpc device\n", __func__);
+			adapter_err("failed to get tcpc device\n");
 			ret = -EINVAL;
 		}
 		goto err_get_tcpc_dev;
@@ -571,7 +579,7 @@ static int xm_pd_adapter_probe(struct platform_device *pdev)
 
 	info->pd_adapter = get_adapter_by_name("pd_adapter");
 	if (info->pd_adapter)
-		adapter_info("Found PD adapter [%s]\n",
+		adapter_err("Found PD adapter [%s]\n",
 			info->pd_adapter->props.alias_name);
 	else
 		adapter_err("Error: can't find PD adapter\n");
@@ -580,11 +588,11 @@ static int xm_pd_adapter_probe(struct platform_device *pdev)
 	ret = register_tcp_dev_notifier(info->tcpc, &info->pd_nb,
 				TCP_NOTIFY_TYPE_USB | TCP_NOTIFY_TYPE_MISC | TCP_NOTIFY_TYPE_MODE);
 	if (ret < 0) {
-		adapter_info("%s: register tcpc notifer fail\n", __func__);
+		adapter_err("register tcpc notifer fail\n");
 		ret = -EINVAL;
 		goto err_get_tcpc_dev;
 	}
-	adapter_info("%s OK\n", __func__);
+	adapter_err("OK\n");
 
 	return 0;
 
@@ -593,7 +601,7 @@ err_get_tcpc_dev:
 err_register_adapter_dev:
 	adapter_class_exit();
 	devm_kfree(&pdev->dev, info);
-
+	adapter_err("Fail!\n");
 	return ret;
 }
 
@@ -616,8 +624,8 @@ static struct platform_driver xm_pd_adapter_driver = {
 	.probe = xm_pd_adapter_probe,
 	.remove = xm_pd_adapter_remove,
 	.driver = {
-		.name = "xm_pd_adapter",
-		.of_match_table = xm_pd_adapter_of_match,
+		   .name = "xm_pd_adapter",
+		   .of_match_table = xm_pd_adapter_of_match,
 	},
 };
 
@@ -636,3 +644,4 @@ module_exit(xm_pd_adapter_exit);
 MODULE_DESCRIPTION("Xiaomi PD Adapter Driver");
 MODULE_AUTHOR("getian@xiaomi.com");
 MODULE_LICENSE("GPL");
+

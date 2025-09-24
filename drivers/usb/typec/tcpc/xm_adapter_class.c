@@ -14,24 +14,30 @@
 #include "inc/tcpci_config.h"
 
 static struct class *adapter_class;
-static int log_level = 2;
+static int log_level = 0;
 
 #define class_err(fmt, ...)							\
 do {										\
 	if (log_level >= 0)							\
-		printk(KERN_ERR "[xm_adapter_class] " fmt, ##__VA_ARGS__);	\
+		pr_err("[xm_adapter_class]: %s: " fmt, __func__, ##__VA_ARGS__);	\
+	else							\
+		pr_err("[xm_adapter_class]: %s: " fmt, __func__, ##__VA_ARGS__);	\
 } while (0)
 
 #define class_info(fmt, ...)							\
 do {										\
 	if (log_level >= 1)							\
-		printk(KERN_INFO "[xm_adapter_class] " fmt, ##__VA_ARGS__);	\
+		pr_err("[xm_adapter_class]: %s: " fmt, __func__, ##__VA_ARGS__);	\
+	else							\
+		pr_info("[xm_adapter_class]: %s: " fmt, __func__, ##__VA_ARGS__);	\
 } while (0)
 
 #define class_dbg(fmt, ...)							\
 do {										\
 	if (log_level >= 2)							\
-		printk(KERN_DEBUG "[xm_adapter_class] " fmt, ##__VA_ARGS__);	\
+		pr_err("[xm_adapter_class]: %s: " fmt, __func__, ##__VA_ARGS__);	\
+	else							\
+		pr_debug("[xm_adapter_class]: %s: " fmt, __func__, ##__VA_ARGS__);	\
 } while (0)
 
 static const char * const usbpd_state_strings[] = {
@@ -58,11 +64,11 @@ static const char * const usbpd_state_strings[] = {
 #ifdef CONFIG_USB_PD_SRC_STARTUP_DISCOVER_ID
 #ifdef CONFIG_PD_SRC_RESET_CABLE
 	"SRC_CBL_SEND_SOFT_RESET",
-#endif /* CONFIG_PD_SRC_RESET_CABLE */
+#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 	"SRC_VDM_IDENTITY_REQUEST",
 	"SRC_VDM_IDENTITY_ACKED",
 	"SRC_VDM_IDENTITY_NAKED",
-#endif /* PD_CAP_PE_SRC_STARTUP_DISCOVER_ID */
+#endif	/* PD_CAP_PE_SRC_STARTUP_DISCOVER_ID */
 /* Source for PD30 */
 #ifdef CONFIG_USB_PD_REV30
 	"SRC_SEND_NOT_SUPPORTED",
@@ -70,24 +76,24 @@ static const char * const usbpd_state_strings[] = {
 	"SRC_CHUNK_RECEIVED",
 #ifdef CONFIG_USB_PD_REV30_ALERT_LOCAL
 	"SRC_SEND_SOURCE_ALERT",
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_ALERT_REMOTE
 	"SRC_SINK_ALERT_RECEIVED",
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL
 	"SRC_GIVE_SOURCE_CAP_EXT",
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_STATUS_LOCAL
 	"SRC_GIVE_SOURCE_STATUS",
-#endif /* CONFIG_USB_PD_REV30_STATUS_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_STATUS_REMOTE
 	"SRC_GET_SINK_STATUS",
-#endif /* CONFIG_USB_PD_REV30_STATUS_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_PPS_SOURCE
 	"SRC_GIVE_PPS_STATUS",
-#endif /* CONFIG_USB_PD_REV30_PPS_SOURCE */
-#endif /* CONFIG_USB_PD_REV30 */
-#endif /* CONFIG_USB_PD_PE_SOURCE */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SOURCE */
+#endif	/* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_PE_SOURCE */
 /******************* Sink *******************/
 #ifdef CONFIG_USB_PD_PE_SINK
 /* Sink Init */
@@ -112,24 +118,24 @@ static const char * const usbpd_state_strings[] = {
 	"SNK_CHUNK_RECEIVED",
 #ifdef CONFIG_USB_PD_REV30_ALERT_REMOTE
 	"SNK_SOURCE_ALERT_RECEIVED",
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_ALERT_LOCAL
 	"SNK_SEND_SINK_ALERT",
-#endif /* CONFIG_USB_PD_REV30_ALERT_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE
 	"SNK_GET_SOURCE_CAP_EXT",
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_STATUS_REMOTE
 	"SNK_GET_SOURCE_STATUS",
-#endif /* CONFIG_USB_PD_REV30_STATUS_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_STATUS_LOCAL
 	"SNK_GIVE_SINK_STATUS",
-#endif /* CONFIG_USB_PD_REV30_STATUS_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_PPS_SINK
 	"SNK_GET_PPS_STATUS",
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
-#endif /* CONFIG_USB_PD_REV30 */
-#endif /* CONFIG_USB_PD_PE_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_PE_SINK */
 /******************* DR_SWAP *******************/
 #ifdef CONFIG_USB_PD_DR_SWAP
 /* DR_SWAP_DFP */
@@ -144,7 +150,7 @@ static const char * const usbpd_state_strings[] = {
 	"DRS_UFP_DFP_CHANGE_TO_DFP",
 	"DRS_UFP_DFP_SEND_DR_SWAP",
 	"DRS_UFP_DFP_REJECT_DR_SWAP",
-#endif /* CONFIG_USB_PD_DR_SWAP */
+#endif	/* CONFIG_USB_PD_DR_SWAP */
 /******************* PR_SWAP *******************/
 #ifdef CONFIG_USB_PD_PR_SWAP
 /* PR_SWAP_SRC */
@@ -172,12 +178,12 @@ static const char * const usbpd_state_strings[] = {
 #ifdef CONFIG_USB_PD_REV30
 #ifdef CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL
 	"DR_SNK_GIVE_SOURCE_CAP_EXT",
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE
 	"DR_SRC_GET_SOURCE_CAP_EXT",
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */
-#endif /* CONFIG_USB_PD_REV30 */
-#endif /* CONFIG_USB_PD_PR_SWAP */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_PR_SWAP */
 /******************* VCONN_SWAP *******************/
 #ifdef CONFIG_USB_PD_VCONN_SWAP
 	"VCS_SEND_SWAP",
@@ -188,7 +194,7 @@ static const char * const usbpd_state_strings[] = {
 	"VCS_TURN_OFF_VCONN",
 	"VCS_TURN_ON_VCONN",
 	"VCS_SEND_PS_RDY",
-#endif /* CONFIG_USB_PD_VCONN_SWAP */
+#endif	/* CONFIG_USB_PD_VCONN_SWAP */
 /******************* UFP_VDM *******************/
 	"UFP_VDM_GET_IDENTITY",
 	"UFP_VDM_GET_SVIDS",
@@ -199,7 +205,7 @@ static const char * const usbpd_state_strings[] = {
 #ifdef CONFIG_USB_PD_ALT_MODE
 	"UFP_VDM_DP_STATUS_UPDATE",
 	"UFP_VDM_DP_CONFIGURE",
-#endif /* CONFIG_USB_PD_ALT_MODE */
+#endif/* CONFIG_USB_PD_ALT_MODE */
 /******************* DFP_VDM *******************/
 	"DFP_UFP_VDM_IDENTITY_REQUEST",
 	"DFP_UFP_VDM_IDENTITY_ACKED",
@@ -222,7 +228,7 @@ static const char * const usbpd_state_strings[] = {
 #ifdef CONFIG_PD_DFP_RESET_CABLE
 	"DFP_CBL_SEND_SOFT_RESET",
 	"DFP_CBL_SEND_CABLE_RESET",
-#endif /* CONFIG_PD_DFP_RESET_CABLE */
+#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 #ifdef CONFIG_USB_PD_ALT_MODE_DFP
 	"DFP_VDM_DP_STATUS_UPDATE_REQUEST",
 	"DFP_VDM_DP_STATUS_UPDATE_ACKED",
@@ -230,60 +236,60 @@ static const char * const usbpd_state_strings[] = {
 	"DFP_VDM_DP_CONFIGURATION_REQUEST",
 	"DFP_VDM_DP_CONFIGURATION_ACKED",
 	"DFP_VDM_DP_CONFIGURATION_NAKED",
-#endif /* CONFIG_USB_PD_ALT_MODE_DFP */
+#endif/* CONFIG_USB_PD_ALT_MODE_DFP */
 /******************* UVDM & SVDM *******************/
 #ifdef CONFIG_USB_PD_CUSTOM_VDM
 	"UFP_UVDM_RECV",
 	"DFP_UVDM_SEND",
 	"DFP_UVDM_ACKED",
 	"DFP_UVDM_NAKED",
-#endif /* CONFIG_USB_PD_CUSTOM_VDM */
+#endif/* CONFIG_USB_PD_CUSTOM_VDM */
 /******************* PD30 Common *******************/
 #ifdef CONFIG_USB_PD_REV30
 #ifdef CONFIG_USB_PD_REV30_BAT_CAP_REMOTE
 	"GET_BATTERY_CAP",
-#endif /* CONFIG_USB_PD_REV30_BAT_CAP_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_BAT_CAP_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_BAT_CAP_LOCAL
 	"GIVE_BATTERY_CAP",
-#endif /* CONFIG_USB_PD_REV30_BAT_CAP_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_BAT_CAP_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_BAT_STATUS_REMOTE
 	"GET_BATTERY_STATUS",
-#endif /* CONFIG_USB_PD_REV30_BAT_STATUS_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_BAT_STATUS_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_BAT_STATUS_LOCAL
 	"GIVE_BATTERY_STATUS",
-#endif /* CONFIG_USB_PD_REV30_BAT_STATUS_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_BAT_STATUS_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_MFRS_INFO_REMOTE
 	"GET_MANUFACTURER_INFO",
-#endif /* CONFIG_USB_PD_REV30_MFRS_INFO_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_MFRS_INFO_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_MFRS_INFO_LOCAL
 	"GIVE_MANUFACTURER_INFO",
-#endif /* CONFIG_USB_PD_REV30_MFRS_INFO_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_MFRS_INFO_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_COUNTRY_CODE_REMOTE
 	"GET_COUNTRY_CODES",
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_CODE_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_CODE_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL
 	"GIVE_COUNTRY_CODES",
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL */
 #ifdef CONFIG_USB_PD_REV30_COUNTRY_INFO_REMOTE
 	"GET_COUNTRY_INFO",
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_INFO_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_INFO_REMOTE */
 #ifdef CONFIG_USB_PD_REV30_COUNTRY_INFO_LOCAL
 	"GIVE_COUNTRY_INFO",
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_INFO_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_INFO_LOCAL */
 	"VDM_NOT_SUPPORTED",
 #endif /* CONFIG_USB_PD_REV30 */
 /******************* Others *******************/
 #ifdef CONFIG_USB_PD_CUSTOM_DBGACC
 	"DBG_READY",
-#endif /* CONFIG_USB_PD_CUSTOM_DBGACC */
+#endif/* CONFIG_USB_PD_CUSTOM_DBGACC */
 #ifdef CONFIG_USB_PD_RECV_HRESET_COUNTER
 	"OVER_RECV_HRESET_LIMIT",
-#endif /* CONFIG_USB_PD_RECV_HRESET_COUNTER */
+#endif/* CONFIG_USB_PD_RECV_HRESET_COUNTER */
 	"REJECT",
 	"ERROR_RECOVERY",
 #ifdef CONFIG_USB_PD_ERROR_RECOVERY_ONCE
 	"ERROR_RECOVERY_ONCE",
-#endif /* CONFIG_USB_PD_ERROR_RECOVERY_ONCE */
+#endif	/* CONFIG_USB_PD_ERROR_RECOVERY_ONCE */
 	"BIST_TEST_DATA",
 	"BIST_CARRIER_MODE_2",
 /* Wait tx finished */
@@ -298,8 +304,8 @@ static ssize_t adapter_show_name(struct device *dev,
 	struct adapter_device *adapter_dev = to_adapter_device(dev);
 
 	return snprintf(buf, 20, "%s\n",
-			adapter_dev->props.alias_name ?
-			adapter_dev->props.alias_name : "anonymous");
+		       adapter_dev->props.alias_name ?
+		       adapter_dev->props.alias_name : "anonymous");
 }
 
 static void adapter_device_release(struct device *dev)
@@ -312,7 +318,7 @@ static void adapter_device_release(struct device *dev)
 int adapter_dev_get_id(struct adapter_device *adapter_dev)
 {
 	if (adapter_dev != NULL && adapter_dev->ops != NULL &&
-		adapter_dev->ops->get_svid)
+	    adapter_dev->ops->get_svid)
 		return adapter_dev->ops->get_svid(adapter_dev);
 
 	return -ENOTSUPP;
@@ -331,7 +337,7 @@ EXPORT_SYMBOL(adapter_dev_get_pd_verified);
 int adapter_dev_get_svid(struct adapter_device *adapter_dev)
 {
 	if (adapter_dev != NULL && adapter_dev->ops != NULL &&
-		adapter_dev->ops->get_svid)
+	    adapter_dev->ops->get_svid)
 		return adapter_dev->ops->get_svid(adapter_dev);
 
 	return -ENOTSUPP;
@@ -344,7 +350,7 @@ int adapter_dev_request_vdm_cmd(struct adapter_device *adapter_dev,
 	unsigned int data_len)
 {
 	if (adapter_dev != NULL && adapter_dev->ops != NULL &&
-		adapter_dev->ops->request_vdm_cmd)
+	    adapter_dev->ops->request_vdm_cmd)
 		return adapter_dev->ops->request_vdm_cmd(adapter_dev, cmd, data, data_len);
 
 	return -ENOTSUPP;
@@ -361,7 +367,7 @@ static ssize_t adapter_id_show(struct device *dev,
 		adapter_dev->ops->get_svid) {
 		adapter_dev->ops->get_svid(adapter_dev);
 	}
-	class_info("%s: adapter_id is %08x\n", __func__, adapter_dev->adapter_id);
+	class_info("adapter_id is %08x\n", adapter_dev->adapter_id);
 
 	return snprintf(buf, PAGE_SIZE, "%08x\n", adapter_dev->adapter_id);
 }
@@ -388,7 +394,7 @@ static ssize_t adapter_svid_show(struct device *dev,
 		adapter_dev->ops->get_svid) {
 		adapter_dev->ops->get_svid(adapter_dev);
 	}
-	class_info("%s: adapter_svid is %04x\n", __func__, adapter_dev->adapter_svid);
+	class_info("adapter_svid is %04x\n", adapter_dev->adapter_svid);
 
 	return snprintf(buf, PAGE_SIZE, "%04x\n", adapter_dev->adapter_svid);
 }
@@ -428,24 +434,30 @@ static ssize_t request_vdm_cmd_store(struct device *dev,
 
 	if (in_interrupt()) {
 		data = kmalloc(40, GFP_ATOMIC);
-		class_info("%s: kmalloc atomic ok.\n", __func__);
+		class_info("kmalloc atomic ok.\n");
 	} else {
 		data = kmalloc(40, GFP_KERNEL);
-		class_info("%s: kmalloc kernel ok.\n", __func__);
+		class_info("kmalloc kernel ok.\n");
 	}
 	memset(data, 0, 40);
 
 	ret = sscanf(buf, "%d,%s\n", &cmd, buffer);
-	class_info("%s: cmd:%d, buffer:%s, ret:%d\n", __func__, cmd, buffer, ret);
+	if (ret < 2) {
+		class_info("Invalid input format: %s\n", buf);
+		kfree(data);
+		return -EINVAL;
+	}
+
+	class_info("cmd:%d, buffer:%s\n", cmd, buffer);
 
 	StringToHex(buffer, data, &count);
-	class_info("%s: count = %d\n", __func__, count);
+	class_info("count = %d\n", count);
 
 	for (i = 0; i < count; i++)
-		class_info("%02x", data[i]);
+		class_info("%02x\n", data[i]);
 
 	if (adapter_dev != NULL && adapter_dev->ops != NULL &&
-		adapter_dev->ops->request_vdm_cmd) {
+	    adapter_dev->ops->request_vdm_cmd) {
 		adapter_dev->ops->request_vdm_cmd(adapter_dev,
 							cmd, data, count);
 	}
@@ -481,7 +493,7 @@ static ssize_t request_vdm_cmd_show(struct device *dev,
 		return snprintf(buf, PAGE_SIZE, "%d,Null\n", cmd);
 	case USBPD_UVDM_REVERSE_AUTHEN:
 		return snprintf(buf, PAGE_SIZE, "%d,%d", cmd,
-				adapter_dev->vdm_data.reauth);
+			adapter_dev->vdm_data.reauth);
 	case USBPD_UVDM_AUTHENTICATION:
 		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
 			memset(data, 0, sizeof(data));
@@ -491,7 +503,7 @@ static ssize_t request_vdm_cmd_show(struct device *dev,
 		}
 		return snprintf(buf, PAGE_SIZE, "%d,%s\n", cmd, str_buf);
 	default:
-		class_err("feedbak cmd: %d is not support\n", cmd);
+		class_err("feedbak cmd:%d is not support\n", cmd);
 		break;
 	}
 	return snprintf(buf, PAGE_SIZE, "%d,%s\n", cmd, str_buf);
@@ -512,11 +524,10 @@ static ssize_t verify_process_store(struct device *dev,
 
 	adapter_dev->verify_process = !!val;
 
-	class_info("%s: batterysecret verify process: %d\n",
-		__func__, adapter_dev->verify_process);
+	class_info("batterysecret verify process: %d\n", adapter_dev->verify_process);
 
 	if (adapter_dev != NULL && adapter_dev->ops != NULL &&
-		adapter_dev->ops->set_pd_verify_process) {
+	    adapter_dev->ops->set_pd_verify_process) {
 		adapter_dev->ops->set_pd_verify_process(adapter_dev,
 							adapter_dev->verify_process);
 	}
@@ -544,7 +555,7 @@ static ssize_t usbpd_verifed_store(struct device *dev,
 		adapter_dev->verifed = 0;
 		return -EINVAL;
 	}
-	class_info("%s: batteryd set usbpd verifyed: %d\n", __func__, val);
+	class_info("batteryd set usbpd verifyed: %d\n", val);
 	adapter_dev->verifed = !!val;
 
 	if (adapter_dev->verifed) {
@@ -575,7 +586,7 @@ static ssize_t current_pr_show(struct device *dev,
 		adapter_dev->ops->get_power_role) {
 		adapter_dev->ops->get_power_role(adapter_dev);
 	}
-	class_info("%s: current_pr is %d\n", __func__, adapter_dev->role);
+	class_info("current_pr is %d\n", adapter_dev->role);
 	if (adapter_dev->role == PD_ROLE_SINK_FOR_ADAPTER)
 		pr = "sink";
 	else if (adapter_dev->role == PD_ROLE_SOURCE_FOR_ADAPTER)
@@ -594,13 +605,12 @@ static ssize_t current_state_show(struct device *dev,
 		adapter_dev->ops->get_current_state) {
 		adapter_dev->ops->get_current_state(adapter_dev);
 	}
-	class_info("%s: current_state is %d\n", __func__, adapter_dev->current_state);
+	class_err("current_state is %d\n", adapter_dev->current_state);
 
 	if (adapter_dev->current_state >= (sizeof(usbpd_state_strings) / sizeof(usbpd_state_strings[0])))
 		adapter_dev->current_state = 0;
 
-	class_info("%s: %s\n", __func__,
-		usbpd_state_strings[adapter_dev->current_state]);
+	class_err("%s\n", usbpd_state_strings[adapter_dev->current_state]);
 
 	return snprintf(buf, PAGE_SIZE, "%s\n",
 			usbpd_state_strings[adapter_dev->current_state]);
@@ -639,10 +649,10 @@ static ssize_t pdo_n_show(struct device *dev,
 		if (attr == &dev_attr_pdos[i])
 			/* dump the PDO as a hex string */
 			return snprintf(buf, PAGE_SIZE, "%08x\n",
-					adapter_dev->received_pdos[i]);
+				adapter_dev->received_pdos[i]);
 	}
 
-	class_err("%s: Invalid PDO index\n", __func__);
+	class_err("Invalid PDO index\n");
 	return -EINVAL;
 }
 
@@ -677,19 +687,19 @@ static const struct attribute_group *adapter_groups[] = {
 };
 
 int register_adapter_device_notifier(struct adapter_device *adapter_dev,
-		struct notifier_block *nb)
+                               struct notifier_block *nb)
 {
-	int ret;
+       int ret;
 
-	ret = srcu_notifier_chain_register(&adapter_dev->evt_nh, nb);
-	return ret;
+       ret = srcu_notifier_chain_register(&adapter_dev->evt_nh, nb);
+       return ret;
 }
 EXPORT_SYMBOL(register_adapter_device_notifier);
 
 int unregister_adapter_device_notifier(struct adapter_device *adapter_dev,
-		struct notifier_block *nb)
+                               struct notifier_block *nb)
 {
-	return srcu_notifier_chain_unregister(&adapter_dev->evt_nh, nb);
+       return srcu_notifier_chain_unregister(&adapter_dev->evt_nh, nb);
 }
 EXPORT_SYMBOL(unregister_adapter_device_notifier);
 
@@ -715,7 +725,7 @@ struct adapter_device *adapter_device_register(const char *name,
 	struct srcu_notifier_head *head = NULL;
 	int rc;
 
-	class_info("%s: name=%s\n", __func__, name);
+	class_err("name=%s\n", name);
 	adapter_dev = kzalloc(sizeof(*adapter_dev), GFP_KERNEL);
 	if (!adapter_dev)
 		return ERR_PTR(-ENOMEM);
@@ -734,7 +744,7 @@ struct adapter_device *adapter_device_register(const char *name,
 	/* Copy properties */
 	if (props) {
 		memcpy(&adapter_dev->props, props,
-				sizeof(struct adapter_properties));
+		       sizeof(struct adapter_properties));
 	}
 	rc = device_register(&adapter_dev->dev);
 	if (rc) {
@@ -808,3 +818,4 @@ int adapter_class_init(void)
 	return 0;
 }
 EXPORT_SYMBOL(adapter_class_init);
+

@@ -43,8 +43,8 @@ struct pe_state_reaction {
  *---------------------------------------------------------------------------
  */
 
-bool pd_process_protocol_error(struct pd_port *pd_port,
-	struct pd_event *pd_event);
+bool pd_process_protocol_error(
+	struct pd_port *pd_port, struct pd_event *pd_event);
 
 bool pd_process_tx_failed(struct pd_port *pd_port);
 
@@ -72,7 +72,8 @@ static inline uint8_t pe_get_curr_soft_reset_state(struct pd_port *pd_port)
 	return pd_port->curr_sreset_state;
 }
 
-static inline uint8_t pe_get_curr_evaluate_pr_swap_state(struct pd_port *pd_port)
+static inline uint8_t pe_get_curr_evaluate_pr_swap_state(
+	struct pd_port *pd_port)
 {
 	if (pd_port->power_role == PD_ROLE_SINK)
 		return PE_PRS_SNK_SRC_EVALUATE_PR_SWAP;
@@ -80,7 +81,8 @@ static inline uint8_t pe_get_curr_evaluate_pr_swap_state(struct pd_port *pd_port
 	return PE_PRS_SRC_SNK_EVALUATE_PR_SWAP;
 }
 
-static inline uint8_t pe_get_curr_send_pr_swap_state(struct pd_port *pd_port)
+static inline uint8_t pe_get_curr_send_pr_swap_state(
+	struct pd_port *pd_port)
 {
 	if (pd_port->power_role == PD_ROLE_SINK)
 		return PE_PRS_SNK_SRC_SEND_SWAP;
@@ -88,7 +90,8 @@ static inline uint8_t pe_get_curr_send_pr_swap_state(struct pd_port *pd_port)
 	return PE_PRS_SRC_SNK_SEND_SWAP;
 }
 
-static inline uint8_t pd_get_curr_hard_reset_recv_state(struct pd_port *pd_port)
+static inline uint8_t pd_get_curr_hard_reset_recv_state(
+	struct pd_port *pd_port)
 {
 	if (pd_port->power_role == PD_ROLE_SINK)
 		return PE_SNK_TRANSITION_TO_DEFAULT;
@@ -96,7 +99,8 @@ static inline uint8_t pd_get_curr_hard_reset_recv_state(struct pd_port *pd_port)
 	return PE_SRC_HARD_RESET_RECEIVED;
 }
 
-static inline uint8_t pd_get_curr_soft_reset_recv_state(struct pd_port *pd_port)
+static inline uint8_t pd_get_curr_soft_reset_recv_state(
+	struct pd_port *pd_port)
 {
 	if (pd_port->power_role == PD_ROLE_SINK)
 		return PE_SNK_SOFT_RESET;
@@ -196,6 +200,6 @@ extern bool pd_process_event_tcp(struct pd_port *pd_port, struct pd_event *evt);
 
 #ifdef CONFIG_USB_PD_CUSTOM_DBGACC
 extern bool pd_process_event_dbg(struct pd_port *pd_port, struct pd_event *evt);
-#endif /* CONFIG_USB_PD_CUSTOM_DBGACC */
+#endif	/* CONFIG_USB_PD_CUSTOM_DBGACC */
 
 #endif /* PD_PROCESS_EVT_H_ */

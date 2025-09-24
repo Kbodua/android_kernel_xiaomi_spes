@@ -481,9 +481,7 @@ static void nopmi_chg_handle_jeita_current(struct nopmi_chg_jeita_st *nopmi_chg_
 		pd_active = nopmi_chg_jeita_get_pd_active(nopmi_chg_jeita);
 		if (sw_jeita->sm == TEMP_T2_TO_T3 && pd_active == 2) {
 			if (nopmi_chg_jeita->battery_temp >= 35) {
-				if (nopmi_chg_jeita->battery_id == 1)
-					sw_jeita->term_curr = 784;
-				else if (nopmi_chg_jeita->battery_id == 2)
+				if (nopmi_chg_jeita->battery_id == 0 || nopmi_chg_jeita->battery_id == 1)
 					sw_jeita->term_curr = 833;
 				else
 					sw_jeita->term_curr = 784;

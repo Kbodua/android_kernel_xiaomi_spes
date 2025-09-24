@@ -126,7 +126,7 @@ static void dual_role_dev_release(struct device *dev)
 
 static struct dual_role_phy_instance *__must_check
 __dual_role_register(struct device *parent,
-			const struct dual_role_phy_desc *desc)
+		     const struct dual_role_phy_desc *desc)
 {
 	struct device *dev;
 	struct dual_role_phy_instance *dual_role;
@@ -293,14 +293,16 @@ static ssize_t dual_role_show_property(struct device *dev,
 	}
 
 	if (off == DUAL_ROLE_PROP_SUPPORTED_MODES) {
-		BUILD_BUG_ON(DUAL_ROLE_PROP_SUPPORTED_MODES_TOTAL != ARRAY_SIZE(supported_modes_text));
+		BUILD_BUG_ON(DUAL_ROLE_PROP_SUPPORTED_MODES_TOTAL !=
+			ARRAY_SIZE(supported_modes_text));
 		if (value < DUAL_ROLE_PROP_SUPPORTED_MODES_TOTAL)
 			return snprintf(buf, PAGE_SIZE, "%s\n",
 					supported_modes_text[value]);
 		else
 			return -EIO;
 	} else if (off == DUAL_ROLE_PROP_MODE) {
-		BUILD_BUG_ON(DUAL_ROLE_PROP_MODE_TOTAL != ARRAY_SIZE(mode_text));
+		BUILD_BUG_ON(DUAL_ROLE_PROP_MODE_TOTAL !=
+			ARRAY_SIZE(mode_text));
 		if (value < DUAL_ROLE_PROP_MODE_TOTAL)
 			return snprintf(buf, PAGE_SIZE, "%s\n",
 					mode_text[value]);
@@ -321,7 +323,8 @@ static ssize_t dual_role_show_property(struct device *dev,
 		else
 			return -EIO;
 	} else if (off == DUAL_ROLE_PROP_VCONN_SUPPLY) {
-		BUILD_BUG_ON(DUAL_ROLE_PROP_VCONN_SUPPLY_TOTAL != ARRAY_SIZE(vconn_supply_text));
+		BUILD_BUG_ON(DUAL_ROLE_PROP_VCONN_SUPPLY_TOTAL !=
+				ARRAY_SIZE(vconn_supply_text));
 		if (value < DUAL_ROLE_PROP_VCONN_SUPPLY_TOTAL)
 			return snprintf(buf, PAGE_SIZE, "%s\n",
 					vconn_supply_text[value]);
@@ -407,7 +410,7 @@ static umode_t dual_role_attr_is_visible(struct kobject *kobj,
 
 		if (property == attrno) {
 			if (dual_role->desc->property_is_writeable &&
-				dual_role_property_is_writeable(dual_role, property) > 0)
+					dual_role_property_is_writeable(dual_role, property) > 0)
 				mode |= S_IWUSR;
 
 			return mode;
@@ -522,6 +525,3 @@ static void __exit dual_role_class_exit(void)
 
 subsys_initcall(dual_role_class_init);
 module_exit(dual_role_class_exit);
-
-MODULE_DESCRIPTION("Class Dual Role Driver");
-MODULE_LICENSE("GPL");

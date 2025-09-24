@@ -34,7 +34,7 @@ static inline bool pd_evaluate_reject_dr_swap(struct pd_port *pd_port)
 
 	return true;
 }
-#endif /* CONFIG_USB_PD_DR_SWAP */
+#endif	/* CONFIG_USB_PD_DR_SWAP */
 
 #ifdef CONFIG_USB_PD_PR_SWAP
 static inline bool pd_evaluate_reject_pr_swap(struct pd_port *pd_port)
@@ -48,7 +48,7 @@ static inline bool pd_evaluate_reject_pr_swap(struct pd_port *pd_port)
 
 	return true;
 }
-#endif /* CONFIG_USB_PD_PR_SWAP */
+#endif	/* CONFIG_USB_PD_PR_SWAP */
 
 #ifdef CONFIG_USB_PD_VCONN_SWAP
 static inline bool pd_evaluate_accept_vconn_swap(struct pd_port *pd_port)
@@ -58,9 +58,10 @@ static inline bool pd_evaluate_accept_vconn_swap(struct pd_port *pd_port)
 
 	return false;
 }
-#endif /* CONFIG_USB_PD_VCONN_SWAP */
+#endif	/* CONFIG_USB_PD_VCONN_SWAP */
 
-static inline bool pd_process_ctrl_msg_dr_swap(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_ctrl_msg_dr_swap(
+		struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	if (pd_port->pe_data.modal_operation) {
 		pe_transit_hard_reset_state(pd_port);
@@ -80,13 +81,14 @@ static inline bool pd_process_ctrl_msg_dr_swap(struct pd_port *pd_port, struct p
 			PE_DRS_DFP_UFP_EVALUATE_DR_SWAP);
 		return true;
 	}
-#endif /* CONFIG_USB_PD_DR_SWAP */
+#endif	/* CONFIG_USB_PD_DR_SWAP */
 
 	PE_TRANSIT_STATE(pd_port, PE_REJECT);
 	return true;
 }
 
-static inline bool pd_process_ctrl_msg_pr_swap(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_ctrl_msg_pr_swap(
+		struct pd_port *pd_port, struct pd_event *pd_event)
 {
 #ifdef CONFIG_USB_PD_PR_SWAP
 	if (!pd_evaluate_reject_pr_swap(pd_port)) {
@@ -95,13 +97,14 @@ static inline bool pd_process_ctrl_msg_pr_swap(struct pd_port *pd_port, struct p
 		pe_transit_evaluate_pr_swap_state(pd_port);
 		return true;
 	}
-#endif /* CONFIG_USB_PD_PR_SWAP */
+#endif	/* CONFIG_USB_PD_PR_SWAP */
 
 	PE_TRANSIT_STATE(pd_port, PE_REJECT);
 	return true;
 }
 
-static inline bool pd_process_ctrl_msg_vconn_swap(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_ctrl_msg_vconn_swap(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 #ifdef CONFIG_USB_PD_VCONN_SWAP
 	if (!pd_check_pe_state_ready(pd_port))
@@ -112,7 +115,7 @@ static inline bool pd_process_ctrl_msg_vconn_swap(struct pd_port *pd_port, struc
 		PE_TRANSIT_STATE(pd_port, PE_VCS_EVALUATE_SWAP);
 		return true;
 	}
-#endif /* CONFIG_USB_PD_VCONN_SWAP */
+#endif	/* CONFIG_USB_PD_VCONN_SWAP */
 
 	if (!pd_check_rev30(pd_port)) {
 		PE_TRANSIT_STATE(pd_port, PE_REJECT);
@@ -126,7 +129,8 @@ static inline bool pd_process_ctrl_msg_vconn_swap(struct pd_port *pd_port, struc
  * [BLOCK] BIST
  */
 
-static inline bool pd_process_data_msg_bist(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_data_msg_bist(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
@@ -189,10 +193,12 @@ static bool pd_process_ctrl_msg_wait_reject(struct pd_port *pd_port)
 
 static inline bool pd_process_ctrl_msg_wait(struct pd_port *pd_port)
 {
+
 	return pd_process_ctrl_msg_wait_reject(pd_port);
 }
 
-static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_ctrl_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool ret = false;
 
@@ -202,7 +208,7 @@ static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event 
 		pd_event->msg = PD_CTRL_MSG_NR;
 		return false;
 	}
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	switch (pd_event->msg) {
 	case PD_CTRL_GOOD_CRC:
@@ -265,7 +271,7 @@ static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event 
 				PE_GIVE_COUNTRY_CODES);
 		}
 		break;
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL */
 
 	case PD_CTRL_NOT_SUPPORTED:
 		pd_cancel_dpm_reaction(pd_port);
@@ -281,7 +287,7 @@ static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event 
 				pd_port->tcpc, PD_PE_VDM_NOT_SUPPORT);
 		}
 		break;
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 	}
 
 	return ret;
@@ -291,7 +297,8 @@ static inline bool pd_process_ctrl_msg(struct pd_port *pd_port, struct pd_event 
  * [BLOCK] Porcess Data MSG
  */
 
-static inline bool pd_process_data_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_data_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool ret = false;
 	uint8_t ready_state = pe_get_curr_ready_state(pd_port);
@@ -302,7 +309,7 @@ static inline bool pd_process_data_msg(struct pd_port *pd_port, struct pd_event 
 		pd_event->msg = PD_DATA_MSG_NR;
 		return false;
 	}
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	switch (pd_event->msg) {
 	case PD_DATA_BIST:
@@ -316,7 +323,7 @@ static inline bool pd_process_data_msg(struct pd_port *pd_port, struct pd_event 
 		ret = PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_GET_BATTERY_STATUS, ready_state);
 		break;
-#endif /* CONFIG_USB_PD_REV30_BAT_STATUS_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_BAT_STATUS_REMOTE */
 
 #ifdef CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL
 	case PD_DATA_GET_COUNTRY_INFO:
@@ -325,8 +332,8 @@ static inline bool pd_process_data_msg(struct pd_port *pd_port, struct pd_event 
 				ready_state, PE_GIVE_COUNTRY_INFO);
 		}
 		break;
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL */
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_CODE_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30 */
 	}
 
 	return ret;
@@ -337,7 +344,8 @@ static inline bool pd_process_data_msg(struct pd_port *pd_port, struct pd_event 
  */
 
 #ifdef CONFIG_USB_PD_REV30
-static inline bool pd_process_ext_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_ext_msg(
+		struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool ret = false;
 	uint8_t ready_state = pe_get_curr_ready_state(pd_port);
@@ -353,7 +361,7 @@ static inline bool pd_process_ext_msg(struct pd_port *pd_port, struct pd_event *
 		pd_port->curr_unsupported_msg = true;
 		return pd_process_protocol_error(pd_port, pd_event);
 	}
-#endif /* CONFIG_USB_PD_REV30_CHUNKING_BY_PE */
+#endif	/* CONFIG_USB_PD_REV30_CHUNKING_BY_PE */
 
 	switch (pd_event->msg) {
 
@@ -364,7 +372,7 @@ static inline bool pd_process_ext_msg(struct pd_port *pd_port, struct pd_event *
 				ready_state, PE_GIVE_BATTERY_CAP);
 		}
 		break;
-#endif /* CONFIG_USB_PD_REV30_BAT_CAP_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_BAT_CAP_LOCAL */
 
 #ifdef CONFIG_USB_PD_REV30_BAT_STATUS_LOCAL
 	case PD_EXT_GET_BAT_STATUS:
@@ -373,53 +381,54 @@ static inline bool pd_process_ext_msg(struct pd_port *pd_port, struct pd_event *
 				ready_state, PE_GIVE_BATTERY_STATUS);
 		}
 		break;
-#endif /* CONFIG_USB_PD_REV30_BAT_STATUS_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_BAT_STATUS_LOCAL */
 
 #ifdef CONFIG_USB_PD_REV30_BAT_CAP_REMOTE
 	case PD_EXT_BAT_CAP:
 		ret = PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_GET_BATTERY_CAP, ready_state);
 		break;
-#endif /* CONFIG_USB_PD_REV30_BAT_CAP_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_BAT_CAP_REMOTE */
 
 #ifdef CONFIG_USB_PD_REV30_MFRS_INFO_LOCAL
 	case PD_EXT_GET_MFR_INFO:
 		ret = PE_MAKE_STATE_TRANSIT_SINGLE(
 			ready_state, PE_GIVE_MANUFACTURER_INFO);
 		break;
-#endif /* CONFIG_USB_PD_REV30_MFRS_INFO_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_MFRS_INFO_LOCAL */
 
 #ifdef CONFIG_USB_PD_REV30_MFRS_INFO_REMOTE
 	case PD_EXT_MFR_INFO:
 		ret = PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_GET_MANUFACTURER_INFO, ready_state);
 		break;
-#endif /* CONFIG_USB_PD_REV30_MFRS_INFO_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_MFRS_INFO_REMOTE */
 
 #ifdef CONFIG_USB_PD_REV30_COUNTRY_INFO_REMOTE
 	case PD_EXT_COUNTRY_INFO:
 		ret = PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_GET_COUNTRY_INFO, ready_state);
 		break;
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_INFO_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_INFO_REMOTE */
 
 #ifdef CONFIG_USB_PD_REV30_COUNTRY_CODE_REMOTE
 	case PD_EXT_COUNTRY_CODES:
 		ret = PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_GET_COUNTRY_CODES, ready_state);
 		break;
-#endif /* CONFIG_USB_PD_REV30_COUNTRY_CODE_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_COUNTRY_CODE_REMOTE */
 	}
 
 	return ret;
 }
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 /*
  * [BLOCK] Porcess DPM MSG
  */
 
-static inline bool pd_process_dpm_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_dpm_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	bool ret = false;
 
@@ -439,7 +448,7 @@ static inline bool pd_process_dpm_msg(struct pd_port *pd_port, struct pd_event *
 			return true;
 		}
 		break;
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 	}
 
 	return ret;
@@ -449,7 +458,8 @@ static inline bool pd_process_dpm_msg(struct pd_port *pd_port, struct pd_event *
  * [BLOCK] Porcess HW MSG
  */
 
-static inline bool pd_process_recv_hard_reset(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_recv_hard_reset(
+		struct pd_port *pd_port, struct pd_event *pd_event)
 {
 #ifdef CONFIG_USB_PD_RECV_HRESET_COUNTER
 	if (pd_port->pe_data.recv_hard_reset_count > PD_HARD_RESET_COUNT) {
@@ -458,18 +468,19 @@ static inline bool pd_process_recv_hard_reset(struct pd_port *pd_port, struct pd
 	}
 
 	pd_port->pe_data.recv_hard_reset_count++;
-#endif /* CONFIG_USB_PD_RECV_HRESET_COUNTER */
+#endif	/* CONFIG_USB_PD_RECV_HRESET_COUNTER */
 
 #ifdef CONFIG_USB_PD_RENEGOTIATION_COUNTER
 	if (pd_check_pe_during_hard_reset(pd_port))
 		pd_port->pe_data.renegotiation_count++;
-#endif /* CONFIG_USB_PD_RENEGOTIATION_COUNTER */
+#endif	/* CONFIG_USB_PD_RENEGOTIATION_COUNTER */
 
 	pe_transit_hard_reset_recv_state(pd_port);
 	return true;
 }
 
-static inline bool pd_process_hw_msg_tx_failed(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_hw_msg_tx_failed(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 #ifdef CONFIG_USB_PD_RENEGOTIATION_COUNTER
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
@@ -479,7 +490,7 @@ static inline bool pd_process_hw_msg_tx_failed(struct pd_port *pd_port, struct p
 		PE_TRANSIT_STATE(pd_port, PE_ERROR_RECOVERY);
 		return true;
 	}
-#endif /* CONFIG_USB_PD_RENEGOTIATION_COUNTER */
+#endif	/* CONFIG_USB_PD_RENEGOTIATION_COUNTER */
 
 	if (pd_port->pe_data.pe_state_flags &
 		PE_STATE_FLAG_BACK_READY_IF_TX_FAILED) {
@@ -496,7 +507,8 @@ static inline bool pd_process_hw_msg_tx_failed(struct pd_port *pd_port, struct p
 	return false;
 }
 
-static inline bool pd_process_hw_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_hw_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_event->msg) {
 	case PD_HW_RECV_HARD_RESET:
@@ -533,9 +545,10 @@ static inline bool pd_check_rx_pending(struct pd_port *pd_port)
 
 	return false;
 }
-#endif /* CONFIG_USB_PD_CHECK_RX_PENDING_IF_SRTOUT */
+#endif	/* CONFIG_USB_PD_CHECK_RX_PENDING_IF_SRTOUT */
 
-static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event *pd_event)
+static inline bool pd_process_timer_msg(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	uint8_t ready_state = pe_get_curr_ready_state(pd_port);
 
@@ -549,8 +562,8 @@ static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event
 			return false;
 #else
 		pd_check_rx_pending(pd_port);
-#endif /* CONFIG_USB_PD_PRINT_SYSTEM_BUSY */
-#endif /* CONFIG_USB_PD_CHECK_RX_PENDING_IF_SRTOUT */
+#endif	/* CONFIG_USB_PD_PRINT_SYSTEM_BUSY */
+#endif	/* CONFIG_USB_PD_CHECK_RX_PENDING_IF_SRTOUT */
 
 
 		pd_cancel_dpm_reaction(pd_port);
@@ -568,7 +581,7 @@ static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event
 			return true;
 		}
 		break;
-#endif /* CONFIG_USB_PD_DBG_IGRONE_TIMEOUT */
+#endif	/* CONFIG_USB_PD_DBG_IGRONE_TIMEOUT */
 	case PD_TIMER_BIST_CONT_MODE:
 		if (PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_BIST_CARRIER_MODE_2, ready_state))
@@ -584,7 +597,7 @@ static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event
 				DPM_REACTION_DFP_FLOW_DELAY);
 		}
 		break;
-#endif /* CONFIG_USB_PD_DFP_FLOW_DELAY */
+#endif	/* CONFIG_USB_PD_DFP_FLOW_DELAY */
 
 #ifdef CONFIG_USB_PD_UFP_FLOW_DELAY
 	case PD_TIMER_UFP_FLOW_DELAY:
@@ -595,7 +608,7 @@ static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event
 				DPM_REACTION_UFP_FLOW_DELAY);
 		}
 		break;
-#endif /* CONFIG_USB_PD_UFP_FLOW_DELAY */
+#endif	/* CONFIG_USB_PD_UFP_FLOW_DELAY */
 
 #ifdef CONFIG_USB_PD_VCONN_STABLE_DELAY
 	case PD_TIMER_VCONN_STABLE:
@@ -606,7 +619,7 @@ static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event
 				DPM_REACTION_VCONN_STABLE_DELAY);
 		}
 		break;
-#endif /* CONFIG_USB_PD_VCONN_STABLE_DELAY */
+#endif	/* CONFIG_USB_PD_VCONN_STABLE_DELAY */
 
 #if defined(CONFIG_USB_PD_REV30) && defined(CONFIG_USB_PD_REV30_COLLISION_AVOID)
 	case PD_TIMER_DEFERRED_EVT:
@@ -622,7 +635,8 @@ static inline bool pd_process_timer_msg(struct pd_port *pd_port, struct pd_event
 	return false;
 }
 
-bool pd_process_event_com(struct pd_port *pd_port, struct pd_event *pd_event)
+bool pd_process_event_com(
+	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_event->event_type) {
 	case PD_EVT_CTRL_MSG:
@@ -634,7 +648,7 @@ bool pd_process_event_com(struct pd_port *pd_port, struct pd_event *pd_event)
 #ifdef CONFIG_USB_PD_REV30
 	case PD_EVT_EXT_MSG:
 		return pd_process_ext_msg(pd_port, pd_event);
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	case PD_EVT_DPM_MSG:
 		return pd_process_dpm_msg(pd_port, pd_event);

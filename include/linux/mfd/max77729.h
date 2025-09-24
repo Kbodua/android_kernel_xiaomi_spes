@@ -86,3 +86,4 @@ struct max77729 {
 };
 
 #endif /* __MAX77729_H__ */
+

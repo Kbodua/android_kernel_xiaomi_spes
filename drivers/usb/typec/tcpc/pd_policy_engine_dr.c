@@ -71,7 +71,7 @@ void pe_dr_snk_give_source_cap_ext_entry(struct pd_port *pd_port)
 
 	pd_dpm_send_source_cap_ext(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
 
 #ifdef CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE
 void pe_dr_src_get_source_cap_ext_entry(struct pd_port *pd_port)
@@ -84,4 +84,4 @@ void pe_dr_src_get_source_cap_ext_exit(struct pd_port *pd_port)
 {
 	pd_dpm_inform_source_cap_ext(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_REMOTE */

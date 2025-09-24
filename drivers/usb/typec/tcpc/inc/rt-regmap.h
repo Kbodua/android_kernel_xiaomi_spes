@@ -65,13 +65,13 @@ enum rt_data_format {
 /* multi bytes for each regiseter */
 #define RT_MULTI_BYTE		(1 << 0)
 
-#define RT_CACHE_MODE_MASK	(0x06)
+#define RT_CACHE_MODE_MASK	 (0x06)
 /* write to cache and chip synchronously */
-#define RT_CACHE_WR_THROUGH	(0 << 1)
+#define RT_CACHE_WR_THROUGH	 (0 << 1)
 /* write to cache and chip asynchronously */
-#define RT_CACHE_WR_BACK	(1 << 1)
+#define RT_CACHE_WR_BACK	 (1 << 1)
 /* disable cache */
-#define RT_CACHE_DISABLE	(2 << 1)
+#define RT_CACHE_DISABLE	 (2 << 1)
 
 #define RT_IO_BLK_MODE_MASK	(0x18)
 /* pass through all write function */

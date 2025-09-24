@@ -111,7 +111,7 @@ enum max77729_fuelgauge_reg {
 	SALRT_THRESHOLD_REG			= 0x03,
 	REMCAP_REP_REG				= 0x05,
 	SOCREP_REG				= 0x06,
-	AGES_REG				= 0x07,
+	AGES_REG				= 0x07,	
 	TEMPERATURE_REG				= 0x08,
 	VCELL_REG				= 0x09,
 	TIME_TO_EMPTY_REG			= 0x11,
@@ -389,7 +389,7 @@ struct max77729_dev {
 	u8 cc_booting_complete;
 
 	int set_altmode_en;
-	int enable_nested_irq;
+	int enable_nested_irq;    
 	u8 usbc_irq;
 
 	bool suspended;
@@ -438,3 +438,4 @@ extern void max77729_usbc_fw_setting(struct max77729_dev *max77729, int enforce_
 extern void max77729_register_pdmsg_func(struct max77729_dev *max77729,
 	void (*check_pdmsg)(void *, u8), void *data);
 #endif /* __LINUX_MFD_MAX77729_PRIV_H */
+

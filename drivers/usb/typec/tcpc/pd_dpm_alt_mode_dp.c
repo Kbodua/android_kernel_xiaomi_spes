@@ -24,6 +24,8 @@
 #ifdef CONFIG_USB_PD_ALT_MODE
 
 /* Display Port DFP_U / UFP_U */
+
+
 /* DP_Role : DFP_D & UFP_D Both or DFP_D only */
 
 #define DP_CHECK_DP_CONNECTED_MATCH(a, b)	\
@@ -108,8 +110,8 @@ void dp_dfp_u_set_state(struct pd_port *pd_port, uint8_t state)
 		DP_DBG("dp_dfp_u_stop (%d)\n", state);
 }
 
-bool dp_dfp_u_notify_pe_startup(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data)
+bool dp_dfp_u_notify_pe_startup(
+		struct pd_port *pd_port, struct svdm_svid_data *svid_data)
 {
 	if (!(pd_port->id_vdos[0] & PD_IDH_MODAL_SUPPORT))
 		return true;
@@ -120,13 +122,13 @@ bool dp_dfp_u_notify_pe_startup(struct pd_port *pd_port,
 	return true;
 }
 
-int dp_dfp_u_notify_pe_ready(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data)
+int dp_dfp_u_notify_pe_ready(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data)
 {
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
-	DPM_DBG("%s\n", __func__);
+	DPM_DBG("start.\n");
 
 	if (pd_port->data_role != PD_ROLE_DFP)
 		return 0;
@@ -140,8 +142,8 @@ int dp_dfp_u_notify_pe_ready(struct pd_port *pd_port,
 	return 1;
 }
 
-bool dp_notify_pe_shutdown(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data)
+bool dp_notify_pe_shutdown(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data)
 {
 	if (svid_data->active_mode) {
 		pd_send_vdm_exit_mode(pd_port, TCPC_TX_SOP,
@@ -174,8 +176,8 @@ bool dp_dfp_u_notify_discover_id(struct pd_port *pd_port,
 	return true;
 }
 
-bool dp_dfp_u_notify_discover_svid(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data, bool ack)
+bool dp_dfp_u_notify_discover_svid(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data, bool ack)
 {
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 
@@ -200,7 +202,7 @@ bool dp_dfp_u_notify_discover_svid(struct pd_port *pd_port,
 
 static inline bool is_dp_v1_cap_valid(uint32_t dp_cap)
 {
-	if (((dp_cap >> 24) == 0) && ((dp_cap & 0x00ffffff) != 0))
+	if  (((dp_cap >> 24) == 0) && ((dp_cap & 0x00ffffff) != 0))
 		return true;
 	return false;
 }
@@ -342,12 +344,12 @@ static inline int eval_dp_match_score(uint32_t local_mode,
 static inline uint8_t dp_dfp_u_select_mode(struct pd_port *pd_port,
 	struct dp_data *dp_data, struct svdm_svid_data *svid_data)
 {
-	uint32_t dp_local_mode, dp_remote_mode, remote_dp_config = 0, local_dp_config = 0;
+	uint32_t dp_local_mode, dp_remote_mode,
+			remote_dp_config = 0, local_dp_config = 0;
 	struct svdm_mode *remote, *local;
 	int i, j;
 	int match_score, best_match_score = 0;
-	int __maybe_unused local_index = -1;
-	int remote_index = -1;
+	int __maybe_unused local_index = -1, remote_index = -1;
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
 	local = &svid_data->local_mode;
@@ -365,7 +367,7 @@ static inline uint8_t dp_dfp_u_select_mode(struct pd_port *pd_port,
 			match_score = eval_dp_match_score(dp_local_mode,
 				dp_remote_mode, &local_dp_config,
 				&remote_dp_config);
-			if (match_score > best_match_score) {
+			if (match_score >  best_match_score) {
 				local_index = j;
 				remote_index = i;
 				dp_data->local_config = local_dp_config;
@@ -381,7 +383,7 @@ static inline uint8_t dp_dfp_u_select_mode(struct pd_port *pd_port,
 	}
 
 	DP_INFO("SelectMode: %d\n", remote_index);
-#endif /* DP_INFO_ENABLE */
+#endif	/* DP_INFO_ENABLE */
 
 	/*
 	 * dp_mode = svid_data->remote_mode.mode_vdo[0];
@@ -392,8 +394,8 @@ static inline uint8_t dp_dfp_u_select_mode(struct pd_port *pd_port,
 	return remote_index + 1;
 }
 
-bool dp_dfp_u_notify_discover_modes(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data, bool ack)
+bool dp_dfp_u_notify_discover_modes(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data, bool ack)
 {
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
@@ -461,13 +463,13 @@ bool dp_dfp_u_notify_enter_mode(struct pd_port *pd_port,
 	 */
 
 	pd_put_tcp_vdm_event(pd_port, TCP_DPM_EVT_DP_STATUS_UPDATE);
-#endif /* CONFIG_USB_PD_DBG_DP_DFP_D_AUTO_UPDATE */
+#endif	/* CONFIG_USB_PD_DBG_DP_DFP_D_AUTO_UPDATE */
 
 	return true;
 }
 
-bool dp_dfp_u_notify_exit_mode(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data, uint8_t ops)
+bool dp_dfp_u_notify_exit_mode(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data, uint8_t ops)
 {
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 
@@ -666,7 +668,7 @@ static inline void dp_ufp_u_auto_update(struct pd_port *pd_port)
 	pd_port->mode_svid = USB_SID_DISPLAYPORT;
 	dp_data->local_status |= DPSTS_DP_ENABLED | DPSTS_DP_HPD_STATUS;
 	pd_put_tcp_vdm_event(pd_port, TCP_DPM_EVT_DP_STATUS_UPDATE);
-#endif /* CONFIG_USB_PD_DBG_DP_UFP_U_AUTO_UPDATE */
+#endif	/* CONFIG_USB_PD_DBG_DP_UFP_U_AUTO_UPDATE */
 }
 
 bool dp_dfp_u_notify_dp_configuration(struct pd_port *pd_port, bool ack)
@@ -739,8 +741,8 @@ static void dp_ufp_u_set_state(struct pd_port *pd_port, uint8_t state)
 		DPM_DBG("dp_ufp_u_stop\n");
 }
 
-void dp_ufp_u_request_enter_mode(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data, uint8_t ops)
+void dp_ufp_u_request_enter_mode(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data, uint8_t ops)
 {
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 
@@ -755,8 +757,8 @@ void dp_ufp_u_request_enter_mode(struct pd_port *pd_port,
 		dp_ufp_u_set_state(pd_port, DP_UFP_U_WAIT);
 }
 
-void dp_ufp_u_request_exit_mode(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data, uint8_t ops)
+void dp_ufp_u_request_exit_mode(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data, uint8_t ops)
 {
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 
@@ -865,7 +867,7 @@ static inline void dp_ufp_u_auto_attention(struct pd_port *pd_port)
 
 	pd_port->mode_svid = USB_SID_DISPLAYPORT;
 	dp_data->local_status |= DPSTS_DP_ENABLED | DPSTS_DP_HPD_STATUS;
-#endif /* CONFIG_USB_PD_DBG_DP_UFP_U_AUTO_ATTENTION */
+#endif	/* CONFIG_USB_PD_DBG_DP_UFP_U_AUTO_ATTENTION */
 }
 
 static inline int dp_ufp_u_request_dp_config(struct pd_port *pd_port)
@@ -950,7 +952,8 @@ void pd_dpm_dfp_send_dp_status_update(struct pd_port *pd_port)
 		pd_port->mode_obj_pos, 1, &dp_data->local_status);
 }
 
-void pd_dpm_dfp_inform_dp_status_update(struct pd_port *pd_port, bool ack)
+void pd_dpm_dfp_inform_dp_status_update(
+	struct pd_port *pd_port, bool ack)
 {
 	VDM_STATE_DPM_INFORMED(pd_port);
 	dp_dfp_u_notify_dp_status_update(pd_port, ack);
@@ -964,7 +967,8 @@ void pd_dpm_dfp_send_dp_configuration(struct pd_port *pd_port)
 		pd_port->mode_obj_pos, 1, &dp_data->remote_config);
 }
 
-void pd_dpm_dfp_inform_dp_configuration(struct pd_port *pd_port, bool ack)
+void pd_dpm_dfp_inform_dp_configuration(
+	struct pd_port *pd_port, bool ack)
 {
 	VDM_STATE_DPM_INFORMED(pd_port);
 	dp_dfp_u_notify_dp_configuration(pd_port, ack);
@@ -1006,8 +1010,8 @@ static const struct {
 	{"ufp_d", DPSTS_UFP_D_CONNECTED},
 };
 
-bool dp_parse_svid_data(struct pd_port *pd_port,
-	struct svdm_svid_data *svid_data)
+bool dp_parse_svid_data(
+	struct pd_port *pd_port, struct svdm_svid_data *svid_data)
 {
 	struct device_node *np, *ufp_np, *dfp_np;
 	const char *connection;
@@ -1025,13 +1029,13 @@ bool dp_parse_svid_data(struct pd_port *pd_port,
 		return false;
 	}
 
-	pr_info("dp, svid\n");
+	pr_info("%s dp, svid\n", __func__);
 	svid_data->svid = USB_SID_DISPLAYPORT;
 	ufp_np = of_find_node_by_name(np, "ufp_d");
 	dfp_np = of_find_node_by_name(np, "dfp_d");
 
 	if (ufp_np) {
-		pr_info("dp, ufp_np\n");
+		pr_info("%s dp, ufp_np\n", __func__);
 		for (i = 0; i < ARRAY_SIZE(supported_dp_pin_modes); i++) {
 			if (of_property_read_bool(ufp_np,
 				supported_dp_pin_modes[i].prop_name))
@@ -1041,7 +1045,7 @@ bool dp_parse_svid_data(struct pd_port *pd_port,
 	}
 
 	if (dfp_np) {
-		pr_info("dp, dfp_np\n");
+		pr_info("%s dp, dfp_np\n", __func__);
 		for (i = 0; i < ARRAY_SIZE(supported_dp_pin_modes); i++) {
 			if (of_property_read_bool(dfp_np,
 				supported_dp_pin_modes[i].prop_name))
@@ -1069,7 +1073,7 @@ bool dp_parse_svid_data(struct pd_port *pd_port,
 	pd_port->dp_second_connected = DEFAULT_DP_SECOND_CONNECTED;
 
 	if (of_property_read_string(np, "1st_connection", &connection) == 0) {
-		pr_info("dp, 1st_connection\n");
+		pr_info("%s dp, 1st_connection\n", __func__);
 		for (i = 0; i < ARRAY_SIZE(dp_connect_mode); i++) {
 			if (strcasecmp(connection,
 				dp_connect_mode[i].conn_mode) == 0) {
@@ -1081,7 +1085,7 @@ bool dp_parse_svid_data(struct pd_port *pd_port,
 	}
 
 	if (of_property_read_string(np, "2nd_connection", &connection) == 0) {
-		pr_info("dp, 2nd_connection\n");
+		pr_info("%s dp, 2nd_connection\n", __func__);
 		for (i = 0; i < ARRAY_SIZE(dp_connect_mode); i++) {
 			if (strcasecmp(connection,
 				dp_connect_mode[i].conn_mode) == 0) {
@@ -1102,7 +1106,7 @@ bool dp_parse_svid_data(struct pd_port *pd_port,
 
 	return true;
 }
-#endif /* CONFIG_USB_PD_ALT_MODE */
+#endif	/* CONFIG_USB_PD_ALT_MODE */
 
-#endif /* CONFIG_USB_PD_ALT_MODE */
-#endif /* CONFIG_USB_POWER_DELIVERY */
+#endif	/* CONFIG_USB_PD_ALT_MODE */
+#endif	/* CONFIG_USB_POWER_DELIVERY */

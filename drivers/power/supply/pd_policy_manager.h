@@ -21,11 +21,11 @@
 #include "nopmi_chg_common.h"
 #include "nopmi/bq2589x_charger.h"
 
-#define BQ_TAPER_HYS_MV		20
+#define BQ_TAPER_HYS_MV		10
 #define TAPER_VOL_HYS		80
 
 #define NON_FFC_BQ_TAPER_HYS_MV		50
-#define BQ_TAPER_DECREASE_STEP_MA	100
+#define BQ_TAPER_DECREASE_STEP_MA	200
 
 #define QUICK_RAISE_VOLT_INTERVAL_S	10 * MSEC_PER_SEC
 

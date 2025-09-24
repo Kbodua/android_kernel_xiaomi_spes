@@ -51,10 +51,10 @@ bool pd_put_vdm_event(struct tcpc_device *tcpc,
 
 bool pd_put_last_vdm_event(struct tcpc_device *tcpc);
 
-bool pd_get_deferred_tcp_event(struct tcpc_device *tcpc,
-	struct tcp_dpm_event *tcp_event);
-bool pd_put_deferred_tcp_event(struct tcpc_device *tcpc,
-	const struct tcp_dpm_event *tcp_event);
+bool pd_get_deferred_tcp_event(
+	struct tcpc_device *tcpc, struct tcp_dpm_event *tcp_event);
+bool pd_put_deferred_tcp_event(
+	struct tcpc_device *tcpc, const struct tcp_dpm_event *tcp_event);
 
 extern int tcpci_event_init(struct tcpc_device *tcpc);
 extern int tcpci_event_deinit(struct tcpc_device *tcpc);
@@ -78,7 +78,7 @@ enum pd_event_type {
 
 #ifdef CONFIG_USB_PD_REV30
 	PD_EVT_EXT_MSG,
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	PD_EVT_PD_MSG_END,
 
@@ -115,7 +115,7 @@ enum pd_msg_type {
 	PD_CTRL_FR_SWAP = 0x10 + 3,
 	PD_CTRL_GET_PPS_STATUS = 0x10 + 4,
 	PD_CTRL_GET_COUNTRY_CODE = 0x10 + 5,
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 	/* 22-31 Reserved */
 	PD_CTRL_MSG_NR,
 /* Data message type */
@@ -129,7 +129,7 @@ enum pd_msg_type {
 	PD_DATA_BAT_STATUS = 5,
 	PD_DATA_ALERT = 6,
 	PD_DATA_GET_COUNTRY_INFO = 7,
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 	/* 8-14 Reserved */
 	PD_DATA_VENDOR_DEF = 15,
 	PD_DATA_MSG_NR,
@@ -152,7 +152,7 @@ enum pd_msg_type {
 	PD_EXT_COUNTRY_CODES = 14,
 	/* 15 Reserved */
 	PD_EXT_MSG_NR,
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 /* HW Message type */
 	PD_HW_CC_DETACHED = 0,
 	PD_HW_CC_ATTACHED,
@@ -166,7 +166,7 @@ enum pd_msg_type {
 	PD_HW_RETRY_VDM,	/* discard vdm msg (retry) */
 #ifdef CONFIG_USB_PD_REV30_COLLISION_AVOID
 	PD_HW_SINK_TX_CHANGE,
-#endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 	PD_HW_MSG_NR,
 /* PE Message type*/
 	PD_PE_RESET_PRL_COMPLETED = 0,
@@ -222,12 +222,14 @@ static inline bool pd_event_msg_match(struct pd_event *pd_event,
 	return pd_event->msg == msg;
 }
 
-static inline bool pd_event_ctrl_msg_match(struct pd_event *pd_event, uint8_t msg)
+static inline bool pd_event_ctrl_msg_match(
+		struct pd_event *pd_event, uint8_t msg)
 {
 	return pd_event_msg_match(pd_event, PD_EVT_CTRL_MSG, msg);
 }
 
-static inline bool pd_event_data_msg_match(struct pd_event *pd_event, uint8_t msg)
+static inline bool pd_event_data_msg_match(
+		struct pd_event *pd_event, uint8_t msg)
 {
 	return pd_event_msg_match(pd_event, PD_EVT_DATA_MSG, msg);
 }
@@ -242,18 +244,20 @@ static inline bool pd_event_pe_msg_match(struct pd_event *pd_event, uint8_t msg)
 	return pd_event_msg_match(pd_event, PD_EVT_PE_MSG, msg);
 }
 
-static inline bool pd_event_timer_msg_match(struct pd_event *pd_event, uint8_t msg)
+static inline bool pd_event_timer_msg_match(
+			struct pd_event *pd_event, uint8_t msg)
 {
 	return pd_event_msg_match(pd_event, PD_EVT_TIMER_MSG, msg);
 }
 
 #ifdef CONFIG_USB_PD_REV30
 
-static inline bool pd_event_ext_msg_match(struct pd_event *pd_event, uint8_t msg)
+static inline bool pd_event_ext_msg_match(
+	struct pd_event *pd_event, uint8_t msg)
 {
 	return pd_event_msg_match(pd_event, PD_EVT_EXT_MSG, msg);
 }
 
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 #endif /* TCPC_EVENT_BUF_H_INCLUDED */

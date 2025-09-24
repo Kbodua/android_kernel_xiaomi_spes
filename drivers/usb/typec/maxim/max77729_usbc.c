@@ -112,18 +112,17 @@ static int max77729_send_vdm_write_message(void *data)
 	write_data.write_length = len;
 	write_data.read_length = len;
 	max77729_usbc_opcode_write(usbpd_data, &write_data);
-	msg_maxim("opcode is sent");
+	msg_maxim("opcode is sent\n");
 	return 0;
 }
-
 
 static int usbpd_send_vdm(void *data, unsigned char cmd, uint8_t *buf, size_t size)
 {
 	struct max77729_usbc_platform_data *usbpd_data = data;
-	uint8_t SendMSG[32] = {0, };
+	uint8_t SendMSG[32] = {0,};
 	int time_left;
 	int obj_num;
-	int i=0;
+	int i = 0;
 	u8 usbc_status2 = 0;
 
 	/* if (buf == NULL) { */
@@ -131,9 +130,9 @@ static int usbpd_send_vdm(void *data, unsigned char cmd, uint8_t *buf, size_t si
 		/* return -EINVAL; */
 	/* } */
 
-	msg_maxim("adapter_svid: %x", usbpd_data->adapter_svid);
+	msg_maxim("adapter_svid: %x\n", usbpd_data->adapter_svid);
 	if ((usbpd_data->adapter_svid != USB_PD_MI_SVID)) {
-		msg_maxim("Not support the UVDM except MI_SVID!");
+		msg_maxim("Not support the UVDM except MI_SVID!\n");
 		return -ENXIO;
 	}
 
@@ -165,21 +164,20 @@ static int usbpd_send_vdm(void *data, unsigned char cmd, uint8_t *buf, size_t si
 	max77729_send_vdm_write_message(SendMSG);
 	reinit_completion(&usbpd_data->uvdm_longpacket_out_wait);
 	/* Wait Response*/
-	time_left =
-		wait_for_completion_interruptible_timeout(&usbpd_data->uvdm_longpacket_out_wait,
-				msecs_to_jiffies(2000));
+	time_left = wait_for_completion_interruptible_timeout(&usbpd_data->uvdm_longpacket_out_wait,
+					msecs_to_jiffies(2000));
 
 	if (time_left <= 0) {
 		//to add the protection code to avoid the PD collision. 
 		max77729_read_reg(usbpd_data->muic, REG_USBC_STATUS2, &usbc_status2);
-		msg_maxim("Need to check the reason sysmsg: %d", usbc_status2);
+		msg_maxim("Need to check the reason sysmsg: %d\n", usbc_status2);
 		max77729_usbc_clear_queue(usbpd_data);
 		max77729_send_vdm_write_message(SendMSG);
 		msleep(300);
 		return -ETIME;
 	}
 
-	msg_maxim("exit: short data transfer complete!");
+	msg_maxim("exit: short data transfer complete!\n");
 	return size;
 }
 
@@ -188,7 +186,6 @@ static int StringToHex(char *str, unsigned char *out, unsigned int *outlen)
 	char *p = str;
 	char high = 0, low = 0;
 	int tmplen = strlen(p), cnt = 0;
-
 	tmplen = strlen(p);
 	while (cnt < (tmplen / 2)) {
 		high = ((*p > '9') && ((*p <= 'F') || (*p <= 'f'))) ? *p - 48 - 7 : *p - 48;
@@ -235,10 +232,10 @@ void charTointMax(char *str, int input_len, unsigned int *out, unsigned int *out
 		*outlen = *outlen + 1;
 	}
 
-	msg_maxim("%s: outlen = %d\n", __func__, *outlen);
+	msg_maxim("outlen = %d\n", *outlen);
 	/*for (i = 0; i < *outlen; i++)
 		msg_maxim("%s: out[%d] = %08x\n", __func__, i, out[i]);*/
-	msg_maxim("%s: char to int done.\n", __func__);
+	msg_maxim("char to int done.\n");
 }
 
 static int usbpd_request_vdm_cmd(enum uvdm_state cmd, unsigned char *data)
@@ -252,10 +249,10 @@ static int usbpd_request_vdm_cmd(enum uvdm_state cmd, unsigned char *data)
 
 	if (in_interrupt()) {
 		int_data = kmalloc(40, GFP_ATOMIC);
-		msg_maxim("%s: kmalloc atomic ok.\n", __func__);
+		msg_maxim("kmalloc atomic ok.\n");
 	} else {
 		int_data = kmalloc(40, GFP_KERNEL);
-		msg_maxim("%s: kmalloc kernel ok.\n", __func__);
+		msg_maxim("kmalloc kernel ok.\n");
 	}
 	memset(int_data, 0, 40);
 
@@ -281,7 +278,7 @@ static int usbpd_request_vdm_cmd(enum uvdm_state cmd, unsigned char *data)
 		break;
 	case USBPD_UVDM_SESSION_SEED:
 	case USBPD_UVDM_AUTHENTICATION:
-	// it need to add or not based on the taget plaform(Xiaomi)
+		// it need to add or not based on the taget plaform(Xiaomi)
 		usbpd_sha256_bitswap32(int_data, 4);
 		/*for (i = 0; i < 4; i++) {
 			msg_maxim("%08x\n", int_data[i]);
@@ -295,7 +292,7 @@ static int usbpd_request_vdm_cmd(enum uvdm_state cmd, unsigned char *data)
 		}
 
 		/*for (i = 0; i < 16; i++) {
-			msg_maxim("i:%d %02x\n", i, vdm_data[i]);
+			msg_maxim("i:%d %02x\n\n", i, vdm_data[i]);
 		}*/
 
 		rc = usbpd_send_vdm(usbpd_data, cmd, vdm_data, 16);
@@ -305,7 +302,7 @@ static int usbpd_request_vdm_cmd(enum uvdm_state cmd, unsigned char *data)
 		}
 		break;
 	default:
-		msg_maxim("cmd:%d is not support\n", cmd);
+		msg_maxim("cmd %d is not support\n", cmd);
 		break;
 	}
 
@@ -315,62 +312,64 @@ static int usbpd_request_vdm_cmd(enum uvdm_state cmd, unsigned char *data)
 void usbpd_mi_vdm_received_cb(struct max77729_usbc_platform_data *usbpd_data,
 		char *opcode_data, int len)
 {
- 	uint8_t ReadMSG[32] = {0,};
+	uint8_t ReadMSG[32] = {0,};
 	int cmd;
 
 	memcpy(ReadMSG, opcode_data, OPCODE_DATA_LENGTH);
 	cmd = UVDM_HDR_CMD(ReadMSG[2]);
 
-	/*for (i = 0; i < 10; i++) {
-		msg_maxim("%x", ReadMSG[i]);
+	/*for(i=0; i<10;i++){
+		msg_maxim("%x\n", ReadMSG[i]);
 	}
 	msg_maxim("\n");
 
-	for(i = 10; i < 20; i++) {
-		msg_maxim("%x", ReadMSG[i]);
+	for (i = 10; i < 20; i++) {
+		msg_maxim("%x\n", ReadMSG[i]);
 	}
 	msg_maxim("\n");*/
+
 	//need to add the calutation for current and volate and etc.
 	switch (cmd) {
 	case USBPD_UVDM_CHARGER_VERSION:
 		//usbpd_data->vdm_data.ta_version = 0x00030001;
-		usbpd_data->vdm_data.ta_version = (ReadMSG[9]<<24)|(ReadMSG[8]<<16)|(ReadMSG[7]<<8)|ReadMSG[6];
-		msg_maxim("ta_version: %x",usbpd_data->vdm_data.ta_version);
+		usbpd_data->vdm_data.ta_version = (ReadMSG[9] << 24) | (ReadMSG[8] << 16) | (ReadMSG[7] << 8) | ReadMSG[6];
+		msg_maxim("ta_version: %x\n", usbpd_data->vdm_data.ta_version);
 		break;
 	case USBPD_UVDM_CHARGER_VOLTAGE:
 		//usbpd_data->vdm_data.ta_voltage = 0x33 * 100; /* mV */
-		usbpd_data->vdm_data.ta_voltage = ((ReadMSG[9]<<24)|(ReadMSG[8]<<16)|(ReadMSG[7]<<8)|ReadMSG[6])*100;
-		msg_maxim("ta_voltage: %d", usbpd_data->vdm_data.ta_voltage);
+		usbpd_data->vdm_data.ta_voltage = ((ReadMSG[9] << 24) | (ReadMSG[8] << 16) | (ReadMSG[7] << 8) | ReadMSG[6]) * 100;
+		msg_maxim("ta_voltage: %d\n", usbpd_data->vdm_data.ta_voltage);
 		break;
 	case USBPD_UVDM_CHARGER_TEMP:
 		//usbpd_data->vdm_data.ta_temp = 0x00;
-		usbpd_data->vdm_data.ta_temp = (ReadMSG[9]<<24)|(ReadMSG[8]<<16)|(ReadMSG[7]<<8)|ReadMSG[6];
-		msg_maxim("ta_temp: %d", usbpd_data->vdm_data.ta_temp);
+		usbpd_data->vdm_data.ta_temp = (ReadMSG[9] <<24 ) | (ReadMSG[8] << 16) | (ReadMSG[7] << 8) | ReadMSG[6];
+		msg_maxim("ta_temp: %d\n", usbpd_data->vdm_data.ta_temp);
 		break;
 	case USBPD_UVDM_SESSION_SEED:
-		usbpd_data->vdm_data.s_secert [0] = (ReadMSG[9]<<24)|(ReadMSG[8]<<16)|(ReadMSG[7]<<8)|ReadMSG[6];
+		usbpd_data->vdm_data.s_secert [0] = (ReadMSG[9] << 24) | (ReadMSG[8] << 16) | (ReadMSG[7] << 8) | ReadMSG[6];
 		usbpd_data->vdm_data.s_secert [1] = 0x00000000;
 		usbpd_data->vdm_data.s_secert [2] = 0x00000000;
 		usbpd_data->vdm_data.s_secert [3] = 0x00000000;
-		msg_maxim("s_secert");
+		msg_maxim("s_secert\n");
 		break;
 	case USBPD_UVDM_AUTHENTICATION:
-		usbpd_data->vdm_data.digest [0] = ((ReadMSG[9]<<24)|(ReadMSG[8]<<16)|(ReadMSG[7]<<8)|ReadMSG[6]) & 0xFFFFFFFF;//0x850a0b71;
-		usbpd_data->vdm_data.digest [1] = ((ReadMSG[13]<<24)|(ReadMSG[12]<<16)|(ReadMSG[11]<<8)|ReadMSG[10]) & 0xFFFFFFFF;//0x58479a1c;
-		usbpd_data->vdm_data.digest [2] = ((ReadMSG[17]<<24)|(ReadMSG[16]<<16)|(ReadMSG[15]<<8)|ReadMSG[14]) & 0xFFFFFFFF;//0x04a54634;
-		usbpd_data->vdm_data.digest [3] = ((ReadMSG[21]<<24)|(ReadMSG[20]<<16)|(ReadMSG[19]<<8)|ReadMSG[18]) & 0xFFFFFFFF;//0x1875206b;
+		usbpd_data->vdm_data.digest [0] = ((ReadMSG[9] << 24) | (ReadMSG[8] << 16) | (ReadMSG[7] << 8) | ReadMSG[6]) & 0xFFFFFFFF;//0x850a0b71;
+		usbpd_data->vdm_data.digest [1] = ((ReadMSG[13] << 24) | (ReadMSG[12] << 16) | (ReadMSG[11] << 8) | ReadMSG[10]) & 0xFFFFFFFF;//0x58479a1c;
+		usbpd_data->vdm_data.digest [2] = ((ReadMSG[17] << 24) | (ReadMSG[16] << 16) | (ReadMSG[15] << 8) | ReadMSG[14]) & 0xFFFFFFFF;//0x04a54634;
+		usbpd_data->vdm_data.digest [3] = ((ReadMSG[21] << 24) | (ReadMSG[20] << 16) | (ReadMSG[19] << 8) | ReadMSG[18]) & 0xFFFFFFFF;//0x1875206b;
 		/*msg_maxim("digest 0: %08lx\n",usbpd_data->vdm_data.digest[0]);
 		msg_maxim("digest 1: %08lx\n",usbpd_data->vdm_data.digest[1]);
 		msg_maxim("digest 2: %08lx\n",usbpd_data->vdm_data.digest[2]);
 		msg_maxim("digest 3: %08lx\n",usbpd_data->vdm_data.digest[3]);*/
-		msg_maxim("digest");
+		msg_maxim("digest\n");
 		break;
 	case USBPD_UVDM_VERIFIED:
-		msg_maxim("verified");
+		msg_maxim("verified\n");
 		break;
 	default:
 		break;
 	}
+
 	usbpd_data->uvdm_state = cmd;
 	complete(&usbpd_data->uvdm_longpacket_out_wait);
 }
@@ -391,7 +390,7 @@ static void max77729_send_role_swap_message(struct max77729_usbc_platform_data *
 
 void max77729_power_role_change(struct max77729_usbc_platform_data *usbpd_data, int power_role)
 {
-	msg_maxim("power_role = 0x%x", power_role);
+	msg_maxim("power_role = 0x%x\n", power_role);
 
 	switch (power_role) {
 	case TYPE_C_ATTACH_SRC:
@@ -400,10 +399,9 @@ void max77729_power_role_change(struct max77729_usbc_platform_data *usbpd_data, 
 		break;
 	};
 }
-
 void max77729_rprd_mode_change(struct max77729_usbc_platform_data *usbpd_data, u8 mode)
 {
-	msg_maxim("mode = 0x%x", mode);
+	msg_maxim("mode = 0x%x\n", mode);
 
 	switch (mode) {
 	case TYPE_C_ATTACH_DFP:
@@ -418,7 +416,7 @@ void max77729_rprd_mode_change(struct max77729_usbc_platform_data *usbpd_data, u
 
 void max77729_data_role_change(struct max77729_usbc_platform_data *usbpd_data, int data_role)
 {
-	msg_maxim("data_role = 0x%x", data_role);
+	msg_maxim("data_role = 0x%x\n", data_role);
 	msleep(300);
 
 	switch (data_role) {
@@ -436,34 +434,35 @@ static int max77729_pr_set(const struct typec_capability *cap, enum typec_role r
 	if (!usbpd_data)
 		return -EINVAL;
 
-	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d",
-			usbpd_data->typec_power_role, usbpd_data->typec_data_role, role);
+	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d\n",
+		usbpd_data->typec_power_role, usbpd_data->typec_data_role, role);
 
-	if (usbpd_data->typec_power_role != TYPEC_SINK &&
-		usbpd_data->typec_power_role != TYPEC_SOURCE)
+	if (usbpd_data->typec_power_role != TYPEC_SINK && usbpd_data->typec_power_role != TYPEC_SOURCE)
 		return -EPERM;
 	else if (usbpd_data->typec_power_role == role)
 		return -EPERM;
 
 	reinit_completion(&usbpd_data->typec_reverse_completion);
 	if (role == TYPEC_SINK) {
-		msg_maxim("try reversing, from Source to Sink");
+		msg_maxim("try reversing, from Source to Sink\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_PR;
 		max77729_power_role_change(usbpd_data, TYPE_C_ATTACH_SNK);
 	} else if (role == TYPEC_SOURCE) {
-		msg_maxim("try reversing, from Sink to Source");
+		msg_maxim("try reversing, from Sink to Source\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_PR;
 		max77729_power_role_change(usbpd_data, TYPE_C_ATTACH_SRC);
 	} else {
-		msg_maxim("invalid typec_role");
+		msg_maxim("invalid typec_role\n");
 		return -EIO;
 	}
+
 	if (!wait_for_completion_timeout(&usbpd_data->typec_reverse_completion,
-			msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
+				msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_NONE;
 		if (usbpd_data->typec_power_role != role)
 		return -ETIMEDOUT;
 	}
+
 	return 0;
 }
 
@@ -502,33 +501,34 @@ static int max77729_dr_set(const struct typec_capability *cap, enum typec_data_r
 
 	if (!usbpd_data)
 		return -EINVAL;
-	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d",
+	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d\n",
 			usbpd_data->typec_power_role, usbpd_data->typec_data_role, role);
 
-	if (usbpd_data->typec_data_role != TYPEC_DEVICE &&
-		usbpd_data->typec_data_role != TYPEC_HOST)
+	if (usbpd_data->typec_data_role != TYPEC_DEVICE && usbpd_data->typec_data_role != TYPEC_HOST)
 		return -EPERM;
 	else if (usbpd_data->typec_data_role == role)
 		return -EPERM;
 
 	reinit_completion(&usbpd_data->typec_reverse_completion);
 	if (role == TYPEC_DEVICE) {
-		msg_maxim("try reversing, from DFP to UFP");
+		msg_maxim("try reversing, from DFP to UFP\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_DR;
 		max77729_data_role_change(usbpd_data, TYPE_C_ATTACH_UFP);
 	} else if (role == TYPEC_HOST) {
-		msg_maxim("try reversing, from UFP to DFP");
+		msg_maxim("try reversing, from UFP to DFP\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_DR;
 		max77729_data_role_change(usbpd_data, TYPE_C_ATTACH_DFP);
 	} else {
-		msg_maxim("invalid typec_role");
+		msg_maxim("invalid typec_role\n");
 		return -EIO;
 	}
+
 	if (!wait_for_completion_timeout(&usbpd_data->typec_reverse_completion,
-			msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
+				msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_NONE;
 		return -ETIMEDOUT;
 	}
+
 	return 0;
 }
 
@@ -597,6 +597,7 @@ void max77729_send_new_srccap(struct max77729_usbc_platform_data *usbpd_data, in
 
 static int max77729_pd_get_svid(struct max77729_usbc_platform_data *usbc_data)
 {
+
 	if (usbc_data->adapter_svid != 0)
 		return 0;
 
@@ -604,13 +605,13 @@ static int max77729_pd_get_svid(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->typec_try_pps_enable = TRY_PPS_ENABLE;
 	max77729_get_srccap_ext_message(usbc_data);
 	if (!wait_for_completion_timeout(&usbc_data->pps_in_wait,
-			msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
+				msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
 		usbc_data->typec_try_pps_enable = TRY_PPS_NONE;
 		return -ETIMEDOUT;
 	}
+
 	return 0;
 }
-
 
 static void max77729_request_response(struct max77729_usbc_platform_data *usbc_data)
 {
@@ -624,8 +625,8 @@ static void max77729_request_response(struct max77729_usbc_platform_data *usbc_d
 	//adding the delay.
 	msleep(30);
 	max77729_usbc_opcode_push(usbc_data, &value);
-	pr_err("%s: OPCODE(0x%02x) W_LENGTH(%d) R_LENGTH(%d)\n", __func__,
-			value.opcode, value.write_length, value.read_length);
+	pr_err("%s: OPCODE(0x%02x) W_LENGTH(%d) R_LENGTH(%d)\n",
+		__func__, value.opcode, value.write_length, value.read_length);
 }
 
 void max77729_extend_msg_process(struct max77729_usbc_platform_data *usbc_data, unsigned char *data,
@@ -634,18 +635,17 @@ void max77729_extend_msg_process(struct max77729_usbc_platform_data *usbc_data, 
 	unsigned short vid=0x0;
 	unsigned short pid=0x0;
 	unsigned short xid=0x0;
-
 	vid = *(unsigned short *)(data + 2);
 	pid = *(unsigned short *)(data + 4);
 	xid = *(unsigned int *)(data + 6);
 	if (vid == 0x2717) {
-		usbc_data->adapter_svid = vid;
-		usbc_data->adapter_id = pid;
+		usbc_data->adapter_svid	= vid;
+		usbc_data->adapter_id	= pid;
 	}
-	usbc_data->xid = xid;
-	msg_maxim("%s, %04x, %04x, %08x", __func__, vid, pid, xid);
-	if (vid == 0x2717) { //&&(pid == 0x741b)
-		msg_maxim("Xiaomi PPS TA");
+	usbc_data->xid	= xid;
+	msg_maxim("%04x, %04x, %08x\n", vid, pid, xid);
+	if (vid == 0x2717) {	//&&(pid == 0x741b)
+		msg_maxim("Xiaomi PPS TA\n");
 		max77729_vdm_process_set_identity_req_push(usbc_data);
 	}
 }
@@ -672,9 +672,9 @@ void max77729_read_response(struct max77729_usbc_platform_data *usbc_data, unsig
 		break;
 	}
 	//complete(&usbc_data->uvdm_longpacket_in_wait);
-	if (usbc_data->typec_try_pps_enable == TRY_PPS_ENABLE) {
-		usbc_data->typec_try_pps_enable = TRY_PPS_NONE;
-		complete(&usbc_data->pps_in_wait);
+	if (usbc_data->typec_try_pps_enable == TRY_PPS_ENABLE){
+			usbc_data->typec_try_pps_enable = TRY_PPS_NONE;
+			complete(&usbc_data->pps_in_wait);
 	}
 }
 
@@ -744,8 +744,7 @@ void blocking_auto_vbus_control(int enable)
 {
 	int current_pr = 0;
 
-	msg_maxim("disable: %d", enable);
-
+	msg_maxim("disable: %d\n", enable);
 	if (enable) {
 		current_pr = max77729_current_pr_state(g_usbc_data);
 		switch (current_pr) {
@@ -765,10 +764,11 @@ void blocking_auto_vbus_control(int enable)
 			break;
 		default:
 			break;
+
 		}
 		g_usbc_data->mpsm_mode = MPSM_OFF;
 	}
-	msg_maxim("current_pr: %x disable: %x", current_pr, enable);
+	msg_maxim("current_pr: %x, disable: %x\n", current_pr, enable);
 }
 EXPORT_SYMBOL(blocking_auto_vbus_control);
 
@@ -776,12 +776,11 @@ static void vbus_control_hard_reset(struct work_struct *work)
 {
 	struct max77729_usbc_platform_data *usbpd_data = g_usbc_data;
 
-	msg_maxim("current_pr = %d", usbpd_data->cc_data->current_pr);
+	msg_maxim("current_pr=%d\n", usbpd_data->cc_data->current_pr);
 
 	if (usbpd_data->cc_data->current_pr == SRC)
 		max77729_vbus_turn_on_ctrl(usbpd_data, ON, false);
 }
-
 
 void max77729_usbc_enable_audio(struct max77729_usbc_platform_data *usbc_data)
 {
@@ -796,7 +795,7 @@ void max77729_usbc_enable_audio(struct max77729_usbc_platform_data *usbc_data)
 	write_data.write_length = 0x1;
 	write_data.read_length = 0x1;
 	max77729_usbc_opcode_write(usbc_data, &write_data);
-	msg_maxim("Enable Audio Detect");
+	msg_maxim("Enable Audio Detect\n");
 }
 
 #if 0
@@ -845,30 +844,30 @@ static int max77729_dr_set(struct typec_port *port, enum typec_data_role role)
 
 	if (!usbpd_data)
 		return -EINVAL;
-	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d",
-			usbpd_data->typec_power_role, usbpd_data->typec_data_role, role);
+	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d\n",
+		usbpd_data->typec_power_role, usbpd_data->typec_data_role, role);
 
-	if (usbpd_data->typec_data_role != TYPEC_DEVICE &&
-		usbpd_data->typec_data_role != TYPEC_HOST)
+	if (usbpd_data->typec_data_role != TYPEC_DEVICE
+		&& usbpd_data->typec_data_role != TYPEC_HOST)
 		return -EPERM;
 	else if (usbpd_data->typec_data_role == role)
 		return -EPERM;
 
 	reinit_completion(&usbpd_data->typec_reverse_completion);
 	if (role == TYPEC_DEVICE) {
-		msg_maxim("try reversing, from DFP to UFP");
+		msg_maxim("try reversing, from DFP to UFP\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_DR;
 		max77729_data_role_change(usbpd_data, TYPE_C_ATTACH_UFP);
 	} else if (role == TYPEC_HOST) {
-		msg_maxim("try reversing, from UFP to DFP");
+		msg_maxim("try reversing, from UFP to DFP\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_DR;
 		max77729_data_role_change(usbpd_data, TYPE_C_ATTACH_DFP);
 	} else {
-		msg_maxim("invalid typec_role");
+		msg_maxim("invalid typec_role\n");
 		return -EIO;
 	}
 	if (!wait_for_completion_timeout(&usbpd_data->typec_reverse_completion,
-			msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
+				msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_NONE;
 		return -ETIMEDOUT;
 	}
@@ -897,30 +896,29 @@ static int max77729_pr_set(struct typec_port *port, enum typec_role role)
 	if (!usbpd_data)
 		return -EINVAL;
 
-	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d",
-			usbpd_data->typec_power_role, usbpd_data->typec_data_role, role);
+	msg_maxim("typec_power_role=%d, typec_data_role=%d, role=%d\n",
+		usbpd_data->typec_power_role, usbpd_data->typec_data_role, role);
 
-	if (usbpd_data->typec_power_role != TYPEC_SINK &&
-		usbpd_data->typec_power_role != TYPEC_SOURCE)
+	if (usbpd_data->typec_power_role != TYPEC_SINK && usbpd_data->typec_power_role != TYPEC_SOURCE)
 		return -EPERM;
 	else if (usbpd_data->typec_power_role == role)
 		return -EPERM;
 
 	reinit_completion(&usbpd_data->typec_reverse_completion);
 	if (role == TYPEC_SINK) {
-		msg_maxim("try reversing, from Source to Sink");
+		msg_maxim("try reversing, from Source to Sink\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_PR;
 		max77729_power_role_change(usbpd_data, TYPE_C_ATTACH_SNK);
 	} else if (role == TYPEC_SOURCE) {
-		msg_maxim("try reversing, from Sink to Source");
+		msg_maxim("try reversing, from Sink to Source\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_PR;
 		max77729_power_role_change(usbpd_data, TYPE_C_ATTACH_SRC);
 	} else {
-		msg_maxim("invalid typec_role");
+		msg_maxim("invalid typec_role\n");
 		return -EIO;
 	}
 	if (!wait_for_completion_timeout(&usbpd_data->typec_reverse_completion,
-			msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
+				msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_NONE;
 		if (usbpd_data->typec_power_role != role)
 		return -ETIMEDOUT;
@@ -950,9 +948,9 @@ int max77729_get_pd_support(struct max77729_usbc_platform_data *usbc_data)
 	if (np)
 		support_pd_role_swap = of_property_read_bool(np, "support_pd_role_swap");
 	else
-		msg_maxim("np is null");
+		msg_maxim("np is null\n");
 
-	msg_maxim("TYPEC_CLASS: support_pd_role_swap is %d, usbc_data->pd_support: %d",
+	msg_maxim("TYPEC_CLASS: support_pd_role_swap is %d, usbc_data->pd_support: %d\n",
 		support_pd_role_swap, usbc_data->pd_support);
 
 	if (support_pd_role_swap && usbc_data->pd_support)
@@ -969,7 +967,7 @@ static int max77729_firmware_update_sys(struct max77729_usbc_platform_data *data
 	int fw_size, ret = 0;
 
 	if (!usbc_data) {
-		msg_maxim("usbc_data is null!!");
+		msg_maxim("usbc_data is null!!\n");
 		return -ENODEV;
 	}
 
@@ -981,8 +979,8 @@ static int max77729_firmware_update_sys(struct max77729_usbc_platform_data *data
 
 	fw_size = (int)fw_entry->size;
 	fw_header = (max77729_fw_header *)fw_entry->data;
-	ret = max77729_usbc_fw_update(usbc_data->max77729,
-			MAXIM_SPU_FW, fw_size, 1);
+	ret = max77729_usbc_fw_update(usbc_data->max77729, MAXIM_SPU_FW,
+				fw_size, 1);
 	release_firmware(fw_entry);
 	return ret;
 }
@@ -1015,7 +1013,8 @@ static int max77729_firmware_update_sysfs(struct max77729_usbc_platform_data *us
 #if 0
 static unsigned long max77729_get_firmware_size(void *data)
 {
-	struct max77729_usbc_platform_data *usbpd_data = (struct max77729_usbc_platform_data *)data;
+	struct max77729_usbc_platform_data *usbpd_data
+		= (struct max77729_usbc_platform_data *)data;
 	unsigned long ret = 0;
 
 	ret = usbpd_data->max77729->fw_size;
@@ -1027,7 +1026,8 @@ static unsigned long max77729_get_firmware_size(void *data)
 #if defined(MAX77729_SYS_FW_UPDATE)
 static void max77729_firmware_update_sysfs_work(struct work_struct *work)
 {
-	struct max77729_usbc_platform_data *usbpd_data = container_of(work, struct max77729_usbc_platform_data, fw_update_work);
+	struct max77729_usbc_platform_data *usbpd_data = container_of(work,
+			struct max77729_usbc_platform_data, fw_update_work);
 
 	max77729_firmware_update_sysfs(usbpd_data, 1);
 }
@@ -1052,22 +1052,22 @@ static int _max77729_strtoint(char *tok, uint *result)
 	int ret = 0;
 
 	if (!tok || !result) {
-		msg_maxim("invalid arg!");
+		msg_maxim("invalid arg!\n");
 		ret = -EINVAL;
 		goto end;
 	}
 
-	if (strlen(tok) == 5 && tok[4] == 0xa) {
+	if (strlen(tok) == 5 && tok[4] == 0xa/*LF*/) {
 		/* continue since it's ended with line feed */
 	} else if (strlen(tok) != 4) {
-		msg_maxim("%s should have 4 len, but %lu!", tok, strlen(tok));
+		msg_maxim("%s should have 4 len, but %lu!\n", tok, strlen(tok));
 		ret = -EINVAL;
 		goto end;
 	}
 
 	ret = kstrtouint(tok, 16, result);
 	if (ret) {
-		msg_maxim("fail to convert %s! ret:%d", tok, ret);
+		msg_maxim("fail to convert %s! ret:%d\n", tok, ret);
 		goto end;
 	}
 end:
@@ -1081,8 +1081,9 @@ static int pd_set_pd_verify_process(struct device *dev, int verify_in_process)
 	//union power_supply_propval val = {0,};
 	//struct power_supply *usb_psy = NULL;
 
-	dev_err(dev, "[%s] pd verify in process:%d\n", __func__, verify_in_process);
-	/*
+	dev_err(dev, "[%s] pd verify in process: %d\n",
+		__func__, verify_in_process);
+/*
 	usb_psy = power_supply_get_by_name("usb");
 
 	if (usb_psy) {
@@ -1092,7 +1093,7 @@ static int pd_set_pd_verify_process(struct device *dev, int verify_in_process)
 	} else {
 		adapter_err("[%s] usb psy not found!\n", __func__);
 	}
-	*/
+*/
 	return ret;
 }
 
@@ -1106,7 +1107,7 @@ static ssize_t max77729_fw_update(struct device *dev,
 		dev_err(dev, "%s: Failed converting from str to u32.", __func__);
 	}
 
-	msg_maxim("start_fw_update %d", start_fw_update);
+	msg_maxim("start_fw_update %d\n", start_fw_update);
 	switch (start_fw_update) {
 	case 1:
 		max77729_firmware_update_sysfs(g_usbc_data, 1);
@@ -1238,6 +1239,7 @@ host.I2CWr(0x4a, 0x34, 0x2E)
 host.I2CWr(0x4a, 0x35, 0x8B)
 host.I2CWr(0x4a, 0x36, 0x57)
 host.I2CWr(0x4a, 0x41, 0x00)
+
 */
 		test_buf[0] = 0x1F;
 		test_buf[1] = 0x3B;
@@ -1302,8 +1304,10 @@ host.I2CWr(0x4a, 0x41, 0x00)
 		max77729_pd_get_svid(g_usbc_data);
 		break;
 	}
+
 	return size;
 }
+
 static DEVICE_ATTR(fw_update, S_IRUGO | S_IWUSR | S_IWGRP,
 		NULL, max77729_fw_update);
 
@@ -1317,18 +1321,18 @@ static ssize_t request_vdm_cmd_store(struct device *dev,
 
 	if (in_interrupt()) {
 		data = kmalloc(40, GFP_ATOMIC);
-		msg_maxim("%s: kmalloc atomic ok.\n", __func__);
+		msg_maxim("kmalloc atomic ok.\n");
 	} else {
 		data = kmalloc(40, GFP_KERNEL);
-		msg_maxim("%s: kmalloc kernel ok.\n", __func__);
+		msg_maxim("kmalloc kernel ok.\n");
 	}
 	memset(data, 0, 40);
 
 	ret = sscanf(buf, "%d,%s\n", &cmd, buffer);
-	msg_maxim("%s: cmd:%d, buffer:%s\n", __func__, cmd, buffer);
+	msg_maxim("cmd: %d, buffer: %s\n", cmd, buffer);
 
 	StringToHex(buffer, data, &count);
-	msg_maxim("%s: count = %d\n", __func__, count);
+	msg_maxim("count = %d\n", count);
 
 	/*for (i = 0; i < count; i++)
 		msg_maxim("%02x", data[i]);*/
@@ -1375,16 +1379,18 @@ static ssize_t request_vdm_cmd_show(struct device *dev,
 			snprintf(data, sizeof(data), "%08lx", usbpd_data->vdm_data.digest[i]);
 			strlcat(str_buf, data, sizeof(str_buf));
 		}
-		dev_err(dev, "str_buf: %s\n",str_buf);
+
+		dev_err(dev, "str_buf: %s\n", str_buf);
 		return snprintf(buf, PAGE_SIZE, "%d,%s", usbpd_data->uvdm_state, str_buf);
 		break;
 	default:
 		/* usbpd_err(&pd->dev, "feedbak cmd:%d is not support\n", cmd); */
 		break;
 	}
-	return snprintf(buf, PAGE_SIZE, "%d,%s", usbpd_data->uvdm_state, str_buf);
-}
 
+	return snprintf(buf, PAGE_SIZE, "%d,%s", usbpd_data->uvdm_state, str_buf);
+
+}
 static DEVICE_ATTR_RW(request_vdm_cmd);
 
 static ssize_t current_state_show(struct device *dev,
@@ -1392,8 +1398,7 @@ static ssize_t current_state_show(struct device *dev,
 {
 	struct max77729_usbc_platform_data *usbpd_data = g_usbc_data;
 
-	dev_err(dev, "%s: current_state is %d\n", __func__,
-			usbpd_data->pd_state);
+	dev_err(dev, "%s: current_state is %d\n", __func__, usbpd_data->pd_state);
 
 	if (usbpd_data->sink_Ready) {
 		dev_err(dev, "%s: %s\n", __func__, "SNK_Ready");
@@ -1413,8 +1418,7 @@ static ssize_t adapter_id_show(struct device *dev,
 	struct max77729_usbc_platform_data *usbpd_data = g_usbc_data;
 
 	max77729_pd_get_svid(usbpd_data);
-	dev_err(dev, "%s: adapter_id is %08x\n", __func__,
-			usbpd_data->adapter_id);
+	dev_err(dev, "%s: adapter_id is %08x\n", __func__, usbpd_data->adapter_id);
 
 	return snprintf(buf, PAGE_SIZE, "%08x\n", usbpd_data->adapter_id);
 }
@@ -1426,8 +1430,7 @@ static ssize_t adapter_svid_show(struct device *dev,
 	struct max77729_usbc_platform_data *usbpd_data = g_usbc_data;
 
 	max77729_pd_get_svid(usbpd_data);
-	dev_err(dev, "%s: adapter_svid is %04x\n", __func__,
-			usbpd_data->adapter_svid);
+	dev_err(dev, "%s: adapter_svid is %04x\n", __func__, usbpd_data->adapter_svid);
 
 	return snprintf(buf, PAGE_SIZE, "%04x\n", usbpd_data->adapter_svid);
 }
@@ -1445,8 +1448,8 @@ static ssize_t verify_process_store(struct device *dev,
 	}
 
 	usbpd_data->verify_process = !!val;
-	dev_err(dev, "%s: batterysecret verify process: %d\n", __func__,
-			usbpd_data->verify_process);
+	dev_err(dev, "%s: batterysecret verify process: %d\n",
+		__func__, usbpd_data->verify_process);
 
 	pd_set_pd_verify_process(dev, usbpd_data->verify_process);
 
@@ -1497,8 +1500,7 @@ static ssize_t current_pr_show(struct device *dev,
 	struct max77729_usbc_platform_data *usbpd_data = g_usbc_data;
 	const char *pr = "none";
 
-	dev_err(dev, "%s: current_pr is %d\n", __func__,
-		usbpd_data->typec_power_role);
+	dev_err(dev, "%s: current_pr is %d\n", __func__, usbpd_data->typec_power_role);
 
 	usbpd_data->typec_power_role;
 
@@ -1537,8 +1539,7 @@ static ssize_t pdo_n_show(struct device *dev,
 	for (i = 0; i < ARRAY_SIZE(dev_attr_pdos); i++) {
 		if (attr == &dev_attr_pdos[i])
 			/* dump the PDO as a hex string */
-			return snprintf(buf, PAGE_SIZE, "%08x\n",
-					usbpd_data->received_pdos[i]);
+			return snprintf(buf, PAGE_SIZE, "%08x\n", usbpd_data->received_pdos[i]);
 	}
 
 	dev_err(dev, "%s: Invalid PDO index\n", __func__);
@@ -1604,9 +1605,8 @@ static void max77729_get_version_info(struct max77729_usbc_platform_data *usbc_d
 	usbc_data->FW_Revision = sw_main[0];
 
 	/* H/W, Minor, Major, Boot */
-	msg_maxim("HW rev is %02Xh, FW rev is %02X.%02X!",
+	msg_maxim("HW rev is %02Xh, FW rev is %02X.%02X!\n",
 			usbc_data->HW_Revision, usbc_data->FW_Revision, usbc_data->FW_Minor_Revision);
-
 }
 
 void max77729_usbc_disable_auto_vbus(struct max77729_usbc_platform_data *usbc_data)
@@ -1619,11 +1619,12 @@ void max77729_usbc_disable_auto_vbus(struct max77729_usbc_platform_data *usbc_da
 	write_data.write_length = 0x1;
 	write_data.read_length = 0x1;
 	max77729_usbc_opcode_write(usbc_data, &write_data);
-	msg_maxim("TURN OFF THE AUTO VBUS");
+	msg_maxim("TURN OFF THE AUTO VBUS\n");
 	usbc_data->auto_vbus_en = false;
 }
 
-static void max77729_init_opcode(struct max77729_usbc_platform_data *usbc_data, int reset)
+static void max77729_init_opcode
+		(struct max77729_usbc_platform_data *usbc_data, int reset)
 {
 	struct max77729_platform_data *pdata = usbc_data->max77729_data;
 
@@ -1650,16 +1651,18 @@ static bool max77729_check_recover_opcode(u8 opcode)
 	return ret;
 }
 
-static void max77729_recover_opcode(struct max77729_usbc_platform_data *usbc_data, bool opcode_list[])
+static void max77729_recover_opcode
+		(struct max77729_usbc_platform_data *usbc_data, bool opcode_list[])
 {
 	int i;
 
 	for (i = 0; i < OPCODE_NONE; i++) {
 		if (opcode_list[i]) {
-			msg_maxim("opcode = 0x%02x", i);
+			msg_maxim("opcode = 0x%02x\n", i);
 			switch (i) {
 			case OPCODE_SET_ALTERNATEMODE:
-				max77729_set_enable_alternate_mode(usbc_data->set_altmode);
+				max77729_set_enable_alternate_mode
+					(usbc_data->set_altmode);
 				break;
 			default:
 				break;
@@ -1690,7 +1693,7 @@ static void init_usbc_cmd_node(usbc_cmd_node *usbc_cmd_node)
 {
 	usbc_cmd_data *cmd_data = &(usbc_cmd_node->cmd_data);
 
-	pr_debug("%s:%s\n", "MAX77729", __func__);
+	pr_debug("%s: %s\n", "MAX77729", __func__);
 
 	usbc_cmd_node->next = NULL;
 
@@ -1721,7 +1724,7 @@ bool is_empty_usbc_cmd_queue(usbc_cmd_queue_t *usbc_cmd_queue)
 		ret = true;
 
 	if (ret)
-		msg_maxim("usbc_cmd_queue Empty(%c)", ret ? 'T' : 'F');
+		msg_maxim("usbc_cmd_queue Empty(%c)\n", ret ? 'T' : 'F');
 
 	return ret;
 }
@@ -1731,7 +1734,7 @@ void enqueue_usbc_cmd(usbc_cmd_queue_t *usbc_cmd_queue, usbc_cmd_data *cmd_data)
 	usbc_cmd_node *temp_node = kzalloc(sizeof(usbc_cmd_node), GFP_KERNEL);
 
 	if (!temp_node) {
-		msg_maxim("failed to allocate usbc command queue");
+		msg_maxim("failed to allocate usbc command queue\n");
 		return;
 	}
 
@@ -1756,7 +1759,7 @@ void enqueue_front_usbc_cmd(usbc_cmd_queue_t *usbc_cmd_queue, usbc_cmd_data *cmd
 	usbc_cmd_node *temp_node = kzalloc(sizeof(usbc_cmd_node), GFP_KERNEL);
 
 	if (!temp_node) {
-		msg_maxim("failed to allocate usbc command queue");
+		msg_maxim("failed to allocate usbc command queue\n");
 		return;
 	}
 
@@ -1776,26 +1779,26 @@ void enqueue_front_usbc_cmd(usbc_cmd_queue_t *usbc_cmd_queue, usbc_cmd_data *cmd
 		g_usbc_data->max77729->is_usbc_queue = 1;
 }
 
-static void dequeue_usbc_cmd(usbc_cmd_queue_t *usbc_cmd_queue, usbc_cmd_data *cmd_data)
+static void dequeue_usbc_cmd
+	(usbc_cmd_queue_t *usbc_cmd_queue, usbc_cmd_data *cmd_data)
 {
 	usbc_cmd_node *temp_node;
 
 	if (is_empty_usbc_cmd_queue(usbc_cmd_queue)) {
-		msg_maxim("Queue, Empty!");
+		msg_maxim("Queue, Empty!\n");
 		return;
 	}
 
 	temp_node = usbc_cmd_queue->front;
 	copy_usbc_cmd_data(&(temp_node->cmd_data), cmd_data);
 
-	msg_maxim("Opcode(0x%02x) Response(0x%02x)", cmd_data->opcode, cmd_data->response);
+	msg_maxim("Opcode(0x%02x) Response(0x%02x)\n", cmd_data->opcode, cmd_data->response);
 
 	if (usbc_cmd_queue->front->next == NULL) {
-		msg_maxim("front->next = NULL");
+		msg_maxim("front->next = NULL\n");
 		usbc_cmd_queue->front = NULL;
-	} else {
+	} else
 		usbc_cmd_queue->front = usbc_cmd_queue->front->next;
-	}
 
 	if (is_empty_usbc_cmd_queue(usbc_cmd_queue))
 		usbc_cmd_queue->rear = NULL;
@@ -1803,15 +1806,16 @@ static void dequeue_usbc_cmd(usbc_cmd_queue_t *usbc_cmd_queue, usbc_cmd_data *cm
 	kfree(temp_node);
 }
 
-static bool front_usbc_cmd(usbc_cmd_queue_t *cmd_queue, usbc_cmd_data *cmd_data)
+static bool front_usbc_cmd
+	(usbc_cmd_queue_t *cmd_queue, usbc_cmd_data *cmd_data)
 {
 	if (is_empty_usbc_cmd_queue(cmd_queue)) {
-		msg_maxim("Queue, Empty!");
+		msg_maxim("Queue, Empty!\n");
 		return false;
 	}
 
 	copy_usbc_cmd_data(&(cmd_queue->front->cmd_data), cmd_data);
-	msg_maxim("Opcode(0x%02x)", cmd_data->opcode);
+	msg_maxim("Opcode(0x%02x)\n", cmd_data->opcode);
 	return true;
 }
 
@@ -1856,7 +1860,7 @@ EXPORT_SYMBOL(check_usbc_opcode_queue);
 int max77729_i2c_opcode_write(struct max77729_usbc_platform_data *usbc_data,
 		u8 opcode, u8 length, u8 *values)
 {
-	u8 write_values[OPCODE_MAX_LENGTH] = {0, };
+	u8 write_values[OPCODE_MAX_LENGTH] = { 0, };
 	int ret = 0;
 
 	if (length > OPCODE_DATA_LENGTH)
@@ -1866,8 +1870,7 @@ int max77729_i2c_opcode_write(struct max77729_usbc_platform_data *usbc_data,
 	if (length)
 		memcpy(&write_values[1], values, length);
 
-
-	msg_maxim("opcode 0x%x, write_length %d",
+	msg_maxim("opcode 0x%x, write_length %d\n",
 			opcode, length + OPCODE_SIZE);
 	print_hex_dump(KERN_ERR, "max77729: opcode_write: ",
 			DUMP_PREFIX_OFFSET, 16, 1, write_values,
@@ -1914,8 +1917,7 @@ int max77729_i2c_opcode_read(struct max77729_usbc_platform_data *usbc_data,
 	size = max77729_bulk_read(usbc_data->muic, OPCODE_READ,
 			length + OPCODE_SIZE, values);
 
-
-	msg_maxim("opcode 0x%x, read_length %d, ret_error %d",
+	msg_maxim("opcode 0x%x, read_length %d, ret_error %d\n",
 			opcode, length + OPCODE_SIZE, size);
 	print_hex_dump(KERN_ERR, "max77729: opcode_read: ",
 			DUMP_PREFIX_OFFSET, 16, 1, values,
@@ -1926,7 +1928,7 @@ int max77729_i2c_opcode_read(struct max77729_usbc_platform_data *usbc_data,
 static void max77729_notify_execute(struct max77729_usbc_platform_data *usbc_data,
 		const usbc_cmd_data *cmd_data)
 {
-		/* to do */
+		/* to do  */
 }
 
 static void max77729_handle_update_opcode(struct max77729_usbc_platform_data *usbc_data,
@@ -1965,41 +1967,45 @@ void max77729_send_get_request(struct max77729_usbc_platform_data *usbc_data, un
 	} else { /* ERROR case */
 		/* Mark Error in xid */
 		snk_sts->xid = (UNKNOWN_VID << 16) | (data[1] << 8);
-		msg_maxim("%s, Err: %d", __func__, data[1]);
+		msg_maxim("Err : %d\n", data[1]);
 	}
 }
 
 void max77729_handle_qc_result(struct max77729_muic_data *muic_data, unsigned char *data)
 {
 	int result = data[1];
-	union power_supply_propval pvalue ={0,};
-	pr_info("%s:%s result:0x%x vbadc:0x%x\n", MUIC_DEV_NAME, __func__,
-			data[1], data[2]);
+	union power_supply_propval pvalue = {0,};
+
+	pr_info("%s: %s: result:0x%x vbadc:0x%x\n", MUIC_DEV_NAME,
+			__func__, data[1], data[2]);
 
 	switch (result) {
 	case 0:
-		pr_info("%s:%s QC2.0 Success\n", MUIC_DEV_NAME, __func__);
+		pr_info("%s: %s: QC2.0 Success\n", MUIC_DEV_NAME, __func__);
 		g_usbc_data->is_hvdcp = true;
 		pvalue.intval = POWER_SUPPLY_TYPE_USB_HVDCP;
 		psy_do_property("usb", set, POWER_SUPPLY_PROP_REAL_TYPE, pvalue);
 		break;
 	case 1:
-		pr_info("%s:%s No CHGIN\n", MUIC_DEV_NAME, __func__);
+		pr_info("%s: %s: No CHGIN\n", MUIC_DEV_NAME, __func__);
 		break;
 	case 2:
-		pr_info("%s:%s Not High Voltage DCP\n", MUIC_DEV_NAME, __func__);
+		pr_info("%s: %s: Not High Voltage DCP\n",
+				MUIC_DEV_NAME, __func__);
 		break;
 	case 3:
-		pr_info("%s:%s Not DCP\n", MUIC_DEV_NAME, __func__);
+		pr_info("%s: %s: Not DCP\n", MUIC_DEV_NAME, __func__);
 		break;
 	case 6:
-		pr_info("%s:%s Vbus is not changed with 3 continuous ping\n", MUIC_DEV_NAME, __func__);
+		pr_info("%s: %s: Vbus is not changed with 3 continuous ping\n",
+				MUIC_DEV_NAME, __func__);
 		break;
 	case 7:
-		pr_info("%s:%s Vbus is not changed in 1 sec\n", MUIC_DEV_NAME, __func__);
+		pr_info("%s: %s: Vbus is not changed in 1 sec\n",
+				MUIC_DEV_NAME, __func__);
 		break;
 	default:
-		pr_info("%s:%s QC2.0 error(%d)\n", MUIC_DEV_NAME, __func__, result);
+		pr_info("%s: %s: QC2.0 error(%d)\n", MUIC_DEV_NAME, __func__, result);
 		break;
 	}
 }
@@ -2020,16 +2026,18 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 	u8 result = 0x0;
 
 	memset(&vdm_header, 0, sizeof(UND_DATA_MSG_VDM_HEADER_Type));
-	max77729_i2c_opcode_read(usbc_data, cmd_data->opcode, len, data);
+	max77729_i2c_opcode_read(usbc_data, cmd_data->opcode,
+			len, data);
 
 	/* opcode identifying the messsage type. (0x51)*/
 	response = data[0];
 
 	if (response != cmd_data->response) {
-		msg_maxim("Response [0x%02x] != [0x%02x]", response, cmd_data->response);
+		msg_maxim("Response [0x%02x] != [0x%02x]\n",
+			response, cmd_data->response);
 #if !defined (MAX77729_GRL_ENABLE)
 		if (cmd_data->response == OPCODE_FW_OPCODE_CLEAR) {
-			msg_maxim("Response after FW opcode cleared, just return");
+			msg_maxim("Response after FW opcode cleared, just return\n");
 			return;
 		}
 #endif
@@ -2065,20 +2073,20 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 		result = data[1];
 		switch (result) {
 		case SENT_REQ_MSG:
-			msg_maxim("sucess to send");
+			msg_maxim("sucess to send\n");
 			max77729_request_response(usbc_data);
 			break;
 		case ERR_SNK_RDY:
-			msg_maxim("Not in Snk Ready");
+			msg_maxim("Not in Snk Ready\n");
 			break;
 		case ERR_PD20:
-			msg_maxim("PD 2.0");
+			msg_maxim("PD 2.0\n");
 			break;
 		case ERR_SNKTXNG:
-			msg_maxim("SinkTxNG");
+			msg_maxim("SinkTxNG\n");
 			break;
 		default:
-			msg_maxim("OPCODE_SEND_GET_REQUEST = [%x]", result);
+			msg_maxim("OPCODE_SEND_GET_REQUEST = [%x]\n", result);
 			break;
 		}
 		break;
@@ -2088,18 +2096,18 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 		 * It means that the message can not be sent to Port Partner.
 		 * After Attaching Rp 3.0A, send again the message.
 		 */
-		if (data[1] == 0xfe || data[1] == 0xff) {
+		if (data[1] == 0xfe || data[1] == 0xff){
 			usbc_data->srcccap_request_retry = true;
 			pr_info("%s: srcccap_request_retry is set\n", __func__);
 		}
 		break;
 	case OPCODE_SET_SRCCAP:
-		if (data[1] == 0xff && usbc_data->source_Ready) {
+		if (data[1] == 0xff && usbc_data->source_Ready){
 			max77729_send_new_srccap(usbc_data, 0);
 		}
 		break;
 	case 0x65:
-		if (data[1] != 0xff && !usbc_data->source_Ready) {
+		if (data[1] != 0xff && !usbc_data->source_Ready){
 			pr_info("%s: harry otg srccap %x %x\n", __func__, data[1], data[2]);
 			max77729_current_pdo(usbc_data, data);
 		}
@@ -2111,16 +2119,16 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 		max77729_response_set_pps(usbc_data, data);
 		break;
 	case OPCODE_READ_MESSAGE:
-		pr_info("@TA_ALERT: %s: OPCODE[%x] Data[1]=0x%x Data[7]=0x%x Data[9]=0x%x\n", __func__,
-				OPCODE_READ_MESSAGE, data[1], data[7], data[9]);
+		pr_info("@TA_ALERT: %s: OPCODE[%x] Data[1] = 0x%x Data[7] = 0x%x Data[9] = 0x%x\n",
+			__func__, OPCODE_READ_MESSAGE, data[1], data[7], data[9]);
 #if defined(CONFIG_DIRECT_CHARGING)
 		if ((data[0] == 0x5D) &&
 			/* OCP would be set to Alert or Status message */
-			((data[1] == 0x01 && data[7] == 0x04) ||
-			(data[1] == 0x02 && (data[9] & 0x02)))) {
-			union power_supply_propval value = {0, };
+			((data[1] == 0x01 && data[7] == 0x04) || (data[1] == 0x02 && (data[9] & 0x02)))) {
+			union power_supply_propval value = {0,};
 			value.intval = true;
-			psy_do_property("battery", set, POWER_SUPPLY_EXT_PROP_DIRECT_TA_ALERT, value);
+			psy_do_property("battery", set,
+				POWER_SUPPLY_EXT_PROP_DIRECT_TA_ALERT, value);
 		}
 #endif
 		break;
@@ -2131,44 +2139,44 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 		vdm_opcode_header = data[1];
 		switch (vdm_opcode_header) {
 		case 0xFF:
-			msg_maxim("This isn't invalid response(OPCODE : 0x48, HEADER : 0xFF)");
+			msg_maxim("This isn't invalid response(OPCODE : 0x48, HEADER : 0xFF)\n");
 			break;
 		default:
 			memcpy(&vdm_header, &data[2], sizeof(vdm_header));
 			vdm_type = vdm_header.BITS.VDM_Type;
 			vdm_command = vdm_header.BITS.VDM_command;
 			vdm_response = vdm_header.BITS.VDM_command_type;
-			msg_maxim("vdm_type[%x], vdm_command[%x], vdm_response[%x]",
-					vdm_type, vdm_command, vdm_response);
+			msg_maxim("vdm_type[%x], vdm_command[%x], vdm_response[%x]\n",
+				vdm_type, vdm_command, vdm_response);
 			switch (vdm_type) {
 			case STRUCTURED_VDM:
 				if ((vdm_response == SEC_UVDM_RESPONDER_ACK) ||
-					((vdm_response == SEC_UVDM_RESPONDER_NAK) &&
-					(vdm_command == Discover_Identity))) {
+						((vdm_response == SEC_UVDM_RESPONDER_NAK) &&
+						(vdm_command == Discover_Identity))) {
 					switch (vdm_command) {
 					case Discover_Identity:
-						msg_maxim("ignore Discover_Identity");
+						msg_maxim("ignore Discover_Identity\n");
 						usbc_data->uvdm_state = USBPD_UVDM_CONNECT;
 						break;
 					case Discover_SVIDs:
-						msg_maxim("ignore Discover_SVIDs");
+						msg_maxim("ignore Discover_SVIDs\n");
 						break;
 					case Discover_Modes:
-						msg_maxim("ignore Discover_Modes");
+						msg_maxim("ignore Discover_Modes\n");
 						break;
 					case Enter_Mode:
-						msg_maxim("ignore Enter_Mode");
+						msg_maxim("ignore Enter_Mode\n");
 						break;
 					case Exit_Mode:
-						msg_maxim("ignore Exit_Mode");
+						msg_maxim("ignore Exit_Mode\n");
 						break;
 					case Attention:
-						msg_maxim("ignore Attention");
+						msg_maxim("ignore Attention\n");
 						break;
 					case Configure:
 						break;
 					default:
-						msg_maxim("vdm_command isn't valid[%x]", vdm_command);
+						msg_maxim("vdm_command isn't valid[%x]\n", vdm_command);
 						break;
 					};
 				} else if (vdm_response == SEC_UVDM_ININIATOR) {
@@ -2184,7 +2192,7 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 							if (reqd_vdm_command == Configure) {
 								W_DATA = 1 << (usbc_data->dp_selected_pin - 1);
 								/* Retry Configure message */
-								msg_maxim("Retry Configure message, W_DATA = %x, dp_selected_pin = %d",
+								msg_maxim("Retry Configure message, W_DATA = %x, dp_selected_pin = %d\n",
 										W_DATA, usbc_data->dp_selected_pin);
 								max77729_vdm_process_set_DP_configure_mode_req(usbc_data, W_DATA);
 							}
@@ -2199,19 +2207,18 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 						/* Nothing */
 						break;
 					};
-				} else {
-					msg_maxim("vdm_response is error value[%x]", vdm_response);
-				}
+				} else
+					msg_maxim("vdm_response is error value[%x]\n", vdm_response);
 				break;
-			case SEC_UVDM_UNSTRUCTURED_VDM:
-				msg_maxim("adapter_svid: %x", usbc_data->adapter_svid);
+			case SEC_UVDM_UNSTRUCTURED_VDM :
+				msg_maxim("adapter_svid: %x\n", usbc_data->adapter_svid);
 				if (usbc_data->adapter_svid == USB_PD_MI_SVID) {
-					msg_maxim("SEC_UVDM_UNSTRUCTURED_VDM !!!");
-					usbpd_mi_vdm_received_cb(usbc_data, data, len + OPCODE_SIZE);
+					msg_maxim("SEC_UVDM_UNSTRUCTURED_VDM !!!\n");
+					usbpd_mi_vdm_received_cb(usbc_data, data, len+OPCODE_SIZE);
 				}
 				break;
 			default:
-				msg_maxim("vdm_type isn't valid error");
+				msg_maxim("vdm_type isn't valid error\n");
 				break;
 			};
 			break;
@@ -2219,13 +2226,13 @@ static void max77729_irq_execute(struct max77729_usbc_platform_data *usbc_data,
 		break;
 	case OPCODE_SET_ALTERNATEMODE:
 		usbc_data->max77729->set_altmode_en = 1;
-		msg_maxim("set altmode en to 1");
+		msg_maxim("set altmode en to 1\n");
 		break;
 	case OPCODE_QC_2_0_SET:
 		max77729_handle_qc_result(usbc_data->muic_data, data);
 		break;
  	case OPCODE_FW_OPCODE_CLEAR:
-		msg_maxim("Cleared FW OPCODE");
+		msg_maxim("Cleared FW OPCODE\n");
 	default:
 		break;
 	}
@@ -2241,20 +2248,22 @@ void max77729_usbc_dequeue_queue(struct max77729_usbc_platform_data *usbc_data)
 	init_usbc_cmd_data(&cmd_data);
 
 	if (is_empty_usbc_cmd_queue(cmd_queue)) {
-		msg_maxim("Queue, Empty");
+		msg_maxim("Queue, Empty\n");
 		return;
 	}
 
 	dequeue_usbc_cmd(cmd_queue, &cmd_data);
-	msg_maxim("!! Dequeue queue: opcode: %x, 1st data: %x. 2st data: %x",
-			cmd_data.write_data[0], cmd_data.read_data[0], cmd_data.val);
+	msg_maxim("!! Dequeue queue = opcode: %x, 1st data: %x. 2st data: %x\n",
+		cmd_data.write_data[0],
+		cmd_data.read_data[0],
+		cmd_data.val);
 }
 
 static void max77729_usbc_clear_fw_queue(struct max77729_usbc_platform_data *usbc_data)
 {
 	usbc_cmd_data write_data;
 
-	msg_maxim("called");
+	msg_maxim("called\n");
 
 	init_usbc_cmd_data(&write_data);
 	write_data.opcode = OPCODE_FW_OPCODE_CLEAR;
@@ -2267,19 +2276,19 @@ void max77729_usbc_clear_queue(struct max77729_usbc_platform_data *usbc_data)
 	usbc_cmd_queue_t *cmd_queue = NULL;
 
 	mutex_lock(&usbc_data->op_lock);
-	msg_maxim("IN");
+	msg_maxim("IN\n");
 	cmd_queue = &(usbc_data->usbc_cmd_queue);
 
 	while (!is_empty_usbc_cmd_queue(cmd_queue)) {
 		init_usbc_cmd_data(&cmd_data);
 		dequeue_usbc_cmd(cmd_queue, &cmd_data);
-		if (max77729_check_recover_opcode(cmd_data.opcode)) {
+		if (max77729_check_recover_opcode(cmd_data.opcode)){
 			usbc_data->recover_opcode_list[cmd_data.opcode] = true;
 			usbc_data->need_recover = true;
 		}
 	}
 	usbc_data->opcode_stamp = 0;
-	msg_maxim("OUT");
+	msg_maxim("OUT\n");
 	mutex_unlock(&usbc_data->op_lock);
 	/* also clear fw opcode queue to sync with driver */
 	max77729_usbc_clear_fw_queue(usbc_data);
@@ -2294,10 +2303,9 @@ static void max77729_usbc_cmd_run(struct max77729_usbc_platform_data *usbc_data)
 
 	cmd_queue = &(usbc_data->usbc_cmd_queue);
 
-
 	run_node = kzalloc(sizeof(usbc_cmd_node), GFP_KERNEL);
 	if (!run_node) {
-		msg_maxim("failed to allocate muic command queue");
+		msg_maxim("failed to allocate muic command queue\n");
 		return;
 	}
 
@@ -2306,7 +2314,7 @@ static void max77729_usbc_cmd_run(struct max77729_usbc_platform_data *usbc_data)
 	init_usbc_cmd_data(&cmd_data);
 
 	if (is_empty_usbc_cmd_queue(cmd_queue)) {
-		msg_maxim("Queue, Empty");
+		msg_maxim("Queue Empty\n");
 		kfree(run_node);
 		return;
 	}
@@ -2317,17 +2325,17 @@ static void max77729_usbc_cmd_run(struct max77729_usbc_platform_data *usbc_data)
 		max77729_notify_execute(usbc_data, &cmd_data);
 		max77729_usbc_cmd_run(usbc_data);
 	} else if (cmd_data.opcode == OPCODE_NONE) {/* Apcmdres isr */
-		msg_maxim("Apcmdres ISR !!!");
+		msg_maxim("Apcmdres ISR !!!\n");
 		max77729_irq_execute(usbc_data, &cmd_data);
 		usbc_data->opcode_stamp = 0;
 		max77729_usbc_cmd_run(usbc_data);
 	} else { /* No ISR */
-		msg_maxim("No ISR");
+		msg_maxim("No ISR\n");
 		copy_usbc_cmd_data(&cmd_data, &(usbc_data->last_opcode));
 		ret = max77729_i2c_opcode_write(usbc_data, cmd_data.opcode,
 				cmd_data.write_length, cmd_data.write_data);
 		if (ret < 0) {
-			msg_maxim("i2c write fail. dequeue opcode");
+			msg_maxim("i2c write fail. dequeue opcode\n");
 			max77729_usbc_dequeue_queue(usbc_data);
 		}
 	}
@@ -2361,19 +2369,20 @@ void max77729_usbc_opcode_write(struct max77729_usbc_platform_data *usbc_data,
 	execute_cmd_data.seq = OPCODE_WRITE_SEQ;
 	enqueue_usbc_cmd(cmd_queue, &execute_cmd_data);
 
-	msg_maxim("W->W opcode[0x%02x] write_length[%d] read_length[%d]",
-			write_op->opcode, write_op->write_length, write_op->read_length);
+	msg_maxim("W->W opcode[0x%02x] write_length[%d] read_length[%d]\n",
+		write_op->opcode, write_op->write_length, write_op->read_length);
 
 	front_usbc_cmd(cmd_queue, &current_cmd);
 	if (current_cmd.opcode == write_op->opcode) {
 		max77729_usbc_cmd_run(usbc_data);
 	} else {
-		msg_maxim("!!!current_cmd.opcode [0x%02x][0x%02x], read_op->opcode[0x%02x]",
-				current_cmd.opcode, current_cmd.response, write_op->opcode);
+		msg_maxim("!!!current_cmd.opcode [0x%02x][0x%02x], read_op->opcode[0x%02x]\n",
+			current_cmd.opcode, current_cmd.response, write_op->opcode);
 		if (usbc_data->opcode_stamp != 0 && current_cmd.opcode == OPCODE_NONE) {
-			if (time_after(jiffies, usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
+			if (time_after(jiffies,
+					usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
 				usbc_data->opcode_stamp = 0;
-				msg_maxim("error. we will dequeue response data");
+				msg_maxim("error. we will dequeue response data\n");
 				max77729_usbc_dequeue_queue(usbc_data);
 				max77729_usbc_cmd_run(usbc_data);
 			}
@@ -2381,7 +2390,6 @@ void max77729_usbc_opcode_write(struct max77729_usbc_platform_data *usbc_data,
 	}
 	mutex_unlock(&usbc_data->op_lock);
 }
-
 
 void max77729_usbc_opcode_write_immediately(struct max77729_usbc_platform_data *usbc_data,
 	usbc_cmd_data *write_op)
@@ -2394,12 +2402,10 @@ void max77729_usbc_opcode_write_immediately(struct max77729_usbc_platform_data *
 	mutex_lock(&usbc_data->op_lock);
 	init_usbc_cmd_data(&current_cmd);
 
-
 	if (front_usbc_cmd(cmd_queue, &current_cmd)) {
-		if (usbc_data->opcode_stamp != 0 &&
-			current_cmd.opcode == OPCODE_NONE) {
+		if (usbc_data->opcode_stamp != 0 && current_cmd.opcode == OPCODE_NONE) {
 			usbc_data->opcode_stamp = 0;
-			msg_maxim("before enqueue to front, dequeue response data");
+			msg_maxim("before enqueue to front, dequeue response data\n");
 			max77729_usbc_dequeue_queue(usbc_data);
 			wait_response_flag = 1;
 		}
@@ -2422,22 +2428,20 @@ void max77729_usbc_opcode_write_immediately(struct max77729_usbc_platform_data *
 	execute_cmd_data.seq = OPCODE_WRITE_SEQ;
 	enqueue_front_usbc_cmd(cmd_queue, &execute_cmd_data);
 
-	msg_maxim("W->W opcode[0x%02x] write_length[%d] read_length[%d]",
-			write_op->opcode, write_op->write_length, write_op->read_length);
+	msg_maxim("W->W opcode[0x%02x] write_length[%d] read_length[%d]\n",
+		write_op->opcode, write_op->write_length, write_op->read_length);
 
 	/* add back the dequeue response opcode. */
 	if (1 == wait_response_flag) {
-		msg_maxim("wait_response_flag = 1, add back the response opcode to the front of the queue, don't send opcode 0x37 immediately");
+		msg_maxim("wait_response_flag = 1, add back the response opcode to the front of the queue, don't send opcode 0x37 immediately\n");
 		enqueue_front_usbc_cmd(cmd_queue, &current_cmd);
 	} else {
 		max77729_usbc_cmd_run(usbc_data);
-		msg_maxim("wait_response_flag = 0, no response opcode in queue, send opcode 0x37 immediately");
+		msg_maxim("wait_response_flag = 0, no response opcode in queue, send opcode 0x37 immediately\n");
 	}
-
 
 	mutex_unlock(&usbc_data->op_lock);
 }
-
 
 void max77729_usbc_opcode_read(struct max77729_usbc_platform_data *usbc_data,
 	usbc_cmd_data *read_op)
@@ -2466,19 +2470,20 @@ void max77729_usbc_opcode_read(struct max77729_usbc_platform_data *usbc_data,
 	execute_cmd_data.seq = OPCODE_READ_SEQ;
 	enqueue_usbc_cmd(cmd_queue, &execute_cmd_data);
 
-	msg_maxim("R->R opcode[0x%02x] write_length[%d] read_length[%d]",
-			read_op->opcode, read_op->write_length, read_op->read_length);
+	msg_maxim("R->R opcode[0x%02x] write_length[%d] read_length[%d]\n",
+		read_op->opcode, read_op->write_length, read_op->read_length);
 
 	front_usbc_cmd(cmd_queue, &current_cmd);
 	if (current_cmd.opcode == read_op->opcode) {
 		max77729_usbc_cmd_run(usbc_data);
 	} else {
-		msg_maxim("!!!current_cmd.opcode [0x%02x][0x%02x], read_op->opcode[0x%02x]",
+		msg_maxim("!!!current_cmd.opcode [0x%02x][0x%02x], read_op->opcode[0x%02x]\n",
 			current_cmd.opcode, current_cmd.response, read_op->opcode);
 		if (usbc_data->opcode_stamp != 0 && current_cmd.opcode == OPCODE_NONE) {
-			if (time_after(jiffies, usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
+			if (time_after(jiffies,
+					usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
 				usbc_data->opcode_stamp = 0;
-				msg_maxim("error. we will dequeue response data");
+				msg_maxim("error. we will dequeue response data\n");
 				max77729_usbc_dequeue_queue(usbc_data);
 				max77729_usbc_cmd_run(usbc_data);
 			}
@@ -2536,19 +2541,20 @@ void max77729_usbc_opcode_update(struct max77729_usbc_platform_data *usbc_data,
 	execute_cmd_data.is_uvdm = update_op->is_uvdm;
 	enqueue_usbc_cmd(cmd_queue, &execute_cmd_data);
 
-	msg_maxim("U->U opcode[0x%02x] write_length[%d] read_length[%d]",
-			update_op->opcode, update_op->write_length, update_op->read_length);
+	msg_maxim("U->U opcode[0x%02x] write_length[%d] read_length[%d]\n",
+		update_op->opcode, update_op->write_length, update_op->read_length);
 
 	front_usbc_cmd(cmd_queue, &current_cmd);
 	if (current_cmd.opcode == update_op->opcode) {
 		max77729_usbc_cmd_run(usbc_data);
 	} else {
-		msg_maxim("!!! current_cmd.opcode [0x%02x], update_op->opcode[0x%02x]",
-				current_cmd.opcode, update_op->opcode);
+		msg_maxim("!!! current_cmd.opcode [0x%02x], update_op->opcode[0x%02x]\n",
+			current_cmd.opcode, update_op->opcode);
 		if (usbc_data->opcode_stamp != 0 && current_cmd.opcode == OPCODE_NONE) {
-			if (time_after(jiffies, usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
+			if (time_after(jiffies,
+					usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
 				usbc_data->opcode_stamp = 0;
-				msg_maxim("error. we will dequeue response data");
+				msg_maxim("error. we will dequeue response data\n");
 				max77729_usbc_dequeue_queue(usbc_data);
 				max77729_usbc_cmd_run(usbc_data);
 			}
@@ -2584,8 +2590,8 @@ void max77729_usbc_opcode_push(struct max77729_usbc_platform_data *usbc_data,
 	execute_cmd_data.seq = OPCODE_PUSH_SEQ;
 	enqueue_usbc_cmd(cmd_queue, &execute_cmd_data);
 
-	msg_maxim("P->P opcode[0x%02x] write_length[%d] read_length[%d]",
-			read_op->opcode, read_op->write_length, read_op->read_length);
+	msg_maxim("P->P opcode[0x%02x] write_length[%d] read_length[%d]\n",
+		read_op->opcode, read_op->write_length, read_op->read_length);
 }
 
 void max77729_usbc_opcode_rw(struct max77729_usbc_platform_data *usbc_data,
@@ -2632,21 +2638,22 @@ void max77729_usbc_opcode_rw(struct max77729_usbc_platform_data *usbc_data,
 	execute_cmd_data.seq = OPCODE_RW_SEQ;
 	enqueue_usbc_cmd(cmd_queue, &execute_cmd_data);
 
-	msg_maxim("RW->R opcode[0x%02x] write_length[%d] read_length[%d]",
-			read_op->opcode, read_op->write_length, read_op->read_length);
-	msg_maxim("RW->W opcode[0x%02x] write_length[%d] read_length[%d]",
-			write_op->opcode, write_op->write_length, write_op->read_length);
+	msg_maxim("RW->R opcode[0x%02x] write_length[%d] read_length[%d]\n",
+		read_op->opcode, read_op->write_length, read_op->read_length);
+	msg_maxim("RW->W opcode[0x%02x] write_length[%d] read_length[%d]\n",
+		write_op->opcode, write_op->write_length, write_op->read_length);
 
 	front_usbc_cmd(cmd_queue, &current_cmd);
 	if (current_cmd.opcode == read_op->opcode) {
 		max77729_usbc_cmd_run(usbc_data);
 	} else {
-		msg_maxim("!!! current_cmd.opcode [0x%02x], read_op->opcode[0x%02x]",
-				current_cmd.opcode, read_op->opcode);
+		msg_maxim("!!! current_cmd.opcode [0x%02x], read_op->opcode[0x%02x]\n",
+			current_cmd.opcode, read_op->opcode);
 		if (usbc_data->opcode_stamp != 0 && current_cmd.opcode == OPCODE_NONE) {
-			if (time_after(jiffies, usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
+			if (time_after(jiffies,
+					usbc_data->opcode_stamp + MAX77729_MAX_APDCMD_TIME)) {
 				usbc_data->opcode_stamp = 0;
-				msg_maxim("error. we will dequeue response data");
+				msg_maxim("error. we will dequeue response data\n");
 				max77729_usbc_dequeue_queue(usbc_data);
 				max77729_usbc_cmd_run(usbc_data);
 			}
@@ -2655,7 +2662,6 @@ void max77729_usbc_opcode_rw(struct max77729_usbc_platform_data *usbc_data,
 
 	mutex_unlock(&usbc_data->op_lock);
 }
-
 
 static void max77729_reset_ic(struct max77729_usbc_platform_data *usbc_data)
 {
@@ -2676,11 +2682,10 @@ void max77729_usbc_check_sysmsg(struct max77729_usbc_platform_data *usbc_data, u
 	usbc_cmd_data next_cmd_data;
 	u8 next_opcode = 0xFF;
 	u8 interrupt;
-
 	int ret = 0;
 
 	if (usbc_data->shut_down) {
-		msg_maxim("IGNORE SYSTEM_MSG IN SHUTDOWN MODE!!");
+		msg_maxim("IGNORE SYSTEM_MSG IN SHUTDOWN MODE!!\n");
 		return;
 	}
 
@@ -2689,13 +2694,13 @@ void max77729_usbc_check_sysmsg(struct max77729_usbc_platform_data *usbc_data, u
 		break;
 	case SYSERROR_BOOT_WDT:
 		usbc_data->watchdog_count++;
-		msg_maxim("SYSERROR_BOOT_WDT: %d", usbc_data->watchdog_count);
+		msg_maxim("SYSERROR_BOOT_WDT: %d\n", usbc_data->watchdog_count);
 		max77729_usbc_mask_irq(usbc_data);
 		max77729_write_reg(usbc_data->muic, REG_UIC_INT_M, REG_UIC_INT_M_INIT);
 		max77729_write_reg(usbc_data->muic, REG_CC_INT_M, REG_CC_INT_M_INIT);
 		max77729_write_reg(usbc_data->muic, REG_PD_INT_M, REG_PD_INT_M_INIT);
 		max77729_write_reg(usbc_data->muic, REG_VDM_INT_M, REG_VDM_INT_M_INIT);
-		/* clear UIC_INT to prevent infinite sysmsg irq */
+		/* clear UIC_INT to prevent infinite sysmsg irq*/
 		g_usbc_data->max77729->enable_nested_irq = 1;
 		max77729_read_reg(usbc_data->muic, MAX77729_USBC_REG_UIC_INT, &interrupt);
 		g_usbc_data->max77729->usbc_irq = interrupt & 0xBF; //clear the USBC SYSTEM IRQ
@@ -2714,11 +2719,11 @@ void max77729_usbc_check_sysmsg(struct max77729_usbc_platform_data *usbc_data, u
 		max77729_write_reg(usbc_data->muic, REG_CC_INT_M, REG_CC_INT_M_INIT);
 		max77729_write_reg(usbc_data->muic, REG_PD_INT_M, REG_PD_INT_M_INIT);
 		max77729_write_reg(usbc_data->muic, REG_VDM_INT_M, REG_VDM_INT_M_INIT);
-		/* clear UIC_INT to prevent infinite sysmsg irq */
+		/* clear UIC_INT to prevent infinite sysmsg irq*/
 		g_usbc_data->max77729->enable_nested_irq = 1;
 		max77729_read_reg(usbc_data->muic, MAX77729_USBC_REG_UIC_INT, &interrupt);
 		g_usbc_data->max77729->usbc_irq = interrupt & 0xBF; //clear the USBC SYSTEM IRQ
-		msg_maxim("SYSERROR_BOOT_POR: %d, UIC_INT: 0x%02x", usbc_data->por_count, interrupt);
+		msg_maxim("SYSERROR_BOOT_POR: %d, UIC_INT:0x%02x\n", usbc_data->por_count, interrupt);
 		max77729_usbc_clear_queue(usbc_data);
 		usbc_data->is_first_booting = 1;
 		max77729_init_opcode(usbc_data, 1);
@@ -2729,6 +2734,7 @@ void max77729_usbc_check_sysmsg(struct max77729_usbc_platform_data *usbc_data, u
 	case SYSERROR_APCMD_INPROGRESS:
 		break;
 	case SYSERROR_APCMD_FAIL:
+
 		init_usbc_cmd_data(&cmd_data);
 		init_usbc_cmd_data(&next_cmd_data);
 
@@ -2744,23 +2750,23 @@ void max77729_usbc_check_sysmsg(struct max77729_usbc_platform_data *usbc_data, u
 				cmd_data.opcode = OPCODE_NONE;
 			}
 
-			if ((cmd_data.opcode != OPCODE_NONE) &&
-				(cmd_data.opcode == next_opcode)) {
+			if ((cmd_data.opcode != OPCODE_NONE) && (cmd_data.opcode == next_opcode)) {
 				if (next_opcode != OPCODE_VDM_DISCOVER_SET_VDM_REQ) {
 					ret = max77729_i2c_opcode_write(usbc_data,
 						cmd_data.opcode,
 						cmd_data.write_length,
 						cmd_data.write_data);
 					if (ret) {
-						msg_maxim("i2c write fail. dequeue opcode");
+						msg_maxim("i2c write fail. dequeue opcode\n");
 						max77729_usbc_dequeue_queue(usbc_data);
 					} else
-						msg_maxim("RETRY SUCCESS: %x, %x", cmd_data.opcode, next_opcode);
+						msg_maxim("RETRY SUCCESS: %x, %x\n", cmd_data.opcode, next_opcode);
 				} else
-					msg_maxim("IGNORE COMMAND: %x, %x", cmd_data.opcode, next_opcode);
+					msg_maxim("IGNORE COMMAND: %x, %x\n", cmd_data.opcode, next_opcode);
 			} else {
-				msg_maxim("RETRY FAILED: %x, %x", cmd_data.opcode, next_opcode);
+				msg_maxim("RETRY FAILED: %x, %x\n", cmd_data.opcode, next_opcode);
 			}
+
 		}
 		break;
 	default:
@@ -2768,27 +2774,27 @@ void max77729_usbc_check_sysmsg(struct max77729_usbc_platform_data *usbc_data, u
 	}
 }
 
-
 static irqreturn_t max77729_apcmd_irq(int irq, void *data)
 {
 	struct max77729_usbc_platform_data *usbc_data = data;
 	u8 sysmsg = 0;
 
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	max77729_read_reg(usbc_data->muic, REG_USBC_STATUS2, &usbc_data->usbc_status2);
 	sysmsg = usbc_data->usbc_status2;
-	msg_maxim(" [IN] sysmsg : %d", sysmsg);
+	msg_maxim("[IN] sysmsg: %d\n", sysmsg);
 
 	mutex_lock(&usbc_data->op_lock);
 	max77729_usbc_cmd_run(usbc_data);
 	mutex_unlock(&usbc_data->op_lock);
 
 	if (usbc_data->need_recover) {
-		max77729_recover_opcode(usbc_data, usbc_data->recover_opcode_list);
+		max77729_recover_opcode(usbc_data,
+			usbc_data->recover_opcode_list);
 		usbc_data->need_recover = false;
 	}
 
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 
 	return IRQ_HANDLED;
 }
@@ -2807,21 +2813,21 @@ static irqreturn_t max77729_sysmsg_irq(int irq, void *data)
 		max77729_read_reg(usbc_data->muic, REG_USBC_STATUS2, &usbc_status2);
 		raw_data[i] = usbc_status2;
 	}
-	if ((raw_data[0] == raw_data[1]) &&
-		(raw_data[0] == raw_data[2])) {
+
+	if ((raw_data[0] == raw_data[1]) && (raw_data[0] == raw_data[2])) {
 		sysmsg = raw_data[0];
 	} else {
-		max77729_bulk_read(usbc_data->muic, REG_USBC_STATUS1, 8, dump_reg);
-		msg_maxim("[ERROR ]sys_reg, %x, %x, %x", raw_data[0], raw_data[1],raw_data[2]);
-		msg_maxim("[ERROR ]dump_reg, %x, %x, %x, %x, %x, %x, %x, %x\n",
-				dump_reg[0], dump_reg[1], dump_reg[2], dump_reg[3],
-				dump_reg[4], dump_reg[5], dump_reg[6], dump_reg[7]);
+		max77729_bulk_read(usbc_data->muic, REG_USBC_STATUS1,
+				8, dump_reg);
+		msg_maxim("[ERROR] sys_reg, %x, %x, %x\n", raw_data[0], raw_data[1],raw_data[2]);
+		msg_maxim("[ERROR] dump_reg, %x, %x, %x, %x, %x, %x, %x, %x\n", dump_reg[0], dump_reg[1],
+			dump_reg[2], dump_reg[3], dump_reg[4], dump_reg[5], dump_reg[6], dump_reg[7]);
 		sysmsg = 0x6D;
 	}
-	msg_maxim("IRQ(%d)_IN sysmsg: %x", irq, sysmsg);
+	msg_maxim("IRQ(%d)_IN sysmsg: %x\n", irq, sysmsg);
 	max77729_usbc_check_sysmsg(usbc_data, sysmsg);
 	usbc_data->sysmsg = sysmsg;
-	msg_maxim("IRQ(%d)_OUT sysmsg: %x", irq, sysmsg);
+	msg_maxim("IRQ(%d)_OUT sysmsg: %x\n", irq, sysmsg);
 
 	return IRQ_HANDLED;
 }
@@ -2832,10 +2838,10 @@ static irqreturn_t max77729_vdm_identity_irq(int irq, void *data)
 	MAX77729_VDM_MSG_IRQ_STATUS_Type VDM_MSG_IRQ_State;
 
 	memset(&VDM_MSG_IRQ_State, 0, sizeof(VDM_MSG_IRQ_State));
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	VDM_MSG_IRQ_State.BITS.Vdm_Flag_Discover_ID = 1;
 	max77729_receive_alternate_message(usbc_data, &VDM_MSG_IRQ_State);
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 
 	return IRQ_HANDLED;
 }
@@ -2846,10 +2852,10 @@ static irqreturn_t max77729_vdm_svids_irq(int irq, void *data)
 	MAX77729_VDM_MSG_IRQ_STATUS_Type VDM_MSG_IRQ_State;
 
 	memset(&VDM_MSG_IRQ_State, 0, sizeof(VDM_MSG_IRQ_State));
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	VDM_MSG_IRQ_State.BITS.Vdm_Flag_Discover_SVIDs = 1;
 	max77729_receive_alternate_message(usbc_data, &VDM_MSG_IRQ_State);
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 	return IRQ_HANDLED;
 }
 
@@ -2859,10 +2865,10 @@ static irqreturn_t max77729_vdm_discover_mode_irq(int irq, void *data)
 	MAX77729_VDM_MSG_IRQ_STATUS_Type VDM_MSG_IRQ_State;
 
 	memset(&VDM_MSG_IRQ_State, 0, sizeof(VDM_MSG_IRQ_State));
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	VDM_MSG_IRQ_State.BITS.Vdm_Flag_Discover_MODEs = 1;
 	max77729_receive_alternate_message(usbc_data, &VDM_MSG_IRQ_State);
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 	return IRQ_HANDLED;
 }
 
@@ -2872,10 +2878,10 @@ static irqreturn_t max77729_vdm_enter_mode_irq(int irq, void *data)
 	MAX77729_VDM_MSG_IRQ_STATUS_Type VDM_MSG_IRQ_State;
 
 	memset(&VDM_MSG_IRQ_State, 0, sizeof(VDM_MSG_IRQ_State));
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	VDM_MSG_IRQ_State.BITS.Vdm_Flag_Enter_Mode = 1;
 	max77729_receive_alternate_message(usbc_data, &VDM_MSG_IRQ_State);
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 	return IRQ_HANDLED;
 }
 
@@ -2885,10 +2891,10 @@ static irqreturn_t max77729_vdm_dp_status_irq(int irq, void *data)
 	MAX77729_VDM_MSG_IRQ_STATUS_Type VDM_MSG_IRQ_State;
 
 	memset(&VDM_MSG_IRQ_State, 0, sizeof(VDM_MSG_IRQ_State));
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	VDM_MSG_IRQ_State.BITS.Vdm_Flag_DP_Status_Update = 1;
 	max77729_receive_alternate_message(usbc_data, &VDM_MSG_IRQ_State);
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 	return IRQ_HANDLED;
 }
 
@@ -2898,10 +2904,10 @@ static irqreturn_t max77729_vdm_dp_configure_irq(int irq, void *data)
 	MAX77729_VDM_MSG_IRQ_STATUS_Type VDM_MSG_IRQ_State;
 
 	memset(&VDM_MSG_IRQ_State, 0, sizeof(VDM_MSG_IRQ_State));
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	VDM_MSG_IRQ_State.BITS.Vdm_Flag_DP_Configure = 1;
 	max77729_receive_alternate_message(usbc_data, &VDM_MSG_IRQ_State);
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 	return IRQ_HANDLED;
 }
 
@@ -2911,10 +2917,10 @@ static irqreturn_t max77729_vdm_attention_irq(int irq, void *data)
 	MAX77729_VDM_MSG_IRQ_STATUS_Type VDM_MSG_IRQ_State;
 
 	memset(&VDM_MSG_IRQ_State, 0, sizeof(VDM_MSG_IRQ_State));
-	msg_maxim("IRQ(%d)_IN", irq);
+	msg_maxim("IRQ(%d)_IN\n", irq);
 	VDM_MSG_IRQ_State.BITS.Vdm_Flag_Attention = 1;
 	max77729_receive_alternate_message(usbc_data, &VDM_MSG_IRQ_State);
-	msg_maxim("IRQ(%d)_OUT", irq);
+	msg_maxim("IRQ(%d)_OUT\n", irq);
 	return IRQ_HANDLED;
 }
 
@@ -2922,14 +2928,15 @@ static irqreturn_t max77729_vir_altmode_irq(int irq, void *data)
 {
 	struct max77729_usbc_platform_data *usbc_data = data;
 
-	msg_maxim("max77729_vir_altmode_irq");
+	msg_maxim("++\n");
 
 	if (usbc_data->shut_down) {
-		msg_maxim("%s doing shutdown. skip set alternate mode", __func__);
+		msg_maxim("doing shutdown. skip set alternate mode\n");
 		goto skip;
 	}
 
-	max77729_set_enable_alternate_mode(usbc_data->set_altmode);
+	max77729_set_enable_alternate_mode
+		(usbc_data->set_altmode);
 
 skip:
 	return IRQ_HANDLED;
@@ -2941,9 +2948,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_apcmd = usbc_data->irq_base + MAX77729_USBC_IRQ_APC_INT;
 	if (usbc_data->irq_apcmd) {
 		ret = request_threaded_irq(usbc_data->irq_apcmd,
-				NULL, max77729_apcmd_irq,
-				0,
-				"usbc-apcmd-irq", usbc_data);
+			   NULL, max77729_apcmd_irq,
+			   0,
+			   "usbc-apcmd-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -2953,9 +2960,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_sysmsg = usbc_data->irq_base + MAX77729_USBC_IRQ_SYSM_INT;
 	if (usbc_data->irq_sysmsg) {
 		ret = request_threaded_irq(usbc_data->irq_sysmsg,
-				NULL, max77729_sysmsg_irq,
-				0,
-				"usbc-sysmsg-irq", usbc_data);
+			   NULL, max77729_sysmsg_irq,
+			   0,
+			   "usbc-sysmsg-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -2965,9 +2972,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vdm0 = usbc_data->irq_base + MAX77729_IRQ_VDM_DISCOVER_ID_INT;
 	if (usbc_data->irq_vdm0) {
 		ret = request_threaded_irq(usbc_data->irq_vdm0,
-				NULL, max77729_vdm_identity_irq,
-				0,
-				"usbc-vdm0-irq", usbc_data);
+			   NULL, max77729_vdm_identity_irq,
+			   0,
+			   "usbc-vdm0-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -2977,9 +2984,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vdm1 = usbc_data->irq_base + MAX77729_IRQ_VDM_DISCOVER_SVIDS_INT;
 	if (usbc_data->irq_vdm1) {
 		ret = request_threaded_irq(usbc_data->irq_vdm1,
-				NULL, max77729_vdm_svids_irq,
-				0,
-				"usbc-vdm1-irq", usbc_data);
+			   NULL, max77729_vdm_svids_irq,
+			   0,
+			   "usbc-vdm1-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -2989,9 +2996,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vdm2 = usbc_data->irq_base + MAX77729_IRQ_VDM_DISCOVER_MODES_INT;
 	if (usbc_data->irq_vdm2) {
 		ret = request_threaded_irq(usbc_data->irq_vdm2,
-				NULL, max77729_vdm_discover_mode_irq,
-				0,
-				"usbc-vdm2-irq", usbc_data);
+			   NULL, max77729_vdm_discover_mode_irq,
+			   0,
+			   "usbc-vdm2-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -3001,9 +3008,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vdm3 = usbc_data->irq_base + MAX77729_IRQ_VDM_ENTER_MODE_INT;
 	if (usbc_data->irq_vdm3) {
 		ret = request_threaded_irq(usbc_data->irq_vdm3,
-				NULL, max77729_vdm_enter_mode_irq,
-				0,
-				"usbc-vdm3-irq", usbc_data);
+			   NULL, max77729_vdm_enter_mode_irq,
+			   0,
+			   "usbc-vdm3-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -3013,9 +3020,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vdm4 = usbc_data->irq_base + MAX77729_IRQ_VDM_DP_STATUS_UPDATE_INT;
 	if (usbc_data->irq_vdm4) {
 		ret = request_threaded_irq(usbc_data->irq_vdm4,
-				NULL, max77729_vdm_dp_status_irq,
-				0,
-				"usbc-vdm4-irq", usbc_data);
+			   NULL, max77729_vdm_dp_status_irq,
+			   0,
+			   "usbc-vdm4-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -3025,9 +3032,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vdm5 = usbc_data->irq_base + MAX77729_IRQ_VDM_DP_CONFIGURE_INT;
 	if (usbc_data->irq_vdm5) {
 		ret = request_threaded_irq(usbc_data->irq_vdm5,
-				NULL, max77729_vdm_dp_configure_irq,
-				0,
-				"usbc-vdm5-irq", usbc_data);
+			   NULL, max77729_vdm_dp_configure_irq,
+			   0,
+			   "usbc-vdm5-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -3037,9 +3044,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vdm6 = usbc_data->irq_base + MAX77729_IRQ_VDM_ATTENTION_INT;
 	if (usbc_data->irq_vdm6) {
 		ret = request_threaded_irq(usbc_data->irq_vdm6,
-				NULL, max77729_vdm_attention_irq,
-				0,
-				"usbc-vdm6-irq", usbc_data);
+			   NULL, max77729_vdm_attention_irq,
+			   0,
+			   "usbc-vdm6-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -3049,9 +3056,9 @@ int max77729_init_irq_handler(struct max77729_usbc_platform_data *usbc_data)
 	usbc_data->irq_vir0 = usbc_data->irq_base + MAX77729_VIR_IRQ_ALTERROR_INT;
 	if (usbc_data->irq_vir0) {
 		ret = request_threaded_irq(usbc_data->irq_vir0,
-				NULL, max77729_vir_altmode_irq,
-				0,
-				"usbc-vir0-irq", usbc_data);
+			   NULL, max77729_vir_altmode_irq,
+			   0,
+			   "usbc-vir0-irq", usbc_data);
 		if (ret) {
 			pr_err("%s: Failed to Request IRQ (%d)\n", __func__, ret);
 			return ret;
@@ -3067,31 +3074,32 @@ static void max77729_usbc_umask_irq(struct max77729_usbc_platform_data *usbc_dat
 	u8 i2c_data = 0;
 	/* Unmask max77729 interrupt */
 	ret = max77729_read_reg(usbc_data->i2c, 0x23,
-			&i2c_data);
+			  &i2c_data);
 	if (ret) {
-		pr_err("%s fail to read muic reg\n", __func__);
+		pr_err("%s: fail to read muic reg\n", __func__);
 		return;
 	}
 
 	i2c_data &= ~((1 << 3));	/* Unmask muic interrupt */
 	max77729_write_reg(usbc_data->i2c, 0x23,
-			i2c_data);
+			  i2c_data);
 }
+
 static void max77729_usbc_mask_irq(struct max77729_usbc_platform_data *usbc_data)
 {
 	int ret = 0;
 	u8 i2c_data = 0;
 	/* Unmask max77729 interrupt */
 	ret = max77729_read_reg(usbc_data->i2c, 0x23,
-			&i2c_data);
+			  &i2c_data);
 	if (ret) {
-		pr_err("%s fail to read muic reg\n", __func__);
+		pr_err("%s: fail to read muic reg\n", __func__);
 		return;
 	}
 
 	i2c_data |= ((1 << 3));	/* Unmask muic interrupt */
 	max77729_write_reg(usbc_data->i2c, 0x23,
-			i2c_data);
+			  i2c_data);
 }
 
 #if 0 //Brandon Need to optimaze based on customer kernel if customer want to use VDM
@@ -3102,7 +3110,7 @@ static int pdic_handle_usb_external_notifier_notification(struct notifier_block 
 	int ret = 0;
 	int enable = *(int *)data;
 
-	pr_info("%s : action=%lu , enable=%d\n", __func__, action, enable);
+	pr_info("%s: action=%lu, enable=%d\n", __func__, action, enable);
 	switch (action) {
 	case EXTERNAL_NOTIFY_HOSTBLOCK_PRE:
 		if (enable) {
@@ -3150,13 +3158,13 @@ static void delayed_external_notifier_init(struct work_struct *work)
 
 	/* Register ccic handler to ccic notifier block list */
 	ret = usb_external_notify_register(&usbpd_data->usb_external_notifier_nb,
-			pdic_handle_usb_external_notifier_notification, EXTERNAL_NOTIFY_DEV_PDIC);
+		pdic_handle_usb_external_notifier_notification, EXTERNAL_NOTIFY_DEV_PDIC);
 	if (ret < 0) {
-		pr_err("Manager notifier init time is %d.\n", retry_count);
+		pr_err("%s: Manager notifier init time is %d.\n", __func__, retry_count);
 		if (retry_count++ != max_retry_count)
 			schedule_delayed_work(&usbpd_data->usb_external_notifier_register_work, msecs_to_jiffies(2000));
 		else
-			pr_err("fail to init external notifier\n");
+			pr_err("%s: fail to init external notifier\n", __func__);
 	} else
 		pr_info("%s: external notifier register done!\n", __func__);
 }
@@ -3169,26 +3177,26 @@ static int max77729_port_type_set(const struct typec_capability *cap, enum typec
 	if (!usbpd_data)
 		return -EINVAL;
 
-	msg_maxim("typec_power_role=%d, typec_data_role=%d, port_type=%d",
-			usbpd_data->typec_power_role, usbpd_data->typec_data_role, port_type);
+	msg_maxim("typec_power_role=%d, typec_data_role=%d, port_type=%d\n",
+		usbpd_data->typec_power_role, usbpd_data->typec_data_role, port_type);
 
 	reinit_completion(&usbpd_data->typec_reverse_completion);
 	if (port_type == TYPEC_PORT_SRC) {
-		msg_maxim("try reversing, from UFP(Sink) to DFP(Source)");
+		msg_maxim("try reversing, from UFP(Sink) to DFP(Source)\n");
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_TYPE;
 		max77729_rprd_mode_change(usbpd_data, TYPE_C_ATTACH_DFP);
 	} else if (port_type == TYPEC_PORT_SNK) {
-		msg_maxim("try reversing, from DFP(Source) to UFP(Sink)");
+		msg_maxim("try reversing, from DFP(Source) to UFP(Sink)\n");
 
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_TYPE;
 		max77729_rprd_mode_change(usbpd_data, TYPE_C_ATTACH_UFP);
 	} else {
-		msg_maxim("invalid typec_role");
+		msg_maxim("invalid typec_role\n");
 		return 0;
 	}
 
 	if (!wait_for_completion_timeout(&usbpd_data->typec_reverse_completion,
-			msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
+				msecs_to_jiffies(TRY_ROLE_SWAP_WAIT_MS))) {
 		usbpd_data->typec_try_state_change = TRY_ROLE_SWAP_NONE;
 		return -ETIMEDOUT;
 	}
@@ -3230,8 +3238,8 @@ struct max_adapter_device *max_adapter_device_register(struct device *parent)
 EXPORT_SYMBOL_GPL(max_adapter_device_register);
 
 /**
- * max_adapter_device_unregister - Unregister a max_adapter_device
- * @port: The max_adapter_device to be unregistered
+ * max_adapter_device_unregister - Unregister a  max_adapter_device
+ * @port: The  max_adapter_device to be unregistered
  *
  * Unregister device created with max_adapter_device_register().
  */
@@ -3251,7 +3259,7 @@ static int max77729_usbc_probe(struct platform_device *pdev)
 	struct max77729_usbc_platform_data *usbc_data = NULL;
 	int ret;
 
-	msg_maxim("Probing: %d", max77729->irq);
+	msg_maxim("Probing: %d\n", max77729->irq);
 	usbc_data = kzalloc(sizeof(struct max77729_usbc_platform_data), GFP_KERNEL);
 	if (!usbc_data)
 		return -ENOMEM;
@@ -3315,9 +3323,9 @@ static int max77729_usbc_probe(struct platform_device *pdev)
 
 	usbc_data->port = typec_register_port(usbc_data->dev, &usbc_data->typec_cap);
 	if (IS_ERR(usbc_data->port))
-		pr_err("unable to register typec_register_port\n");
+		pr_err("%s: unable to register typec_register_port\n", __func__);
 	else
-		msg_maxim("success typec_register_port port=%pK", usbc_data->port);
+		msg_maxim("success typec_register_port, port=%pK\n", usbc_data->port);
 
 	max_adapter_class = class_create(THIS_MODULE, "Charging_Adapter");
 	if (IS_ERR(max_adapter_class)) {
@@ -3348,7 +3356,6 @@ static int max77729_usbc_probe(struct platform_device *pdev)
 	init_completion(&usbc_data->uvdm_longpacket_out_wait);
 	INIT_WORK(&usbc_data->fw_update_work,
 			max77729_firmware_update_sysfs_work);
-
 
 	g_usbc_data = usbc_data;
  	/*
@@ -3385,9 +3392,9 @@ static int max77729_usbc_probe(struct platform_device *pdev)
 	max77729_pd_init(usbc_data);
 	max77729_write_reg(usbc_data->muic, REG_PD_INT_M, 0x1C);
 	max77729_write_reg(usbc_data->muic, REG_VDM_INT_M, 0xFF);
-	max77729_init_opcode(usbc_data, 1); //harry change it for alt mode enable
+	max77729_init_opcode(usbc_data, 1);	//harry change it for alt mode enable
 	INIT_DELAYED_WORK(&usbc_data->vbus_hard_reset_work,
-			vbus_control_hard_reset);
+				vbus_control_hard_reset);
 	/* turn on the VBUS automatically. */
 	max77729->cc_booting_complete = 1;
 	max77729_usbc_umask_irq(usbc_data);
@@ -3399,13 +3406,13 @@ static int max77729_usbc_probe(struct platform_device *pdev)
 
 	/*schedule_delayed_work(&usbc_data->fw_update_work,
 			msecs_to_jiffies(10000));*/
-	msg_maxim("probing Complete..");
+	msg_maxim("Probing Complete..\n");
 
 	return 0;
 
 err_register_max_adapter_dev:
 	max_adapter_device_unregister(usbc_data->adapter_dev);
-
+	msg_maxim("Probing Failed\n");
 	return ret;
 }
 
@@ -3464,7 +3471,7 @@ static int max77729_usbc_resume(struct device *dev)
 
 	max77729_muic_resume(usbc_data);
 	if (usbc_data->set_altmode_error) {
-		msg_maxim("set alternate mode");
+		msg_maxim("set alternate mode\n");
 		max77729_set_enable_alternate_mode
 			(usbc_data->set_altmode);
 	}
@@ -3511,9 +3518,9 @@ static void max77729_usbc_shutdown(struct platform_device *pdev)
 	u8 uic_int = 0;
 	u8 uid = 0;
 
-	msg_maxim("max77729 usbc driver shutdown++++");
+	msg_maxim("++\n");
 	if (!usbc_data->muic) {
-		msg_maxim("no max77729 i2c client");
+		msg_maxim("no max77729 i2c client\n");
 		return;
 	}
 	usbc_data->shut_down = 1;
@@ -3535,11 +3542,13 @@ static void max77729_usbc_shutdown(struct platform_device *pdev)
 	max77729_write_reg(usbc_data->muic, REG_CC_INT_M, 0xFF);
 	max77729_write_reg(usbc_data->muic, REG_UIC_INT_M, 0xFF);
 	max77729_write_reg(usbc_data->muic, REG_VDM_INT_M, 0xFF);
-	max77729_read_reg(usbc_data->muic, MAX77729_USBC_REG_UIC_INT, &uic_int);
-	msg_maxim("max77729 usbc driver shutdown----");
+	max77729_read_reg(usbc_data->muic,
+			MAX77729_USBC_REG_UIC_INT, &uic_int);
+	msg_maxim("--\n");
 }
 
-static SIMPLE_DEV_PM_OPS(max77729_usbc_pm_ops, max77729_usbc_suspend, max77729_usbc_resume);
+static SIMPLE_DEV_PM_OPS(max77729_usbc_pm_ops, max77729_usbc_suspend,
+			 max77729_usbc_resume);
 
 static struct platform_driver max77729_usbc_driver = {
 	.driver = {
@@ -3556,7 +3565,7 @@ static struct platform_driver max77729_usbc_driver = {
 
 static int __init max77729_usbc_init(void)
 {
-	msg_maxim("init");
+	msg_maxim("init\n");
 	return platform_driver_register(&max77729_usbc_driver);
 }
 device_initcall(max77729_usbc_init);

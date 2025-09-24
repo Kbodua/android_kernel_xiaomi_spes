@@ -21,68 +21,68 @@
 
 #include <linux/power_supply.h>
 
-#define SEC_BATTERY_CABLE_UNKNOWN	0
-#define SEC_BATTERY_CABLE_NONE		1
-#define SEC_BATTERY_CABLE_PREPARE_TA	2
-#define SEC_BATTERY_CABLE_TA		3
-#define SEC_BATTERY_CABLE_USB		4
-#define SEC_BATTERY_CABLE_USB_CDP	5
-#define SEC_BATTERY_CABLE_9V_TA		6
-#define SEC_BATTERY_CABLE_9V_ERR	7
-#define SEC_BATTERY_CABLE_9V_UNKNOWN	8
-#define SEC_BATTERY_CABLE_12V_TA	9
-#define SEC_BATTERY_CABLE_WIRELESS	10
-#define SEC_BATTERY_CABLE_HV_WIRELESS	11
-#define SEC_BATTERY_CABLE_PMA_WIRELESS	12
-#define SEC_BATTERY_CABLE_WIRELESS_PACK	13
-#define SEC_BATTERY_CABLE_WIRELESS_HV_PACK	14
-#define SEC_BATTERY_CABLE_WIRELESS_STAND	15
-#define SEC_BATTERY_CABLE_WIRELESS_HV_STAND	16
-#define SEC_BATTERY_CABLE_QC20		17
-#define SEC_BATTERY_CABLE_QC30		18
-#define SEC_BATTERY_CABLE_PDIC		19
-#define SEC_BATTERY_CABLE_UARTOFF	20
-#define SEC_BATTERY_CABLE_OTG		21
-#define SEC_BATTERY_CABLE_LAN_HUB	22
-#define SEC_BATTERY_CABLE_POWER_SHARING	23
-#define SEC_BATTERY_CABLE_HMT_CONNECTED	24
-#define SEC_BATTERY_CABLE_HMT_CHARGE	25
-#define SEC_BATTERY_CABLE_HV_TA_CHG_LIMIT	26
-#define SEC_BATTERY_CABLE_WIRELESS_VEHICLE	27
-#define SEC_BATTERY_CABLE_WIRELESS_HV_VEHICLE	28
-#define SEC_BATTERY_CABLE_PREPARE_WIRELESS_HV	29
-#define SEC_BATTERY_CABLE_TIMEOUT	30
-#define SEC_BATTERY_CABLE_SMART_OTG	31
-#define SEC_BATTERY_CABLE_SMART_NOTG	32
-#define SEC_BATTERY_CABLE_WIRELESS_TX	33
-#define SEC_BATTERY_CABLE_HV_WIRELESS_20	34
-#define SEC_BATTERY_CABLE_HV_WIRELESS_20_LIMIT	35
-#define SEC_BATTERY_CABLE_WIRELESS_FAKE		36
-#define SEC_BATTERY_CABLE_PREPARE_WIRELESS_20	37
-#define SEC_BATTERY_CABLE_PDIC_APDO	38
-#define SEC_BATTERY_CABLE_POGO	39
-#define SEC_BATTERY_CABLE_MAX	40
+#define SEC_BATTERY_CABLE_UNKNOWN 0
+#define SEC_BATTERY_CABLE_NONE                  1
+#define SEC_BATTERY_CABLE_PREPARE_TA             2
+#define SEC_BATTERY_CABLE_TA                     3
+#define SEC_BATTERY_CABLE_USB                    4
+#define SEC_BATTERY_CABLE_USB_CDP                5
+#define SEC_BATTERY_CABLE_9V_TA                  6
+#define SEC_BATTERY_CABLE_9V_ERR                 7
+#define SEC_BATTERY_CABLE_9V_UNKNOWN             8
+#define SEC_BATTERY_CABLE_12V_TA                 9
+#define SEC_BATTERY_CABLE_WIRELESS               10
+#define SEC_BATTERY_CABLE_HV_WIRELESS            11
+#define SEC_BATTERY_CABLE_PMA_WIRELESS           12
+#define SEC_BATTERY_CABLE_WIRELESS_PACK          13
+#define SEC_BATTERY_CABLE_WIRELESS_HV_PACK       14
+#define SEC_BATTERY_CABLE_WIRELESS_STAND         15
+#define SEC_BATTERY_CABLE_WIRELESS_HV_STAND      16
+#define SEC_BATTERY_CABLE_QC20                   17
+#define SEC_BATTERY_CABLE_QC30                   18
+#define SEC_BATTERY_CABLE_PDIC                   19
+#define SEC_BATTERY_CABLE_UARTOFF                20
+#define SEC_BATTERY_CABLE_OTG                    21
+#define SEC_BATTERY_CABLE_LAN_HUB                22
+#define SEC_BATTERY_CABLE_POWER_SHARING          23
+#define SEC_BATTERY_CABLE_HMT_CONNECTED          24
+#define SEC_BATTERY_CABLE_HMT_CHARGE             25
+#define SEC_BATTERY_CABLE_HV_TA_CHG_LIMIT        26
+#define SEC_BATTERY_CABLE_WIRELESS_VEHICLE       27
+#define SEC_BATTERY_CABLE_WIRELESS_HV_VEHICLE    28
+#define SEC_BATTERY_CABLE_PREPARE_WIRELESS_HV    29
+#define SEC_BATTERY_CABLE_TIMEOUT                30
+#define SEC_BATTERY_CABLE_SMART_OTG              31
+#define SEC_BATTERY_CABLE_SMART_NOTG             32
+#define SEC_BATTERY_CABLE_WIRELESS_TX            33
+#define SEC_BATTERY_CABLE_HV_WIRELESS_20         34
+#define SEC_BATTERY_CABLE_HV_WIRELESS_20_LIMIT   35
+#define SEC_BATTERY_CABLE_WIRELESS_FAKE 	 36
+#define SEC_BATTERY_CABLE_PREPARE_WIRELESS_20    37
+#define SEC_BATTERY_CABLE_PDIC_APDO              38
+#define SEC_BATTERY_CABLE_POGO                   39
+#define SEC_BATTERY_CABLE_MAX                    40
 
 
 /* temperature check type */
-#define SEC_BATTERY_TEMP_CHECK_NONE 0 /* no temperature check */
-#define SEC_BATTERY_TEMP_CHECK_ADC 1 /* by ADC value */
-#define SEC_BATTERY_TEMP_CHECK_TEMP 2 /* by temperature */
-#define SEC_BATTERY_TEMP_CHECK_FAKE 3 /* by a fake temperature */
+#define SEC_BATTERY_TEMP_CHECK_NONE 0        /* no temperature check */
+#define SEC_BATTERY_TEMP_CHECK_ADC  1             /* by ADC value */
+#define SEC_BATTERY_TEMP_CHECK_TEMP 2            /* by temperature */
+#define SEC_BATTERY_TEMP_CHECK_FAKE 3            /* by a fake temperature */
 
 /* ADC type */
 	/* NOT using this ADC channel */
-#define SEC_BATTERY_ADC_TYPE_NONE	0
+#define SEC_BATTERY_ADC_TYPE_NONE 	0
 	/* ADC in AP */
-#define SEC_BATTERY_ADC_TYPE_AP		1
-	/* ADC by additional IC */
-#define SEC_BATTERY_ADC_TYPE_IC		2
-#define SEC_BATTERY_ADC_TYPE_NUM	3
+#define SEC_BATTERY_ADC_TYPE_AP 	1
+	 /* ADC by additional IC */
+#define SEC_BATTERY_ADC_TYPE_IC 	2
+#define SEC_BATTERY_ADC_TYPE_NUM 	3
 
 
 /* thermal source */
 /* by fuel gauge */
-#define SEC_BATTERY_THERMAL_SOURCE_FG		0
+#define SEC_BATTERY_THERMAL_SOURCE_FG 		0
 /* by external source */
 #define SEC_BATTERY_THERMAL_SOURCE_CALLBACK	1
 /* by ADC */
@@ -92,7 +92,7 @@
 /* none */
 #define SEC_BATTERY_THERMAL_SOURCE_NONE		4
 
-#define SEC_BATTERY_CABLE_CHECK_NOUSBCHARGE	1
+#define SEC_BATTERY_CABLE_CHECK_NOUSBCHARGE             1
 /* SEC_BATTERY_CABLE_CHECK_NOINCOMPATIBLECHARGE
  * for incompatible charger
  * (Not compliant to USB specification,
@@ -100,37 +100,37 @@
  * do NOT charge and show message to user
  * (only for VZW)
  */
-#define SEC_BATTERY_CABLE_CHECK_NOINCOMPATIBLECHARGE	2
+#define SEC_BATTERY_CABLE_CHECK_NOINCOMPATIBLECHARGE    2
 /* SEC_BATTERY_CABLE_CHECK_PSY
  * check cable by power supply set_property
  */
-#define SEC_BATTERY_CABLE_CHECK_PSY	4
+#define SEC_BATTERY_CABLE_CHECK_PSY                     4
 /* SEC_BATTERY_CABLE_CHECK_INT
  * check cable by interrupt
  */
-#define SEC_BATTERY_CABLE_CHECK_INT	8
+#define SEC_BATTERY_CABLE_CHECK_INT                     8
 /* SEC_BATTERY_CABLE_CHECK_CHGINT
  * check cable by charger interrupt
  */
-#define SEC_BATTERY_CABLE_CHECK_CHGINT	16
+#define SEC_BATTERY_CABLE_CHECK_CHGINT                  16
 /* SEC_BATTERY_CABLE_CHECK_POLLING
  * check cable by GPIO polling
  */
-#define SEC_BATTERY_CABLE_CHECK_POLLING	32
+#define SEC_BATTERY_CABLE_CHECK_POLLING                 32
 
 
 /* SEC_BATTERY_CABLE_SOURCE_EXTERNAL
  * already given by external argument
  */
-#define SEC_BATTERY_CABLE_SOURCE_EXTERNAL	1
+#define SEC_BATTERY_CABLE_SOURCE_EXTERNAL       1
 /* SEC_BATTERY_CABLE_SOURCE_CALLBACK
  * by callback (MUIC, USB switch)
  */
-#define SEC_BATTERY_CABLE_SOURCE_CALLBACK	2
+#define SEC_BATTERY_CABLE_SOURCE_CALLBACK       2
 /* SEC_BATTERY_CABLE_SOURCE_ADC
  * by ADC
  */
-#define SEC_BATTERY_CABLE_SOURCE_ADC	4
+#define SEC_BATTERY_CABLE_SOURCE_ADC            4
 
 
 	/* polling work queue */
@@ -183,47 +183,47 @@
 /* SEC_BATTERY_FULL_CONDITION_NOTIMEFULL
  * full-charged by absolute-timer only in high voltage
  */
-#define SEC_BATTERY_FULL_CONDITION_NOTIMEFULL	1
+#define SEC_BATTERY_FULL_CONDITION_NOTIMEFULL   1
 /* SEC_BATTERY_FULL_CONDITION_NOSLEEPINFULL
  * do not set polling time as sleep polling time in full-charged
  */
-#define SEC_BATTERY_FULL_CONDITION_NOSLEEPINFULL	2
+#define SEC_BATTERY_FULL_CONDITION_NOSLEEPINFULL        2
 /* SEC_BATTERY_FULL_CONDITION_SOC
  * use capacity for full-charged check
  */
-#define SEC_BATTERY_FULL_CONDITION_SOC	4
+#define SEC_BATTERY_FULL_CONDITION_SOC          4
 /* SEC_BATTERY_FULL_CONDITION_VCELL
  * use VCELL for full-charged check
  */
-#define SEC_BATTERY_FULL_CONDITION_VCELL	8
+#define SEC_BATTERY_FULL_CONDITION_VCELL        8
 /* SEC_BATTERY_FULL_CONDITION_AVGVCELL
  * use average VCELL for full-charged check
  */
-#define SEC_BATTERY_FULL_CONDITION_AVGVCELL	16
+#define SEC_BATTERY_FULL_CONDITION_AVGVCELL     16
 /* SEC_BATTERY_FULL_CONDITION_OCV
  * use OCV for full-charged check
  */
-#define SEC_BATTERY_FULL_CONDITION_OCV	32
+#define SEC_BATTERY_FULL_CONDITION_OCV          32
 
 /* recharge check condition type (can be used overlapped) */
 #define sec_battery_recharge_condition_t unsigned int
 /* SEC_BATTERY_RECHARGE_CONDITION_SOC
  * use capacity for recharging check
  */
-#define SEC_BATTERY_RECHARGE_CONDITION_SOC	1
+#define SEC_BATTERY_RECHARGE_CONDITION_SOC              1
 /* SEC_BATTERY_RECHARGE_CONDITION_AVGVCELL
  * use average VCELL for recharging check
  */
-#define SEC_BATTERY_RECHARGE_CONDITION_AVGVCELL	2
+#define SEC_BATTERY_RECHARGE_CONDITION_AVGVCELL         2
 /* SEC_BATTERY_RECHARGE_CONDITION_VCELL
  * use VCELL for recharging check
  */
-#define SEC_BATTERY_RECHARGE_CONDITION_VCELL	4
+#define SEC_BATTERY_RECHARGE_CONDITION_VCELL            4
 
 /* SEC_BATTERY_RECHARGE_CONDITION_LIMITER
  * use VCELL of LIMITER for recharging check
  */
-#define SEC_BATTERY_RECHARGE_CONDITION_LIMITER	8
+#define SEC_BATTERY_RECHARGE_CONDITION_LIMITER          8
 
 /* enum sec_wireless_rx_power_list */
 #define SEC_WIRELESS_RX_POWER_5W		0
@@ -235,11 +235,11 @@
 #define SEC_WIRELESS_RX_POWER_MAX		6
 
 /* enum sec_wireless_rx_power_class_list */
-#define SEC_WIRELESS_RX_POWER_CLASS_1	1 /* 4.5W ~ 7.5W */
-#define SEC_WIRELESS_RX_POWER_CLASS_2	2 /* 7.6W ~ 12W */
-#define SEC_WIRELESS_RX_POWER_CLASS_3	3 /* 12.1W ~ 20W */
-#define SEC_WIRELESS_RX_POWER_CLASS_4	4 /* reserved */
-#define SEC_WIRELESS_RX_POWER_CLASS_5	5 /* reserved */
+#define SEC_WIRELESS_RX_POWER_CLASS_1	1	/* 4.5W ~ 7.5W */
+#define SEC_WIRELESS_RX_POWER_CLASS_2	2	/* 7.6W ~ 12W */
+#define SEC_WIRELESS_RX_POWER_CLASS_3	3	/* 12.1W ~ 20W */
+#define SEC_WIRELESS_RX_POWER_CLASS_4	4	/* reserved */
+#define SEC_WIRELESS_RX_POWER_CLASS_5	5	/* reserved */
 
 enum power_supply_ext_property {
 	POWER_SUPPLY_EXT_PROP_MIN = 1000,
@@ -452,13 +452,13 @@ static inline struct power_supply *get_power_supply_by_name(char *name)
 #define SEC_BATTERY_CABLE_HV_WIRELESS_ETX	100
 #define SEC_BATTERY_CABLE_SILENT_TYPE		99
 
-#define WC_AUTH_MSG	"@WC_AUTH "
-#define WC_TX_MSG	"@Tx_Mode "
+#define WC_AUTH_MSG		"@WC_AUTH "
+#define WC_TX_MSG		"@Tx_Mode "
 
-#define MFC_LDO_ON	1
-#define MFC_LDO_OFF	0
+#define MFC_LDO_ON		1
+#define MFC_LDO_OFF		0
 
-#define TX_ID_CHECK_CNT	3
+#define TX_ID_CHECK_CNT		3
 
 enum battery_thermal_zone {
 	BAT_THERMAL_COLD = 0,
@@ -559,7 +559,7 @@ enum sec_wireless_firm_update_mode {
 	SEC_WIRELESS_TX_OFF_MODE,
 	SEC_WIRELESS_RX_INIT,
 	SEC_WIRELESS_RX_SPU_MODE,
-	SEC_WIRELESS_RX_SPU_VERIFY_MODE, /* for automation test */
+	SEC_WIRELESS_RX_SPU_VERIFY_MODE,	/* for automation test */
 };
 
 enum sec_tx_sharing_mode {
@@ -580,9 +580,9 @@ enum sec_wireless_auth_mode {
 
 enum sec_wireless_vout_control_mode {
 	WIRELESS_VOUT_OFF = 0,
-	WIRELESS_VOUT_NORMAL_VOLTAGE, /* 5V , reserved by factory */
-	WIRELESS_VOUT_RESERVED, /* 6V */
-	WIRELESS_VOUT_HIGH_VOLTAGE, /* 9V , reserved by factory */
+	WIRELESS_VOUT_NORMAL_VOLTAGE,	/* 5V , reserved by factory */
+	WIRELESS_VOUT_RESERVED,			/* 6V */
+	WIRELESS_VOUT_HIGH_VOLTAGE,		/* 9V , reserved by factory */
 	WIRELESS_VOUT_CC_CV_VOUT, /* 4 */
 	WIRELESS_VOUT_CALL, /* 5 */
 	WIRELESS_VOUT_5V, /* 6 */
@@ -682,7 +682,7 @@ enum sec_battery_charge_mode {
 	SEC_BAT_CHG_MODE_BUCK_OFF = 0, /* buck, chg off */
 	SEC_BAT_CHG_MODE_CHARGING_OFF,
 	SEC_BAT_CHG_MODE_CHARGING, /* buck, chg on */
-	//SEC_BAT_CHG_MODE_BUCK_ON,
+//	SEC_BAT_CHG_MODE_BUCK_ON,
 	SEC_BAT_CHG_MODE_OTG_ON,
 	SEC_BAT_CHG_MODE_OTG_OFF,
 	SEC_BAT_CHG_MODE_UNO_ON,
@@ -728,26 +728,26 @@ enum sec_battery_direct_charging_source_ctrl {
 };
 
 /* tx_event */
-#define BATT_TX_EVENT_WIRELESS_TX_STATUS	0x00000001
-#define BATT_TX_EVENT_WIRELESS_RX_CONNECT	0x00000002
-#define BATT_TX_EVENT_WIRELESS_TX_FOD		0x00000004
-#define BATT_TX_EVENT_WIRELESS_TX_HIGH_TEMP	0x00000008
+#define BATT_TX_EVENT_WIRELESS_TX_STATUS		0x00000001
+#define BATT_TX_EVENT_WIRELESS_RX_CONNECT		0x00000002
+#define BATT_TX_EVENT_WIRELESS_TX_FOD			0x00000004
+#define BATT_TX_EVENT_WIRELESS_TX_HIGH_TEMP		0x00000008
 #define BATT_TX_EVENT_WIRELESS_RX_UNSAFE_TEMP	0x00000010
 #define BATT_TX_EVENT_WIRELESS_RX_CHG_SWITCH	0x00000020
-#define BATT_TX_EVENT_WIRELESS_RX_CS100		0x00000040
-#define BATT_TX_EVENT_WIRELESS_TX_OTG_ON	0x00000080
-#define BATT_TX_EVENT_WIRELESS_TX_LOW_TEMP	0x00000100
-#define BATT_TX_EVENT_WIRELESS_TX_SOC_DRAIN	0x00000200
+#define BATT_TX_EVENT_WIRELESS_RX_CS100			0x00000040
+#define BATT_TX_EVENT_WIRELESS_TX_OTG_ON		0x00000080
+#define BATT_TX_EVENT_WIRELESS_TX_LOW_TEMP		0x00000100
+#define BATT_TX_EVENT_WIRELESS_TX_SOC_DRAIN		0x00000200
 #define BATT_TX_EVENT_WIRELESS_TX_CRITICAL_EOC	0x00000400
-#define BATT_TX_EVENT_WIRELESS_TX_CAMERA_ON	0x00000800
-#define BATT_TX_EVENT_WIRELESS_TX_OCP		0x00001000
-#define BATT_TX_EVENT_WIRELESS_TX_MISALIGN	0x00002000
-#define BATT_TX_EVENT_WIRELESS_TX_ETC		0x00004000
-#define BATT_TX_EVENT_WIRELESS_TX_RETRY		0x00008000
-#define BATT_TX_EVENT_WIRELESS_TX_5V_TA		0x00010000
+#define BATT_TX_EVENT_WIRELESS_TX_CAMERA_ON		0x00000800
+#define BATT_TX_EVENT_WIRELESS_TX_OCP			0x00001000
+#define BATT_TX_EVENT_WIRELESS_TX_MISALIGN      0x00002000
+#define BATT_TX_EVENT_WIRELESS_TX_ETC			0x00004000
+#define BATT_TX_EVENT_WIRELESS_TX_RETRY			0x00008000
+#define BATT_TX_EVENT_WIRELESS_TX_5V_TA			0x00010000
 #define BATT_TX_EVENT_WIRELESS_TX_AC_MISSING	0x00020000
-#define BATT_TX_EVENT_WIRELESS_ALL_MASK		0x0003ffff
-#define BATT_TX_EVENT_WIRELESS_TX_ERR		(BATT_TX_EVENT_WIRELESS_TX_FOD | \
+#define BATT_TX_EVENT_WIRELESS_ALL_MASK			0x0003ffff
+#define BATT_TX_EVENT_WIRELESS_TX_ERR			(BATT_TX_EVENT_WIRELESS_TX_FOD | \
 	BATT_TX_EVENT_WIRELESS_TX_HIGH_TEMP | BATT_TX_EVENT_WIRELESS_RX_UNSAFE_TEMP | \
 	BATT_TX_EVENT_WIRELESS_RX_CHG_SWITCH | BATT_TX_EVENT_WIRELESS_RX_CS100 | \
 	BATT_TX_EVENT_WIRELESS_TX_OTG_ON | BATT_TX_EVENT_WIRELESS_TX_LOW_TEMP | \
@@ -767,7 +767,7 @@ enum sec_battery_direct_charging_source_ctrl {
 
 /* ext_event */
 #define BATT_EXT_EVENT_NONE			0x00000000
-#define BATT_EXT_EVENT_CAMERA			0x00000001
+#define BATT_EXT_EVENT_CAMERA		0x00000001
 #define BATT_EXT_EVENT_DEX			0x00000002
 #define BATT_EXT_EVENT_CALL			0x00000004
 
@@ -790,7 +790,7 @@ enum sec_battery_fgsrc_switching {
 	SEC_BAT_INBAT_FGSRC_SWITCHING_VBAT = 0,
 	SEC_BAT_INBAT_FGSRC_SWITCHING_VSYS,
 	SEC_BAT_FGSRC_SWITCHING_VBAT,
-	SEC_BAT_FGSRC_SWITCHING_VSYS
+ 	SEC_BAT_FGSRC_SWITCHING_VSYS
 };
 
 enum ta_alert_mode {
@@ -843,32 +843,32 @@ enum sec_battery_check {
 #define sec_fuelgauge_capacity_type_t int
 
 /* SEC_FUELGAUGE_CAPACITY_TYPE_RESET
- * use capacity information to reset fuel gauge
- * (only for driver algorithm, can NOT be set by user)
- */
+  * use capacity information to reset fuel gauge
+  * (only for driver algorithm, can NOT be set by user)
+  */
 #define SEC_FUELGAUGE_CAPACITY_TYPE_RESET	(-1)
 /* SEC_FUELGAUGE_CAPACITY_TYPE_RAW
- * use capacity information from fuel gauge directly
- */
+  * use capacity information from fuel gauge directly
+  */
 #define SEC_FUELGAUGE_CAPACITY_TYPE_RAW		0x1
 /* SEC_FUELGAUGE_CAPACITY_TYPE_SCALE
- * rescale capacity by scaling, need min and max value for scaling
- */
+  * rescale capacity by scaling, need min and max value for scaling
+  */
 #define SEC_FUELGAUGE_CAPACITY_TYPE_SCALE	0x2
 /* SEC_FUELGAUGE_CAPACITY_TYPE_DYNAMIC_SCALE
- * change only maximum capacity dynamically
- * to keep time for every SOC unit
- */
+  * change only maximum capacity dynamically
+  * to keep time for every SOC unit
+  */
 #define SEC_FUELGAUGE_CAPACITY_TYPE_DYNAMIC_SCALE	0x4
 /* SEC_FUELGAUGE_CAPACITY_TYPE_ATOMIC
- * change capacity value by only -1 or +1
- * no sudden change of capacity
- */
+  * change capacity value by only -1 or +1
+  * no sudden change of capacity
+  */
 #define SEC_FUELGAUGE_CAPACITY_TYPE_ATOMIC	0x8
 /* SEC_FUELGAUGE_CAPACITY_TYPE_SKIP_ABNORMAL
- * skip current capacity value
- * if it is abnormal value
- */
+  * skip current capacity value
+  * if it is abnormal value
+  */
 #define SEC_FUELGAUGE_CAPACITY_TYPE_SKIP_ABNORMAL	0x10
 
 #define SEC_FUELGAUGE_CAPACITY_TYPE_CAPACITY_POINT	0x20
@@ -1000,5 +1000,5 @@ typedef struct {
 	cable_type == SEC_BATTERY_CABLE_PDIC_APDO)
 
 #define is_pd_fpdo_wire_type(cable_type) ( \
-	cable_type == SEC_BATTERY_CABLE_PDIC)
+	cable_type == SEC_BATTERY_CABLE_PDIC)        
 #endif /* __SEC_BATTERY_COMMON_H */

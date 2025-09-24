@@ -77,32 +77,25 @@ static int nopmi_update_system_temp_level(struct nopmi_chg *nopmi_chg, int level
 		return -EINVAL;
 	}
 
-	if (!nopmi_chg->batt_psy) {
-		nopmi_chg->batt_psy = power_supply_get_by_name("battery");
-		if (!nopmi_chg->batt_psy) {
-			pr_err("get batt_psy fail!\n");
-			return -ENODEV;
-		}
-	}
-
-	rc = power_supply_get_property(nopmi_chg->batt_psy, POWER_SUPPLY_PROP_TEMP, &pval);
+	rc = power_supply_get_property(nopmi_chg->bms_psy, POWER_SUPPLY_PROP_TEMP, &pval);
 	if (rc < 0) {
-		pr_err("read batt temp property fail, rc=%d\n", rc);
+		pr_err("read fg batt temp property fail, rc=%d\n", rc);
 		return rc;
 	}
 
 	pval.intval /= 10;
-	if (pval.intval <= 30)
+	if (pval.intval <= 30) {
 		tmp = 0;
-	else if (pval.intval <= 35)
-		tmp = 1 + (pval.intval - 31) / 2;
-	else if (pval.intval <= 42)
-		tmp = 4 + (pval.intval - 36);
-	else
-		tmp = level;
-
-	if (tmp > nopmi_chg->thermal_levels)
-		tmp = nopmi_chg->thermal_levels;
+	} else if (pval.intval <= 35) {
+		tmp = pval.intval - 30;
+	} else if (pval.intval <= 42) {
+		tmp = (pval.intval - 36) + 5;
+	} else {
+		if (level < 12)
+			tmp = 12;
+		else
+			tmp = level;
+	}
 
 	nopmi_chg->system_temp_level = tmp;
 	/*if temp level at max and should be disable buck charger(vote icl as 0) & CP(vote ffc as 0) */
@@ -129,7 +122,7 @@ static int nopmi_update_system_temp_level(struct nopmi_chg *nopmi_chg, int level
 		rc = vote(nopmi_chg->fcc_votable, THERMAL_DAEMON_VOTER, false, 0);
 	} else {
 		rc = vote(nopmi_chg->fcc_votable, THERMAL_DAEMON_VOTER, true,
-			nopmi_chg->thermal_mitigation[nopmi_chg->system_temp_level] / 1000);//divide 1000 to match maxim driver fcc as mA
+				nopmi_chg->thermal_mitigation[nopmi_chg->system_temp_level] / 1000);//divide 1000 to match maxim driver fcc as mA
 	}
 
 	return rc;
@@ -146,7 +139,7 @@ static int nopmi_set_prop_system_temp_level(struct nopmi_chg *nopmi_chg,
 		return -EINVAL;
 	}
 
-	if (level < 0 || nopmi_chg->thermal_levels < 0 || level > nopmi_chg->thermal_levels)
+	if (level < 0 || nopmi_chg->thermal_levels <= 0 || level >= nopmi_chg->thermal_levels)
 		return -EINVAL;
 
 	if (level == nopmi_chg->system_temp_level)
@@ -187,13 +180,24 @@ static int nopmi_get_batt_health(struct nopmi_chg *nopmi_chg)
 		nopmi_chg->batt_health = POWER_SUPPLY_HEALTH_WARM;
 	} else if (pval.intval >= 15 && pval.intval < 45) {
 		nopmi_chg->batt_health = POWER_SUPPLY_HEALTH_GOOD;
-	} else if (pval.intval >= 0 && pval.intval < 15) {
+	} else if (pval.intval > 0 && pval.intval < 15) {
 		nopmi_chg->batt_health = POWER_SUPPLY_HEALTH_COOL;
-	} else if (pval.intval < 0) {
+	} else if (pval.intval <= 0) {
 		nopmi_chg->batt_health = POWER_SUPPLY_HEALTH_COLD;
 	}
 
 	return nopmi_chg->batt_health;
+}
+
+static void nopmi_update_vbat(struct nopmi_chg *nopmi_chg)
+{
+	union power_supply_propval pval = {0, };
+	int ret;
+
+	ret = power_supply_get_property(nopmi_chg->bms_psy,
+			POWER_SUPPLY_PROP_VOLTAGE_NOW, &pval);
+	if (!ret)
+		nopmi_chg->vbat_mv = pval.intval / 1000;
 }
 
 static enum power_supply_property nopmi_batt_props[] = {
@@ -225,7 +229,6 @@ static enum power_supply_property nopmi_batt_props[] = {
 	POWER_SUPPLY_PROP_RESISTANCE_ID,
 	POWER_SUPPLY_PROP_SOC_DECIMAL,
 	POWER_SUPPLY_PROP_SOC_DECIMAL_RATE,
-	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
 	POWER_SUPPLY_PROP_SHUTDOWN_DELAY,
 };
 
@@ -235,7 +238,7 @@ static int nopmi_batt_get_prop_internal(struct power_supply *psy,
 {
 	struct nopmi_chg *nopmi_chg = power_supply_get_drvdata(psy);
 	int rc = 0;
-	static int vbat_mv = 3800;
+	static int last_status;
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_HEALTH:
@@ -248,9 +251,8 @@ static int nopmi_batt_get_prop_internal(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-		if (nopmi_chg->main_psy)
-			rc = power_supply_get_property(nopmi_chg->main_psy,
-					POWER_SUPPLY_PROP_BATT_CHARGE_TYPE, pval);
+		rc = power_supply_get_property(nopmi_chg->main_psy,
+				POWER_SUPPLY_PROP_BATT_CHARGE_TYPE, pval);
 		//pval->intval = 2;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
@@ -262,10 +264,11 @@ static int nopmi_batt_get_prop_internal(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
 		break;
 	case POWER_SUPPLY_PROP_STATUS:
+		nopmi_update_vbat(nopmi_chg);
 		rc = power_supply_get_property(nopmi_chg->main_psy, psp, pval);
 		if (pval->intval == POWER_SUPPLY_STATUS_FULL)
 			pval->intval = POWER_SUPPLY_STATUS_FULL;
-		else if (nopmi_chg->input_suspend)
+		else if (nopmi_chg->input_suspend || nopmi_chg->vbat_mv < 3300)
 			pval->intval = POWER_SUPPLY_STATUS_DISCHARGING;
 		else if (((pval->intval == POWER_SUPPLY_STATUS_DISCHARGING) ||
 				(pval->intval == POWER_SUPPLY_STATUS_NOT_CHARGING)) &&
@@ -274,20 +277,11 @@ static int nopmi_batt_get_prop_internal(struct power_supply *psy,
 		else if (g_nopmi_chg->pd_active)
 			pval->intval = POWER_SUPPLY_STATUS_CHARGING;
 
-		if (vbat_mv < 3300) {
-			pval->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-			if (!nopmi_chg->batt_psy)
-				nopmi_chg->batt_psy = power_supply_get_by_name("battery");
-			if (nopmi_chg->batt_psy)
-				power_supply_changed(nopmi_chg->batt_psy);
-			//pr_err("%s vbat_mv = %d\n", vbat_mv);
-		}
+		if (last_status != pval->intval)
+			power_supply_changed(nopmi_chg->batt_psy);
+		last_status = pval->intval;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-		rc = power_supply_get_property(nopmi_chg->bms_psy,
-				POWER_SUPPLY_PROP_VOLTAGE_NOW, pval);
-		vbat_mv = pval->intval / 1000;
-		break;
 	case POWER_SUPPLY_PROP_CAPACITY:
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 	case POWER_SUPPLY_PROP_TEMP:
@@ -299,14 +293,9 @@ static int nopmi_batt_get_prop_internal(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CHARGE_FULL:
 	case POWER_SUPPLY_PROP_RESISTANCE_ID:
 	case POWER_SUPPLY_PROP_SHUTDOWN_DELAY:
-		rc = power_supply_get_property(nopmi_chg->bms_psy, psp, pval);
-		break;
-	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-		pval->intval = 5000000;
-		break;
 	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-		rc = power_supply_get_property(nopmi_chg->bms_psy,
-				POWER_SUPPLY_PROP_CAPACITY_LEVEL, pval);
+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+		rc = power_supply_get_property(nopmi_chg->bms_psy, psp, pval);
 		break;
 	/*case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
 		break;*/
@@ -327,7 +316,7 @@ static int nopmi_batt_get_prop_internal(struct power_supply *psy,
 		return -ENODATA;
 	}
 
-	return 0;
+	return rc;
 }
 
 static int nopmi_batt_get_prop(struct power_supply *psy,
@@ -389,7 +378,7 @@ static int nopmi_batt_set_prop_internal(struct power_supply *psy,
 		pr_info("Set input suspend prop, value: %d\n", val->intval);
 		break;
 	default:
-		rc = -EINVAL;
+		return -EINVAL;
 	}
 
 	return rc;
@@ -545,8 +534,6 @@ static int nopmi_usb_get_prop_internal(struct power_supply *psy,
 	struct nopmi_chg *nopmi_chg = power_supply_get_drvdata(psy);
 	int rc = 0;
 
-	val->intval = 0;
-
 	switch (psp) {
 #if 0
 	case POWER_SUPPLY_PROP_PRESENT:
@@ -619,8 +606,8 @@ static int nopmi_usb_get_prop_internal(struct power_supply *psy,
 		val->intval = g_nopmi_chg->cc_orientation + 1; /*for cit test*/
 		break;
 	default:
-		rc = -EINVAL;
-		break;
+		pr_debug("prop %d not supported\n", psp);
+		return -EINVAL;
 	}
 
 	if (rc < 0) {
@@ -628,17 +615,16 @@ static int nopmi_usb_get_prop_internal(struct power_supply *psy,
 		return -ENODATA;
 	}
 
-	return 0;
+	return rc;
 }
 
 static int nopmi_usb_get_prop(struct power_supply *psy,
 		enum power_supply_property psp,
 		union power_supply_propval *val)
 {
-	int ret = 0;
-	int rc;
-	union power_supply_propval value;
 	struct nopmi_chg *nopmi_chg = power_supply_get_drvdata(psy);
+	int ret = 0;
+	static int last_online;
 
 	if (NOPMI_CHARGER_IC_MAXIM == nopmi_get_charger_ic_type()) {
 		ret = max77729_usb_get_property(psy, psp, val);
@@ -656,21 +642,14 @@ static int nopmi_usb_get_prop(struct power_supply *psy,
 		ret = 0;
 		break;
 	case POWER_SUPPLY_PROP_ONLINE:
-		if (!nopmi_chg->bms_psy)
-			nopmi_chg->bms_psy = power_supply_get_by_name("bms");
-		if (nopmi_chg->bms_psy) {
-			rc = power_supply_get_property(nopmi_chg->bms_psy,
-					POWER_SUPPLY_PROP_VOLTAGE_NOW, &value);
-			if (rc < 0) {
-				value.intval = 3800000;
-				pr_err("get POWER_SUPPLY_PROP_VOLTAGE_NOW fail\n");
-			}
-		}
-
-		if (g_nopmi_chg->usb_online > 0 && value.intval >= 3300000)
+		if (g_nopmi_chg->usb_online > 0)
 			val->intval = 1;
 		else
 			val->intval = 0;
+
+		if (last_online != val->intval)
+			power_supply_changed(nopmi_chg->usb_psy);
+		last_online = val->intval;
 		ret = 0;
 		break;
 	case POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE:
@@ -733,7 +712,7 @@ static int nopmi_usb_set_prop_internal(struct power_supply *psy,
 			g_nopmi_chg->usb_online = 1;
 		else
 			g_nopmi_chg->usb_online = 0;
-		power_supply_changed(nopmi_chg->usb_psy);
+		//power_supply_changed(nopmi_chg->usb_psy);
 		break;
 	case POWER_SUPPLY_PROP_PD_VOLTAGE_MIN:
 		g_nopmi_chg->pd_min_vol = val->intval;
@@ -760,8 +739,7 @@ static int nopmi_usb_set_prop_internal(struct power_supply *psy,
 		g_nopmi_chg->cc_orientation = val->intval;
 		break;
 	default:
-		rc = -EINVAL;
-		break;
+		return -EINVAL;
 	}
 
 	return rc;
@@ -771,6 +749,7 @@ static int nopmi_usb_set_prop(struct power_supply *psy,
 		enum power_supply_property psp,
 		const union power_supply_propval *val)
 {
+	struct nopmi_chg *nopmi_chg = power_supply_get_drvdata(psy);
 	int ret = 0;
 
 	if (NOPMI_CHARGER_IC_MAXIM == nopmi_get_charger_ic_type()) {
@@ -783,17 +762,22 @@ static int nopmi_usb_set_prop(struct power_supply *psy,
 #if 1
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
+		nopmi_update_vbat(nopmi_chg);
 		g_nopmi_chg->usb_online = val->intval;
-		if ((NOPMI_CHARGER_IC_SYV == nopmi_get_charger_ic_type()) ||
-				(NOPMI_CHARGER_IC_MAXIM == nopmi_get_charger_ic_type()) ||
-				(NOPMI_CHARGER_IC_SC == nopmi_get_charger_ic_type())) {
-			if (g_nopmi_chg->usb_online) {
-				pr_info("wakelock held for %d\n", psp);
+
+		if (g_nopmi_chg->usb_online && g_nopmi_chg->vbat_mv < 3300)
+			g_nopmi_chg->usb_online = 0;
+
+		if (NOPMI_CHARGER_IC_NONE != nopmi_get_charger_ic_type() && NOPMI_CHARGER_IC_MAX != nopmi_get_charger_ic_type()) {
+			if (g_nopmi_chg->usb_online && !g_nopmi_chg->is_awake) {
 				pm_stay_awake(g_nopmi_chg->dev);
 				start_nopmi_chg_workfunc();
-			} else {
+				g_nopmi_chg->is_awake = true;
+				pr_info("wakelock held for %d\n", psp);
+			} else if (!g_nopmi_chg->usb_online && g_nopmi_chg->is_awake) {
 				stop_nopmi_chg_workfunc();
 				pm_relax(g_nopmi_chg->dev);
+				g_nopmi_chg->is_awake = false;
 				pr_info("wakelock released from %d\n", psp);
 			}
 		}
@@ -806,6 +790,7 @@ static int nopmi_usb_set_prop(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_REAL_TYPE: //for maxim solution, use persent use g_nopmi_chg->real_type, we have to set it in global setting.
 		g_nopmi_chg->real_type = val->intval;
+		ret = 0;
 		break;
 	default:
 		break;
@@ -1209,7 +1194,7 @@ static void nopmi_cv_step_monitor_work(struct work_struct *work)
 		pr_err("fail get CURRENT_NOW!\n");
 		goto out;
 	}
-	batt_curr = pval.intval / 1000; //uV to mV
+	batt_curr = pval.intval / 1000; //uA to mA
 
 	rc = power_supply_get_property(nopmi_chg->bms_psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &pval);
 	if (rc < 0) {
@@ -1298,6 +1283,7 @@ static int nopmi_chg_probe(struct platform_device *pdev)
 	nopmi_chg->dev = &pdev->dev;
 	nopmi_chg->pdev = pdev;
 	platform_set_drvdata(pdev, nopmi_chg);
+	nopmi_chg->is_awake = false;
 
 	rc = nopmi_parse_dt(nopmi_chg);
 	if (rc < 0) {
@@ -1345,9 +1331,7 @@ static int nopmi_chg_probe(struct platform_device *pdev)
 	schedule_delayed_work(&nopmi_chg->nopmi_chg_work,
 			msecs_to_jiffies(NOPMI_CHG_WORKFUNC_FIRST_GAP));
 
-	if ((NOPMI_CHARGER_IC_SYV == nopmi_get_charger_ic_type()) ||
-			(NOPMI_CHARGER_IC_MAXIM == nopmi_get_charger_ic_type()) ||
-			(NOPMI_CHARGER_IC_SC == nopmi_get_charger_ic_type()))
+	if (NOPMI_CHARGER_IC_NONE != nopmi_get_charger_ic_type() && NOPMI_CHARGER_IC_MAX != nopmi_get_charger_ic_type())
 		device_init_wakeup(g_nopmi_chg->dev, true);
 
 	pr_info("success\n");

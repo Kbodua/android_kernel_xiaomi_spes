@@ -20,10 +20,10 @@
 
 #ifdef CONFIG_USB_PD_RICHTEK_UVDM
 
-bool richtek_dfp_notify_pe_startup(struct pd_port *pd_port,
-		struct svdm_svid_data *svid_data)
+bool richtek_dfp_notify_pe_startup(
+		struct pd_port *pd_port, struct svdm_svid_data *svid_data)
 {
-	UVDM_INFO("%s\n", __func__);
+	UVDM_INFO("start.\n");
 	pd_port->richtek_init_done = false;
 	return true;
 }
@@ -96,4 +96,4 @@ bool richtek_ufp_notify_uvdm(struct pd_port *pd_port,
 	return true;
 }
 
-#endif /* CONFIG_USB_PD_RICHTEK_UVDM */
+#endif	/* CONFIG_USB_PD_RICHTEK_UVDM */

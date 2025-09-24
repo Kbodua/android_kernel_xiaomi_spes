@@ -44,7 +44,7 @@ static void postpone_vdm_event(struct tcpc_device *tcpc)
 		tcpc_restart_timer(tcpc, PD_PE_VDM_POSTPONE);
 	}
 }
-#endif /* CONFIG_USB_PD_POSTPONE_VDM */
+#endif	/* CONFIG_USB_PD_POSTPONE_VDM */
 
 struct pd_msg *__pd_alloc_msg(struct tcpc_device *tcpc)
 {
@@ -84,7 +84,8 @@ static void __pd_free_msg(struct tcpc_device *tcpc, struct pd_msg *pd_msg)
 	tcpc->pd_msg_buffer_allocated &= (~mask);
 }
 
-static void __pd_free_event(struct tcpc_device *tcpc, struct pd_event *pd_event)
+static void __pd_free_event(
+		struct tcpc_device *tcpc, struct pd_event *pd_event)
 {
 	if (pd_event->pd_msg) {
 		__pd_free_msg(tcpc, pd_event->pd_msg);
@@ -108,7 +109,8 @@ void pd_free_event(struct tcpc_device *tcpc, struct pd_event *pd_event)
 
 /*----------------------------------------------------------------------------*/
 
-static bool __pd_get_event(struct tcpc_device *tcpc, struct pd_event *pd_event)
+static bool __pd_get_event(
+	struct tcpc_device *tcpc, struct pd_event *pd_event)
 {
 	int index = 0;
 
@@ -146,7 +148,7 @@ static bool __pd_put_event(struct tcpc_device *tcpc,
 #ifdef CONFIG_USB_PD_POSTPONE_OTHER_VDM
 	if (from_port_partner)
 		postpone_vdm_event(tcpc);
-#endif /* CONFIG_USB_PD_POSTPONE_OTHER_VDM */
+#endif	/* CONFIG_USB_PD_POSTPONE_OTHER_VDM */
 
 	if (tcpc->pd_event_count >= PD_EVENT_BUF_SIZE) {
 		PD_ERR("pd_put_event failed\n");
@@ -178,7 +180,8 @@ bool pd_put_event(struct tcpc_device *tcpc, const struct pd_event *pd_event,
 
 /*----------------------------------------------------------------------------*/
 
-static inline void pd_get_attention_event(struct tcpc_device *tcpc, struct pd_event *pd_event)
+static inline void pd_get_attention_event(
+	struct tcpc_device *tcpc, struct pd_event *pd_event)
 {
 	struct pd_event attention_evt = {
 		.event_type = PD_EVT_PD_MSG,
@@ -203,7 +206,7 @@ static inline bool pd_check_vdm_state_ready(struct pd_port *pd_port)
 	case PE_SRC_READY:
 #ifdef CONFIG_USB_PD_CUSTOM_DBGACC
 	case PE_DBG_READY:
-#endif /* CONFIG_USB_PD_CUSTOM_DBGACC */
+#endif	/* CONFIG_USB_PD_CUSTOM_DBGACC */
 		return true;
 
 	default:
@@ -272,7 +275,8 @@ bool pd_get_vdm_event(struct tcpc_device *tcpc, struct pd_event *pd_event)
 	return false;
 }
 
-static inline bool reset_pe_vdm_state(struct tcpc_device *tcpc, uint32_t vdm_hdr)
+static inline bool reset_pe_vdm_state(
+		struct tcpc_device *tcpc, uint32_t vdm_hdr)
 {
 	bool vdm_reset = false;
 	struct pd_port *pd_port = &tcpc->pd_port;
@@ -291,7 +295,8 @@ static inline bool reset_pe_vdm_state(struct tcpc_device *tcpc, uint32_t vdm_hdr
 	return vdm_reset;
 }
 
-static inline bool pd_is_init_attention_event(struct tcpc_device *tcpc, struct pd_event *pd_event)
+static inline bool pd_is_init_attention_event(
+	struct tcpc_device *tcpc, struct pd_event *pd_event)
 {
 	uint32_t vdm_hdr = pd_event->pd_msg->payload[0];
 
@@ -331,7 +336,8 @@ bool pd_put_vdm_event(struct tcpc_device *tcpc,
 		ignore_evt = !from_port_partner;
 
 		if (from_port_partner) {
-			if (pd_event_ctrl_msg_match(&tcpc->pd_vdm_event,
+			if (pd_event_ctrl_msg_match(
+					&tcpc->pd_vdm_event,
 					PD_CTRL_GOOD_CRC)) {
 				TCPC_DBG2("PostponeVDM GoodCRC\n");
 				tcpc->pd_pending_vdm_good_crc = true;
@@ -361,7 +367,7 @@ bool pd_put_vdm_event(struct tcpc_device *tcpc,
 		postpone_vdm_event(tcpc);
 		mutex_unlock(&tcpc->access_lock);
 		return true;
-#endif /* CONFIG_USB_PD_POSTPONE_FIRST_VDM */
+#endif	/* CONFIG_USB_PD_POSTPONE_FIRST_VDM */
 	}
 
 	atomic_inc(&tcpc->pending_event);
@@ -407,7 +413,7 @@ bool pd_put_last_vdm_event(struct tcpc_device *tcpc)
 
 #ifdef CONFIG_USB_PD_POSTPONE_RETRY_VDM
 	postpone_vdm_event(tcpc);
-#endif /* CONFIG_USB_PD_POSTPONE_RETRY_VDM */
+#endif	/* CONFIG_USB_PD_POSTPONE_RETRY_VDM */
 
 	mutex_unlock(&tcpc->access_lock);
 	return true;
@@ -415,7 +421,8 @@ bool pd_put_last_vdm_event(struct tcpc_device *tcpc)
 
 /*----------------------------------------------------------------------------*/
 
-static bool __pd_get_deferred_tcp_event(struct tcpc_device *tcpc, struct tcp_dpm_event *tcp_event)
+static bool __pd_get_deferred_tcp_event(
+	struct tcpc_device *tcpc, struct tcp_dpm_event *tcp_event)
 {
 	int index = 0;
 
@@ -435,7 +442,8 @@ static bool __pd_get_deferred_tcp_event(struct tcpc_device *tcpc, struct tcp_dpm
 	return true;
 }
 
-bool pd_get_deferred_tcp_event(struct tcpc_device *tcpc, struct tcp_dpm_event *tcp_event)
+bool pd_get_deferred_tcp_event(
+	struct tcpc_device *tcpc, struct tcp_dpm_event *tcp_event)
 {
 	bool ret;
 
@@ -447,14 +455,15 @@ bool pd_get_deferred_tcp_event(struct tcpc_device *tcpc, struct tcp_dpm_event *t
 		tcpc_restart_timer(tcpc, PD_TIMER_DEFERRED_EVT);
 	else
 		tcpc_disable_timer(tcpc, PD_TIMER_DEFERRED_EVT);
-#endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30 */
 	mutex_unlock(&tcpc->access_lock);
 
 	return ret;
 }
 
-static bool __pd_put_deferred_tcp_event(struct tcpc_device *tcpc, const struct tcp_dpm_event *tcp_event)
+static bool __pd_put_deferred_tcp_event(
+	struct tcpc_device *tcpc, const struct tcp_dpm_event *tcp_event)
 {
 	int index;
 
@@ -469,7 +478,8 @@ static bool __pd_put_deferred_tcp_event(struct tcpc_device *tcpc, const struct t
 	return true;
 }
 
-bool pd_put_deferred_tcp_event(struct tcpc_device *tcpc, const struct tcp_dpm_event *tcp_event)
+bool pd_put_deferred_tcp_event(
+	struct tcpc_device *tcpc, const struct tcp_dpm_event *tcp_event)
 {
 	bool ret = true;
 	struct pd_port *pd_port = &tcpc->pd_port;
@@ -511,8 +521,8 @@ bool pd_put_deferred_tcp_event(struct tcpc_device *tcpc, const struct tcp_dpm_ev
 		pd_port->pe_data.pd_traffic_idle = false;
 	if (tcpc->tcp_event_count == 1)
 		tcpc_enable_timer(tcpc, PD_TIMER_DEFERRED_EVT);
-#endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	dpm_reaction_set_ready_once(pd_port);
 
@@ -539,7 +549,7 @@ void pd_notify_tcp_vdm_event_2nd_result(struct pd_port *pd_port, uint8_t ret)
 		tcp_event->event_cb(pd_port->tcpc, ret, tcp_event);
 
 	pd_port->tcp_event_id_2nd = TCP_DPM_EVT_UNKNOWN;
-#endif /* CONFIG_USB_PD_TCPM_CB_2ND */
+#endif	/* CONFIG_USB_PD_TCPM_CB_2ND */
 }
 
 void pd_notify_tcp_event_2nd_result(struct pd_port *pd_port, int ret)
@@ -575,14 +585,14 @@ void pd_notify_tcp_event_2nd_result(struct pd_port *pd_port, int ret)
 		break;
 	}
 
-	TCPC_DBG2("tcp_event_2nd:evt%d=%d\n",
+	TCPC_DBG2("tcp_event_2nd: evt%d=%d\n",
 		pd_port->tcp_event_id_2nd, ret);
 
 	if (tcp_event->event_cb != NULL)
 		tcp_event->event_cb(tcpc, ret, tcp_event);
 
 	pd_port->tcp_event_id_2nd = TCP_DPM_EVT_UNKNOWN;
-#endif /* CONFIG_USB_PD_TCPM_CB_2ND */
+#endif	/* CONFIG_USB_PD_TCPM_CB_2ND */
 }
 
 void pd_notify_tcp_event_1st_result(struct pd_port *pd_port, int ret)
@@ -594,7 +604,7 @@ void pd_notify_tcp_event_1st_result(struct pd_port *pd_port, int ret)
 	if (pd_port->tcp_event_id_1st == TCP_DPM_EVT_UNKNOWN)
 		return;
 
-	TCPC_DBG2("tcp_event_1st:evt%d=%d\n",
+	TCPC_DBG2("tcp_event_1st: evt%d=%d\n",
 		pd_port->tcp_event_id_1st, ret);
 
 #ifdef CONFIG_USB_PD_TCPM_CB_2ND
@@ -602,7 +612,7 @@ void pd_notify_tcp_event_1st_result(struct pd_port *pd_port, int ret)
 		cb = false;
 		pd_port->tcp_event_id_2nd = tcp_event->event_id;
 	}
-#endif /* CONFIG_USB_PD_TCPM_CB_2ND */
+#endif	/* CONFIG_USB_PD_TCPM_CB_2ND */
 
 	if (cb && tcp_event->event_cb != NULL)
 		tcp_event->event_cb(tcpc, ret, tcp_event);
@@ -610,7 +620,8 @@ void pd_notify_tcp_event_1st_result(struct pd_port *pd_port, int ret)
 	pd_port->tcp_event_id_1st = TCP_DPM_EVT_UNKNOWN;
 }
 
-static void __tcp_event_buf_reset(struct tcpc_device *tcpc, uint8_t reason)
+static void __tcp_event_buf_reset(
+	struct tcpc_device *tcpc, uint8_t reason)
 {
 	struct tcp_dpm_event tcp_event;
 
@@ -666,7 +677,8 @@ void pd_event_buf_reset(struct tcpc_device *tcpc)
 
 /*----------------------------------------------------------------------------*/
 
-static inline bool __pd_put_hw_event(struct tcpc_device *tcpc, uint8_t hw_event)
+static inline bool __pd_put_hw_event(
+	struct tcpc_device *tcpc, uint8_t hw_event)
 {
 	struct pd_event evt = {
 		.event_type = PD_EVT_HW_MSG,
@@ -677,7 +689,8 @@ static inline bool __pd_put_hw_event(struct tcpc_device *tcpc, uint8_t hw_event)
 	return __pd_put_event(tcpc, &evt, false);
 }
 
-static inline bool __pd_put_pe_event(struct tcpc_device *tcpc, uint8_t pe_event)
+static inline bool __pd_put_pe_event(
+	struct tcpc_device *tcpc, uint8_t pe_event)
 {
 	struct pd_event evt = {
 		.event_type = PD_EVT_PE_MSG,
@@ -688,7 +701,8 @@ static inline bool __pd_put_pe_event(struct tcpc_device *tcpc, uint8_t pe_event)
 	return __pd_put_event(tcpc, &evt, false);
 }
 
-bool __pd_put_cc_attached_event(struct tcpc_device *tcpc, uint8_t type)
+bool __pd_put_cc_attached_event(
+		struct tcpc_device *tcpc, uint8_t type)
 {
 	struct pd_event evt = {
 		.event_type = PD_EVT_HW_MSG,
@@ -711,7 +725,8 @@ bool __pd_put_cc_attached_event(struct tcpc_device *tcpc, uint8_t type)
 	return __pd_put_event(tcpc, &evt, false);
 }
 
-bool pd_put_cc_attached_event(struct tcpc_device *tcpc, uint8_t type)
+bool pd_put_cc_attached_event(
+		struct tcpc_device *tcpc, uint8_t type)
 {
 	bool ret = false;
 #ifdef CONFIG_USB_POWER_DELIVERY
@@ -757,8 +772,8 @@ void pd_put_cc_detached_event(struct tcpc_device *tcpc)
 #endif /* CONFIG_USB_PD_WAIT_BC12 */
 #endif /* CONFIG_USB_POWER_DELIVERY */
 
-	tcpci_notify_hard_reset_state(tcpc,
-		TCP_HRESET_RESULT_FAIL);
+	tcpci_notify_hard_reset_state(
+		tcpc, TCP_HRESET_RESULT_FAIL);
 
 	__pd_event_buf_reset(tcpc, TCP_DPM_RET_DROP_CC_DETACH);
 	__pd_put_hw_event(tcpc, PD_HW_CC_DETACHED);
@@ -773,11 +788,11 @@ void pd_put_cc_detached_event(struct tcpc_device *tcpc)
 
 #ifdef CONFIG_USB_PD_DIRECT_CHARGE
 	tcpc->pd_during_direct_charge = false;
-#endif /* CONFIG_USB_PD_DIRECT_CHARGE */
+#endif	/* CONFIG_USB_PD_DIRECT_CHARGE */
 
 #ifdef CONFIG_USB_PD_RETRY_CRC_DISCARD
 	tcpc->pd_discard_pending = false;
-#endif /* CONFIG_USB_PD_RETRY_CRC_DISCARD */
+#endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
 
 	mutex_unlock(&tcpc->access_lock);
 }
@@ -786,8 +801,8 @@ void pd_put_recv_hard_reset_event(struct tcpc_device *tcpc)
 {
 	mutex_lock(&tcpc->access_lock);
 
-	tcpci_notify_hard_reset_state(tcpc,
-		TCP_HRESET_SIGNAL_RECV);
+	tcpci_notify_hard_reset_state(
+		tcpc, TCP_HRESET_SIGNAL_RECV);
 
 	tcpc->pd_transmit_state = PD_TX_STATE_HARD_RESET;
 
@@ -802,12 +817,12 @@ void pd_put_recv_hard_reset_event(struct tcpc_device *tcpc)
 
 #ifdef CONFIG_USB_PD_DIRECT_CHARGE
 		tcpc->pd_during_direct_charge = false;
-#endif /* CONFIG_USB_PD_DIRECT_CHARGE */
+#endif	/* CONFIG_USB_PD_DIRECT_CHARGE */
 	}
 
 #ifdef CONFIG_USB_PD_RETRY_CRC_DISCARD
 	tcpc->pd_discard_pending = false;
-#endif /* CONFIG_USB_PD_RETRY_CRC_DISCARD */
+#endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
 
 	mutex_unlock(&tcpc->access_lock);
 }
@@ -833,7 +848,7 @@ bool pd_put_pd_msg_event(struct tcpc_device *tcpc, struct pd_msg *pd_msg)
 
 #ifdef CONFIG_USB_PD_RETRY_CRC_DISCARD
 	bool discard_pending = false;
-#endif /* CONFIG_USB_PD_RETRY_CRC_DISCARD */
+#endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
 
 	struct pd_event evt = {
 		.event_type = PD_EVT_PD_MSG,
@@ -872,7 +887,7 @@ bool pd_put_pd_msg_event(struct tcpc_device *tcpc, struct pd_msg *pd_msg)
 			return 0;
 		}
 	}
-#endif /* CONFIG_USB_PD_RETRY_CRC_DISCARD */
+#endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
 
 #ifdef CONFIG_USB_PD_DROP_REPEAT_PING
 	if (cnt == 0 && cmd == PD_CTRL_PING) {
@@ -887,7 +902,7 @@ bool pd_put_pd_msg_event(struct tcpc_device *tcpc, struct pd_msg *pd_msg)
 			return 0;
 		}
 	}
-#endif /* CONFIG_USB_PD_DROP_REPEAT_PING */
+#endif	/* CONFIG_USB_PD_DROP_REPEAT_PING */
 
 	if (cnt != 0 && cmd == PD_DATA_BIST && extend == 0)
 		tcpc->pd_bist_mode = PD_BIST_MODE_EVENT_PENDING;
@@ -899,7 +914,7 @@ bool pd_put_pd_msg_event(struct tcpc_device *tcpc, struct pd_msg *pd_msg)
 		tcpc_disable_timer(tcpc, PD_TIMER_DISCARD);
 		pd_put_hw_event(tcpc, PD_HW_TX_FAILED);
 	}
-#endif /* CONFIG_USB_PD_RETRY_CRC_DISCARD */
+#endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
 
 	if (cnt != 0 && cmd == PD_DATA_VENDOR_DEF)
 		return pd_put_vdm_event(tcpc, &evt, true);
@@ -941,7 +956,7 @@ void pd_put_vbus_safe0v_event(struct tcpc_device *tcpc)
 {
 #ifdef CONFIG_USB_PD_SAFE0V_TIMEOUT
 	tcpc_disable_timer(tcpc, PD_TIMER_VSAFE0V_TOUT);
-#endif /* CONFIG_USB_PD_SAFE0V_TIMEOUT */
+#endif	/* CONFIG_USB_PD_SAFE0V_TIMEOUT */
 
 	mutex_lock(&tcpc->access_lock);
 	if (tcpc->pd_wait_vbus_once == PD_WAIT_VBUS_SAFE0V_ONCE) {
@@ -959,7 +974,7 @@ void pd_put_vbus_stable_event(struct tcpc_device *tcpc)
 		tcpc->pd_wait_vbus_once = PD_WAIT_VBUS_DISABLE;
 #ifdef CONFIG_USB_PD_SRC_HIGHCAP_POWER
 		tcpci_enable_force_discharge(tcpc, false, 0);
-#endif /* CONFIG_USB_PD_SRC_HIGHCAP_POWER */
+#endif	/* CONFIG_USB_PD_SRC_HIGHCAP_POWER */
 		__pd_put_hw_event(tcpc, PD_HW_VBUS_STABLE);
 	}
 	mutex_unlock(&tcpc->access_lock);
@@ -1019,11 +1034,11 @@ void pd_notify_pe_wait_vbus_once(struct pd_port *pd_port, int wait_evt)
 		}
 #else
 		pd_enable_timer(pd_port, PD_TIMER_VSAFE0V_DELAY);
-#endif /* CONFIG_TCPC_VSAFE0V_DETECT */
+#endif	/* CONFIG_TCPC_VSAFE0V_DETECT */
 
 #ifdef CONFIG_USB_PD_SAFE0V_TIMEOUT
 		pd_enable_timer(pd_port, PD_TIMER_VSAFE0V_TOUT);
-#endif /* CONFIG_USB_PD_SAFE0V_TIMEOUT */
+#endif	/* CONFIG_USB_PD_SAFE0V_TIMEOUT */
 
 		mutex_lock(&tcpc->access_lock);
 		tcpci_enable_force_discharge(tcpc, true, 0);
@@ -1038,8 +1053,8 @@ void pd_notify_pe_error_recovery(struct pd_port *pd_port)
 
 	mutex_lock(&tcpc->access_lock);
 
-	tcpci_notify_hard_reset_state(tcpc,
-		TCP_HRESET_RESULT_FAIL);
+	tcpci_notify_hard_reset_state(
+		tcpc, TCP_HRESET_RESULT_FAIL);
 
 	tcpc->pd_wait_pr_swap_complete = false;
 	__tcp_event_buf_reset(tcpc, TCP_DPM_RET_DROP_ERROR_REOCVERY);
@@ -1067,7 +1082,7 @@ void pd_notify_pe_over_recv_hreset(struct pd_port *pd_port)
 	tcpc_enable_timer(tcpc, TYPEC_TIMER_ERROR_RECOVERY);
 	enable_irq_wake(chip->irq);
 }
-#endif /* CONFIG_USB_PD_RECV_HRESET_COUNTER */
+#endif	/* CONFIG_USB_PD_RECV_HRESET_COUNTER */
 
 void pd_notify_pe_transit_to_default(struct pd_port *pd_port)
 {
@@ -1082,7 +1097,7 @@ void pd_notify_pe_transit_to_default(struct pd_port *pd_port)
 
 #ifdef CONFIG_USB_PD_DIRECT_CHARGE
 	tcpc->pd_during_direct_charge = false;
-#endif /* CONFIG_USB_PD_DIRECT_CHARGE */
+#endif	/* CONFIG_USB_PD_DIRECT_CHARGE */
 	mutex_unlock(&tcpc->access_lock);
 }
 
@@ -1091,8 +1106,8 @@ void pd_notify_pe_hard_reset_completed(struct pd_port *pd_port)
 	struct tcpc_device *tcpc = pd_port->tcpc;
 
 	mutex_lock(&tcpc->access_lock);
-	tcpci_notify_hard_reset_state(tcpc,
-		TCP_HRESET_RESULT_DONE);
+	tcpci_notify_hard_reset_state(
+		tcpc, TCP_HRESET_RESULT_DONE);
 	mutex_unlock(&tcpc->access_lock);
 }
 
@@ -1160,7 +1175,8 @@ void pd_noitfy_pe_bist_mode(struct pd_port *pd_port, uint8_t mode)
 	mutex_unlock(&tcpc->access_lock);
 }
 
-void pd_notify_pe_transmit_msg(struct pd_port *pd_port, uint8_t type)
+void pd_notify_pe_transmit_msg(
+	struct pd_port *pd_port, uint8_t type)
 {
 	struct tcpc_device *tcpc = pd_port->tcpc;
 
@@ -1201,7 +1217,7 @@ void pd_notify_pe_snk_explicit_contract(struct pd_port *pd_port)
 		pe_data->pd_traffic_control = PD_SINK_TX_START;
 		pd_restart_timer(pd_port, PD_TIMER_SNK_FLOW_DELAY);
 	}
-#endif /* CONFIG_USB_PD_REV30_SNK_FLOW_DELAY_STARTUP */
+#endif	/* CONFIG_USB_PD_REV30_SNK_FLOW_DELAY_STARTUP */
 #endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 }
 
@@ -1218,8 +1234,8 @@ void pd_notify_pe_src_explicit_contract(struct pd_port *pd_port)
 		if (pd_check_rev30(pd_port) &&
 			(pe_data->pd_traffic_control == PD_SOURCE_TX_START))
 			pd_restart_timer(pd_port, PD_TIMER_SINK_TX);
-#endif /* CONFIG_USB_PD_REV30_SRC_FLOW_DELAY_STARTUP */
-#endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30_SRC_FLOW_DELAY_STARTUP */
+#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 		return;
 	}
 
@@ -1235,9 +1251,9 @@ void pd_notify_pe_src_explicit_contract(struct pd_port *pd_port)
 		pd_enable_timer(pd_port, PD_TIMER_SINK_TX);
 #else
 		pe_data->pd_traffic_control = PD_SINK_TX_OK;
-#endif /* CONFIG_USB_PD_REV30_SRC_FLOW_DELAY_STARTUP */
+#endif	/* CONFIG_USB_PD_REV30_SRC_FLOW_DELAY_STARTUP */
 	}
-#endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 
 	if (pull) {
 		tcpci_lock_typec(tcpc);
@@ -1255,15 +1271,15 @@ void pd_notify_pe_direct_charge(struct pd_port *pd_port, bool en)
 	/* TODO: check it later */
 	if (pd_port->request_apdo)
 		en = true;
-#endif /* CONFIG_USB_PD_REV30_PPS_SINK */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
 
 	mutex_lock(&tcpc->access_lock);
 	tcpc->pd_during_direct_charge = en;
 	mutex_unlock(&tcpc->access_lock);
 }
-#endif /* CONFIG_USB_PD_DIRECT_CHARGE */
+#endif	/* CONFIG_USB_PD_DIRECT_CHARGE */
 
-/* ---- init ---- */
+/* ---- init  ---- */
 static int tcpc_event_thread_fn(void *data)
 {
 	struct tcpc_device *tcpc = data;
@@ -1276,8 +1292,8 @@ static int tcpc_event_thread_fn(void *data)
 
 	while (true) {
 		wait_event(tcpc->event_wait_que,
-			atomic_read(&tcpc->pending_event) ||
-			kthread_should_stop());
+			   atomic_read(&tcpc->pending_event) ||
+			   kthread_should_stop());
 		if (kthread_should_stop())
 			break;
 		do {
@@ -1293,7 +1309,7 @@ int tcpci_event_init(struct tcpc_device *tcpc)
 	init_waitqueue_head(&tcpc->event_wait_que);
 	atomic_set(&tcpc->pending_event, 0);
 	tcpc->event_task = kthread_run(tcpc_event_thread_fn, tcpc,
-			"tcpc_event_%s", tcpc->desc.name);
+				       "tcpc_event_%s", tcpc->desc.name);
 
 	return 0;
 }

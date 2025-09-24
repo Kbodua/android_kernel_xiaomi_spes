@@ -105,7 +105,8 @@ struct rt_regmap_device {
 #endif /* CONFIG_DEBUG_FS */
 };
 
-static struct reg_index_offset find_register_index(const struct rt_regmap_device *rd, u32 reg)
+static struct reg_index_offset find_register_index(
+		const struct rt_regmap_device *rd, u32 reg)
 {
 	int i = 0, j = 0, unit = RT_1BYTE_MODE;
 	struct reg_index_offset rio = {-1, -1};
@@ -118,12 +119,12 @@ static struct reg_index_offset find_register_index(const struct rt_regmap_device
 			break;
 		}
 		if (reg > rm[i]->addr &&
-			(reg - rm[i]->addr) < rm[i]->size) {
+		    (reg - rm[i]->addr) < rm[i]->size) {
 			rio.index = i;
 			for (j = 0; rd->props.group[j].mode != RT_DUMMY_MODE;
-					j++) {
+									j++) {
 				if (reg >= rd->props.group[j].start &&
-					reg <= rd->props.group[j].end) {
+				    reg <= rd->props.group[j].end) {
 					unit = rd->props.group[j].mode;
 					break;
 				}
@@ -152,11 +153,11 @@ void rt_regmap_cache_sync(struct rt_regmap_device *rd)
 			if (!test_bit(j, &rd->cache_dirty[i]))
 				continue;
 			ret = rt_chip_block_write(rd, rm->addr + j, 1,
-					rd->cache_data[i] + j);
+						  rd->cache_data[i] + j);
 			if (ret < 0) {
 				dev_notice(&rd->dev,
-						"%s block write fail(%d) @ 0x%02x\n",
-						__func__, ret, rm->addr + j);
+					   "%s block write fail(%d) @ 0x%02x\n",
+					   __func__, ret, rm->addr + j);
 				goto err_cache_sync;
 			}
 		}
@@ -181,7 +182,7 @@ void rt_regmap_cache_write_back(struct rt_regmap_device *rd, u32 reg)
 	rio = find_register_index(rd, reg);
 	if (rio.index < 0 || rio.offset != 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of map\n",
-				__func__, reg);
+				     __func__, reg);
 		return;
 	}
 
@@ -193,11 +194,11 @@ void rt_regmap_cache_write_back(struct rt_regmap_device *rd, u32 reg)
 		if (!test_bit(j, &rd->cache_dirty[rio.index]))
 			continue;
 		ret = rt_chip_block_write(rd, rm->addr + j, 1,
-				rd->cache_data[rio.index] + j);
+					  rd->cache_data[rio.index] + j);
 		if (ret < 0) {
 			dev_notice(&rd->dev,
-					"%s block write fail(%d) @ 0x%02x\n",
-					__func__, ret, rm->addr + j);
+				   "%s block write fail(%d) @ 0x%02x\n",
+				   __func__, ret, rm->addr + j);
 			goto err_cache_write_back;
 		}
 	}
@@ -221,7 +222,7 @@ int rt_is_reg_volatile(struct rt_regmap_device *rd, u32 reg)
 	rio = find_register_index(rd, reg);
 	if (rio.index < 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of range\n",
-				__func__, reg);
+				     __func__, reg);
 		return -EINVAL;
 	}
 	rm = rd->props.rm[rio.index];
@@ -241,7 +242,7 @@ int rt_get_regsize(struct rt_regmap_device *rd, u32 reg)
 	rio = find_register_index(rd, reg);
 	if (rio.index < 0 || rio.offset != 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of map\n",
-				__func__, reg);
+				     __func__, reg);
 		return -EINVAL;
 	}
 	return rd->props.rm[rio.index]->size;
@@ -261,7 +262,7 @@ static int rt_chip_block_write(struct rt_regmap_device *rd, u32 reg,
 			       int bytes, const void *src)
 {
 	if ((rd->props.rt_regmap_mode & RT_IO_BLK_MODE_MASK) == RT_IO_BLK_ALL ||
-		(rd->props.rt_regmap_mode & RT_IO_BLK_MODE_MASK) == RT_IO_BLK_CHIP)
+	    (rd->props.rt_regmap_mode & RT_IO_BLK_MODE_MASK) == RT_IO_BLK_CHIP)
 		return -EPERM;
 
 	return rd->rops->write_device(rd->client, reg, bytes, src);
@@ -296,10 +297,10 @@ static int rt_block_write(struct rt_regmap_device *rd,
 		goto out;
 
 	ret = rt_chip_block_write(rd, rm->addr + cache_offset, size,
-			rd->cache_data[cache_idx] + cache_offset);
+				  rd->cache_data[cache_idx] + cache_offset);
 	if (ret < 0)
 		dev_notice(&rd->dev, "%s block write fail(%d) @ 0x%02x\n",
-				__func__, ret, rm->addr + cache_offset);
+				     __func__, ret, rm->addr + cache_offset);
 out:
 	up(&rd->write_mode_lock);
 	return ret < 0 ? ret : 0;
@@ -322,11 +323,11 @@ static int rt_block_write_blk_cache(struct rt_regmap_device *rd,
 
 	down(&rd->write_mode_lock);
 	ret = rt_chip_block_write(rd, rm->addr + cache_offset, size,
-			&wdata[count]);
+				  &wdata[count]);
 	up(&rd->write_mode_lock);
 	if (ret < 0)
 		dev_notice(&rd->dev, "%s block write fail(%d) @ 0x%02x\n",
-				__func__, ret, rm->addr + cache_offset);
+				     __func__, ret, rm->addr + cache_offset);
 	return ret < 0 ? ret : 0;
 }
 
@@ -374,7 +375,7 @@ static int _rt_cache_block_write(struct rt_regmap_device *rd, u32 reg,
 	rio = find_register_index(rd, reg);
 	if (rio.index < 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of range\n",
-				__func__, reg);
+				     __func__, reg);
 		return -EINVAL;
 	}
 
@@ -386,12 +387,12 @@ static int _rt_cache_block_write(struct rt_regmap_device *rd, u32 reg,
 			(bytes - count) : (rm->size - j);
 		if ((rm->reg_type & RT_REG_TYPE_MASK) == RT_VOLATILE) {
 			ret = rt_chip_block_write(rd, rm->addr + j, size,
-					&wdata[count]);
+						  &wdata[count]);
 		} else if (asyn) {
 			ret = rd->props.rt_regmap_mode & RT_IO_BLK_MODE_MASK;
 			if (ret == RT_IO_BLK_ALL || ret == RT_IO_BLK_CACHE) {
 				dev_notice(&rd->dev, "%s ret = %d\n",
-						__func__, ret);
+						     __func__, ret);
 				ret = -EPERM;
 				goto err_cache_block_write;
 			}
@@ -400,15 +401,15 @@ static int _rt_cache_block_write(struct rt_regmap_device *rd, u32 reg,
 				(rd, rm, size, wdata, count, i, j);
 		} else {
 			blk_index = (rd->props.rt_regmap_mode &
-					RT_IO_BLK_MODE_MASK) >> 3;
+				     RT_IO_BLK_MODE_MASK) >> 3;
 
 			ret = rd->rt_block_write[blk_index]
 				(rd, rm, size, wdata, count, i, j);
 		}
 		if (ret < 0) {
 			dev_notice(&rd->dev,
-					"%s block write fail(%d) @ 0x%02x\n",
-					__func__, ret, rm->addr + j);
+				   "%s block write fail(%d) @ 0x%02x\n",
+				   __func__, ret, rm->addr + j);
 			goto err_cache_block_write;
 		}
 	}
@@ -416,14 +417,14 @@ static int _rt_cache_block_write(struct rt_regmap_device *rd, u32 reg,
 		j = 0;
 		for (i = 0; i < count; i++) {
 			ret = snprintf(wri_data + j, sizeof(wri_data) - j,
-					"%02x,", wdata[i]);
+				       "%02x,", wdata[i]);
 			if ((ret < 0) || (ret >= sizeof(wri_data) - j))
 				return -EINVAL;
 
 			j += ret;
 		}
-		dev_info(&rd->dev, "RT_REGMAP [WRITE] reg0x%02x [Data] %s\n",
-				reg, wri_data);
+		dev_info(&rd->dev, "RT_REGMAP [WRITE] reg0x%02x  [Data] %s\n",
+				   reg, wri_data);
 	}
 	return 0;
 err_cache_block_write:
@@ -458,7 +459,7 @@ static int rt_cache_block_read(struct rt_regmap_device *rd, u32 reg,
 	rio = find_register_index(rd, reg);
 	if (rio.index < 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of range\n",
-				__func__, reg);
+				     __func__, reg);
 		return -EINVAL;
 	}
 
@@ -471,7 +472,7 @@ static int rt_cache_block_read(struct rt_regmap_device *rd, u32 reg,
 
 	if (bytes > total_bytes) {
 		dev_notice(&rd->dev, "%s bytes %d is out of range\n",
-				__func__, bytes);
+				     __func__, bytes);
 		return -EINVAL;
 	}
 
@@ -484,11 +485,11 @@ static int rt_cache_block_read(struct rt_regmap_device *rd, u32 reg,
 			continue;
 		}
 		ret = rd->rops->read_device(rd->client, rm->addr,
-				rm->size, rd->regval);
+					    rm->size, rd->regval);
 		if (ret < 0) {
 			dev_notice(&rd->dev,
-					"%s read device fail(%d) @ 0x%02x\n",
-					__func__, ret, rm->addr);
+				   "%s read device fail(%d) @ 0x%02x\n",
+				   __func__, ret, rm->addr);
 			return ret;
 		}
 		for (; j < rm->size && count < bytes; j++, count++) {
@@ -560,14 +561,14 @@ static int _rt_regmap_reg_write(struct rt_regmap_device *rd,
 	rio = find_register_index(rd, rrd->reg);
 	if (rio.index < 0 || rio.offset != 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of map\n",
-				__func__, rrd->reg);
+				     __func__, rrd->reg);
 		return -EINVAL;
 	}
 
 	size = rm[rio.index]->size;
 	if (size < 1 || size > 4) {
 		dev_notice(&rd->dev, "%s only support 1~4 bytes(%d)\n",
-				__func__, size);
+				     __func__, size);
 		return -EINVAL;
 	}
 
@@ -580,7 +581,7 @@ static int _rt_regmap_reg_write(struct rt_regmap_device *rd,
 	up(&rd->semaphore);
 	if (ret < 0)
 		dev_notice(&rd->dev, "%s block write fail(%d) @ 0x%02x\n",
-				__func__, ret, rrd->reg);
+				     __func__, ret, rrd->reg);
 	return (ret < 0) ? ret : 0;
 }
 
@@ -618,14 +619,14 @@ static int _rt_regmap_reg_read(struct rt_regmap_device *rd,
 	rio = find_register_index(rd, rrd->reg);
 	if (rio.index < 0 || rio.offset != 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of map\n",
-				__func__, rrd->reg);
+				     __func__, rrd->reg);
 		return -EINVAL;
 	}
 
 	size = rm[rio.index]->size;
 	if (size < 1 || size > 4) {
 		dev_notice(&rd->dev, "%s only support 1~4 bytes(%d)\n",
-				__func__, size);
+				     __func__, size);
 		return -EINVAL;
 	}
 
@@ -634,7 +635,7 @@ static int _rt_regmap_reg_read(struct rt_regmap_device *rd,
 	up(&rd->semaphore);
 	if (ret < 0) {
 		dev_notice(&rd->dev, "%s block read fail(%d) @ 0x%02x\n",
-				__func__, ret, rrd->reg);
+				     __func__, ret, rrd->reg);
 		goto out;
 	}
 	rrd->rt_data.data_u32 = chip_to_cpu(rd, data, size);
@@ -664,14 +665,14 @@ static int _rt_regmap_update_bits(struct rt_regmap_device *rd,
 	rio = find_register_index(rd, rrd->reg);
 	if (rio.index < 0 || rio.offset != 0) {
 		dev_notice(&rd->dev, "%s reg 0x%02x is out of map\n",
-				__func__, rrd->reg);
+				     __func__, rrd->reg);
 		return -EINVAL;
 	}
 
 	size = rm[rio.index]->size;
 	if (size < 1 || size > 4) {
 		dev_notice(&rd->dev, "%s only support 1~4 bytes(%d)\n",
-				__func__, size);
+				     __func__, size);
 		return -EINVAL;
 	}
 
@@ -679,7 +680,7 @@ static int _rt_regmap_update_bits(struct rt_regmap_device *rd,
 	ret = rd->regmap_ops.regmap_block_read(rd, rrd->reg, size, &old);
 	if (ret < 0) {
 		dev_notice(&rd->dev, "%s block read fail(%d) @ 0x%02x\n",
-				__func__, ret, rrd->reg);
+				     __func__, ret, rrd->reg);
 		goto out;
 	}
 
@@ -696,7 +697,7 @@ static int _rt_regmap_update_bits(struct rt_regmap_device *rd,
 		(rd, rrd->reg, size, &new);
 	if (ret < 0)
 		dev_notice(&rd->dev, "%s block write fail(%d) @ 0x%02x\n",
-				__func__, ret, rrd->reg);
+				     __func__, ret, rrd->reg);
 out:
 	up(&rd->semaphore);
 	return (ret < 0) ? ret : 0;
@@ -809,7 +810,8 @@ static int rt_regmap_cache_init(struct rt_regmap_device *rd)
 
 	if (rd->props.group == NULL) {
 		rd->props.group = devm_kzalloc(&rd->dev,
-				sizeof(*rd->props.group) * 2, GFP_KERNEL);
+					       sizeof(*rd->props.group) * 2,
+					       GFP_KERNEL);
 		if (!rd->props.group) {
 			ret = -ENOMEM;
 			goto out;
@@ -837,7 +839,7 @@ static int rt_regmap_cache_init(struct rt_regmap_device *rd)
 	/* set 0xff writeable mask for NORMAL and RESERVE type */
 	for (i = 0; i < rd->props.register_num; i++) {
 		if ((rm[i]->reg_type & RT_REG_TYPE_MASK) == RT_NORMAL ||
-			(rm[i]->reg_type & RT_REG_TYPE_MASK) == RT_RESERVE) {
+		    (rm[i]->reg_type & RT_REG_TYPE_MASK) == RT_RESERVE) {
 			for (j = 0; j < rm[i]->size; j++)
 				rm[i]->wbit_mask[j] = 0xff;
 		}
@@ -930,12 +932,12 @@ do {									\
 	down(&rd->semaphore);						\
 	len = strlen(rd->err_msg);					\
 	ret = snprintf(rd->err_msg + len, ERR_MSG_SIZE - len,		\
-			fmt, ##__VA_ARGS__);				\
+		       fmt, ##__VA_ARGS__);				\
 	rd->error_occurred = 1;						\
 	up(&rd->semaphore);						\
 	if ((ret < 0) || (ret >= ERR_MSG_SIZE - len))			\
 		dev_notice(&rd->dev, "%s snprintf fail(%d)\n",		\
-				__func__, ret);			\
+				     __func__, ret);			\
 } while (0)
 
 static int get_parameters(char *buf, unsigned long *param, int num_of_par)
@@ -949,9 +951,8 @@ static int get_parameters(char *buf, unsigned long *param, int num_of_par)
 				return -EINVAL;
 
 			token = strsep(&buf, " ");
-		} else {
+		} else
 			return -EINVAL;
-		}
 	}
 
 	return 0;
@@ -990,7 +991,7 @@ static void rt_show_regs(struct rt_regmap_device *rd, struct seq_file *seq_file)
 	for (i = 0; i < rd->props.register_num; i++) {
 		down(&rd->semaphore);
 		ret = rd->regmap_ops.regmap_block_read(rd, rm[i]->addr,
-				rm[i]->size, rd->regval);
+						       rm[i]->size, rd->regval);
 		up(&rd->semaphore);
 		if (ret < 0) {
 			erro_printf(rd, "%s block read fail(%d) @ 0x%02x\n",
@@ -1003,9 +1004,9 @@ static void rt_show_regs(struct rt_regmap_device *rd, struct seq_file *seq_file)
 			for (j = 0; j < rm[i]->size; j++)
 				seq_printf(seq_file, "%02x,", rd->regval[j]);
 			seq_puts(seq_file, "\n");
-		} else {
-			seq_printf(seq_file, "reg0x%02x:reserve\n", rm[i]->addr);
-		}
+		} else
+			seq_printf(seq_file,
+				   "reg0x%02x:reserve\n", rm[i]->addr);
 	}
 }
 
@@ -1028,7 +1029,7 @@ static int general_read(struct seq_file *seq_file, void *_data)
 		down(&rd->semaphore);
 		if (rd->dbg_data.rio.index < 0)
 			ret = rt_chip_block_read(rd, rd->dbg_data.reg_addr,
-					size, rd->regval);
+						 size, rd->regval);
 		else
 			ret = rd->regmap_ops.regmap_block_read(rd,
 					rd->dbg_data.reg_addr,
@@ -1048,7 +1049,7 @@ static int general_read(struct seq_file *seq_file, void *_data)
 	case RT_DBG_ERROR:
 		seq_puts(seq_file, "======== Error Message ========\n");
 		seq_puts(seq_file, rd->error_occurred ? rd->err_msg :
-				"No Error\n");
+				   "No Error\n");
 		break;
 	case RT_DBG_REGS:
 		rt_show_regs(rd, seq_file);
@@ -1123,7 +1124,7 @@ static ssize_t general_write(struct file *file, const char __user *ubuf,
 	unsigned long param = 0;
 
 	dev_info(&rd->dev, "%s @ %p, count = %u, pos = %llu\n",
-			__func__, ubuf, (unsigned int)count, *ppos);
+			   __func__, ubuf, (unsigned int)count, *ppos);
 	*ppos = 0;
 	res = simple_write_to_buffer(lbuf, sizeof(lbuf) - 1, ppos, ubuf, count);
 	if (res <= 0)
@@ -1151,8 +1152,9 @@ static ssize_t general_write(struct file *file, const char __user *ubuf,
 		size = rd->dbg_data.reg_size;
 
 		if ((size - 1) * 3 + 5 != count) {
-			erro_printf(rd, "%s wrong input length, size = %u, count = %u\n",
-					__func__, size, (unsigned int)count);
+			erro_printf(rd,
+			"%s wrong input length, size = %u, count = %u\n",
+				    __func__, size, (unsigned int)count);
 			return -EINVAL;
 		}
 
@@ -1167,7 +1169,7 @@ static ssize_t general_write(struct file *file, const char __user *ubuf,
 		down(&rd->semaphore);
 		if (rd->dbg_data.rio.index < 0)
 			ret = rt_chip_block_write(rd, rd->dbg_data.reg_addr,
-					size, rd->regval);
+						  size, rd->regval);
 		else
 			ret = rd->regmap_ops.regmap_block_write(rd,
 					rd->dbg_data.reg_addr,
@@ -1308,11 +1310,11 @@ static ssize_t eachreg_read(struct file *file, char __user *ubuf,
 
 	down(&rd->semaphore);
 	ret = rd->regmap_ops.regmap_block_read(rd, rm->addr,
-			rm->size, rd->regval);
+					       rm->size, rd->regval);
 	up(&rd->semaphore);
 	if (ret < 0) {
 		dev_notice(&rd->dev, "%s block read fail(%d) @ 0x%02x\n",
-				__func__, ret, rm->size);
+				     __func__, ret, rm->size);
 		goto out;
 	}
 
@@ -1354,13 +1356,13 @@ static ssize_t eachreg_write(struct file *file, const char __user *ubuf,
 
 	if ((rm->size - 1) * 3 + 5 != count) {
 		dev_notice(&rd->dev,
-				"%s wrong input length, size = %u, count = %u\n",
-				__func__, rm->size, (unsigned int)count);
+			   "%s wrong input length, size = %u, count = %u\n",
+			   __func__, rm->size, (unsigned int)count);
 		return -EINVAL;
 	}
 
 	dev_info(&rd->dev, "%s @ %p, count = %u, pos = %llu\n",
-			__func__, ubuf, (unsigned int)count, *ppos);
+			   __func__, ubuf, (unsigned int)count, *ppos);
 	*ppos = 0;
 	res = simple_write_to_buffer(lbuf, sizeof(lbuf) - 1, ppos, ubuf, count);
 	if (res <= 0)
@@ -1381,7 +1383,7 @@ static ssize_t eachreg_write(struct file *file, const char __user *ubuf,
 	up(&rd->semaphore);
 	if (ret < 0) {
 		dev_notice(&rd->dev, "%s block write fail(%d) @ 0x%02x\n",
-				__func__, ret, rm->addr);
+				     __func__, ret, rm->addr);
 		return ret;
 	}
 
@@ -1407,31 +1409,34 @@ static int rt_create_every_debug(struct rt_regmap_device *rd,
 		return -ENOMEM;
 
 	rd->reg_st = devm_kzalloc(&rd->dev,
-			rd->props.register_num * sizeof(*rd->reg_st),
-			GFP_KERNEL);
+				  rd->props.register_num * sizeof(*rd->reg_st),
+				  GFP_KERNEL);
 	if (!rd->reg_st)
 		return -ENOMEM;
 
 	for (i = 0; i < rd->props.register_num; i++) {
 		ret = snprintf(buf, sizeof(buf),
-				"reg0x%02x", rd->props.rm[i]->addr);
+			       "reg0x%02x", rd->props.rm[i]->addr);
 		if ((ret < 0) || (ret >= sizeof(buf))) {
 			dev_notice(&rd->dev, "%s snprintf fail(%d)\n",
-					__func__, ret);
+					     __func__, ret);
 			continue;
 		}
 
 		rd->rt_reg_file[i] = devm_kzalloc(&rd->dev,
-				sizeof(*rd->rt_reg_file[i]), GFP_KERNEL);
+						  sizeof(*rd->rt_reg_file[i]),
+						  GFP_KERNEL);
 		rd->reg_st[i] = devm_kzalloc(&rd->dev,
-				sizeof(*rd->reg_st[i]), GFP_KERNEL);
+					     sizeof(*rd->reg_st[i]),
+					     GFP_KERNEL);
 		if (!rd->rt_reg_file[i] || !rd->reg_st[i])
 			return -ENOMEM;
 
 		rd->reg_st[i]->info = rd;
 		rd->reg_st[i]->id = i;
 		rd->rt_reg_file[i] = debugfs_create_file(buf, 0444, dir,
-				rd->reg_st[i], &eachreg_ops);
+							 rd->reg_st[i],
+							 &eachreg_ops);
 		if (!rd->rt_reg_file[i])
 			return -EINVAL;
 	}
@@ -1456,8 +1461,8 @@ static int rt_regmap_check(struct rt_regmap_device *rd)
 		/* check byte size, 1 byte ~ 32 bytes is valid */
 		if (rm[i]->size < 1 || rm[i]->size > MAX_BYTE_SIZE) {
 			pr_notice("%s size(%d) must be %d ~ %d @ 0x%02x\n",
-					__func__, rm[i]->size, 1, MAX_BYTE_SIZE,
-					rm[i]->addr);
+				  __func__, rm[i]->size, 1, MAX_BYTE_SIZE,
+				  rm[i]->addr);
 			return -EINVAL;
 		}
 	}
@@ -1466,7 +1471,7 @@ static int rt_regmap_check(struct rt_regmap_device *rd)
 		/* check register sequence */
 		if (rm[i]->addr >= rm[i + 1]->addr) {
 			pr_info("%s sequence error @ 0x%02x\n",
-					__func__, rm[i]->addr);
+				__func__, rm[i]->addr);
 		}
 	}
 
@@ -1481,7 +1486,8 @@ static int rt_regmap_check(struct rt_regmap_device *rd)
 	return 0;
 }
 
-struct rt_regmap_device *rt_regmap_device_register_ex(struct rt_regmap_properties *props,
+struct rt_regmap_device *rt_regmap_device_register_ex
+			(struct rt_regmap_properties *props,
 			 struct rt_regmap_fops *rops,
 			 struct device *parent,
 			 void *client, int dev_addr, void *drvdata)
@@ -1548,14 +1554,14 @@ struct rt_regmap_device *rt_regmap_device_register_ex(struct rt_regmap_propertie
 		ret = rt_create_general_debug(rd, rd->rt_den);
 		if (ret < 0) {
 			pr_notice("%s create general debug fail(%d)\n",
-					__func__, ret);
+				  __func__, ret);
 			goto err_create_general_debug;
 		}
 		if (rd->props.rt_regmap_mode & RT_DBG_MODE_MASK) {
 			ret = rt_create_every_debug(rd, rd->rt_den);
 			if (ret < 0) {
 				pr_notice("%s create every debug fail(%d)\n",
-						__func__, ret);
+					  __func__, ret);
 				goto err_create_every_debug;
 			}
 		}

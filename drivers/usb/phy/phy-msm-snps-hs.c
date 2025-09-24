@@ -83,10 +83,13 @@
 #define USB_HSPHY_1P8_VOL_MAX			1800000 /* uV */
 #define USB_HSPHY_1P8_HPM_LOAD			19000	/* uA */
 
+// only for debug
+/*
 #undef dev_dbg
 #define dev_dbg dev_info
 #undef pr_debug
 #define pr_debug pr_info
+*/
 
 unsigned long panel_info = 1;
 

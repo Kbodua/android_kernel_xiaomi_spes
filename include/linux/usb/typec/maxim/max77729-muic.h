@@ -25,28 +25,28 @@
 
 #include <linux/workqueue.h>
 
-#define MUIC_DEV_NAME		"muic-max77729"
+#define MUIC_DEV_NAME			"muic-max77729"
 /* muic chip specific internal data structure */
-#define BC_STATUS_VBUSDET_SHIFT	7
-#define BC_STATUS_VBUSDET_MASK	(0x1 << BC_STATUS_VBUSDET_SHIFT)
+#define BC_STATUS_VBUSDET_SHIFT		7
+#define BC_STATUS_VBUSDET_MASK		(0x1 << BC_STATUS_VBUSDET_SHIFT)
 
-#define COMN1SW_SHIFT	0
-#define COMP2SW_SHIFT	3
-#define RCPS_SHIFT	6
-#define NOBCCOMP_SHIFT	7
-#define COMN1SW_MASK	(0x7 << COMN1SW_SHIFT)
-#define COMP2SW_MASK	(0x7 << COMP2SW_SHIFT)
-#define RCPS_MASK	(0x1 << RCPS_SHIFT)
-#define NOBCCOMP_MASK	(0x1 << NOBCCOMP_SHIFT)
+#define COMN1SW_SHIFT			0
+#define COMP2SW_SHIFT			3
+#define RCPS_SHIFT			6
+#define NOBCCOMP_SHIFT			7
+#define COMN1SW_MASK			(0x7 << COMN1SW_SHIFT)
+#define COMP2SW_MASK			(0x7 << COMP2SW_SHIFT)
+#define RCPS_MASK			(0x1 << RCPS_SHIFT)
+#define NOBCCOMP_MASK			(0x1 << NOBCCOMP_SHIFT)
 
 /* MAX77729 ID Monitor Config */
-#define MODE_SHIFT	2
-#define MODE_MASK	(0x3 << MODE_SHIFT)
+#define MODE_SHIFT			2
+#define MODE_MASK			(0x3 << MODE_SHIFT)
 
 enum {
-	VB_LOW		= 0x00,
-	VB_HIGH		= (0x1 << BC_STATUS_VBUSDET_SHIFT),
-	VB_DONTCARE	= 0xff,
+	VB_LOW			= 0x00,
+	VB_HIGH			= (0x1 << BC_STATUS_VBUSDET_SHIFT),
+	VB_DONTCARE		= 0xff,
 };
 
 /* muic register value for COMN1, COMN2 in Switch command  */
@@ -98,20 +98,20 @@ enum {
 };
 
 struct max77729_muic_data {
-	struct device		*dev;
-	struct i2c_client	*i2c; /* i2c addr: 0x4A; MUIC */
-	struct mutex		muic_mutex;
-	struct wakeup_source	*muic_ws;
+	struct device			*dev;
+	struct i2c_client		*i2c; /* i2c addr: 0x4A; MUIC */
+	struct mutex			muic_mutex;
+	struct wakeup_source		*muic_ws;
 	/* model dependent mfd platform data */
 	struct max77729_platform_data		*mfd_pdata;
 	struct max77729_usbc_platform_data	*usbc_pdata;
 
-	int	irq_uiadc;
-	int	irq_chgtyp;
-	int	irq_spr;
-	int	irq_dcdtmo;
-	int	irq_vbadc;
-	int	irq_vbusdet;
+	int				irq_uiadc;
+	int				irq_chgtyp;
+	int				irq_spr;
+	int				irq_dcdtmo;
+	int				irq_vbadc;
+	int				irq_vbusdet;
 
 	u8 usbc_status1;
 	u8 usbc_status2;
@@ -131,8 +131,8 @@ struct max77729_muic_data {
 
 	/* Output of Properietary Charger Detection */
 	enum max77729_pr_chg_type pr_chg_type;
-	struct delayed_work	debug_work;
-	struct delayed_work	qc_work;
+	struct delayed_work		debug_work;
+	struct delayed_work		qc_work;
 
 	/* CHGIN Voltage ADC interrupt */
 	u8 vbadc;
@@ -145,3 +145,4 @@ int max77729_bc12_probe(struct max77729_usbc_platform_data *usbc_data);
 int max77729_muic_suspend(struct max77729_usbc_platform_data *usbc_data);
 int max77729_muic_resume(struct max77729_usbc_platform_data *usbc_data);
 #endif /* __MAX77729_MUIC_H__ */
+

@@ -67,15 +67,16 @@ struct dual_role_phy_desc {
 
 	/* Callback for "cat /sys/class/dual_role_usb/<name>/<property>" */
 	int (*get_property)(struct dual_role_phy_instance *dual_role,
-			    enum dual_role_property prop,
-			    unsigned int *val);
-	/* Callback for "echo <value> > /sys/class/dual_role_usb/<name>/<property>" */
+			     enum dual_role_property prop,
+			     unsigned int *val);
+	/* Callback for "echo <value> >
+	 *                      /sys/class/dual_role_usb/<name>/<property>" */
 	int (*set_property)(struct dual_role_phy_instance *dual_role,
-			    enum dual_role_property prop,
-			    const unsigned int *val);
+			     enum dual_role_property prop,
+			     const unsigned int *val);
 	/* Decides whether userspace can change a specific property */
 	int (*property_is_writeable)(struct dual_role_phy_instance *dual_role,
-				     enum dual_role_property prop);
+				      enum dual_role_property prop);
 };
 
 struct dual_role_phy_instance {
@@ -109,7 +110,7 @@ extern int dual_role_property_is_writeable(struct dual_role_phy_instance
 extern void *dual_role_get_drvdata(struct dual_role_phy_instance *dual_role);
 #else /* CONFIG_DUAL_ROLE_USB_INTF */
 static inline void dual_role_instance_changed(struct dual_role_phy_instance
-					      *dual_role){}
+				       *dual_role){}
 static inline struct dual_role_phy_instance *__must_check
 devm_dual_role_instance_register(struct device *parent,
 				 const struct dual_role_phy_desc *desc)
@@ -117,9 +118,10 @@ devm_dual_role_instance_register(struct device *parent,
 	return ERR_PTR(-ENOSYS);
 }
 static inline void devm_dual_role_instance_unregister(struct device *dev,
-						      struct dual_role_phy_instance
-						      *dual_role){}
-static inline void *dual_role_get_drvdata(struct dual_role_phy_instance *dual_role)
+					       struct dual_role_phy_instance
+					       *dual_role){}
+static inline void *dual_role_get_drvdata(struct dual_role_phy_instance
+		*dual_role)
 {
 	return ERR_PTR(-ENOSYS);
 }

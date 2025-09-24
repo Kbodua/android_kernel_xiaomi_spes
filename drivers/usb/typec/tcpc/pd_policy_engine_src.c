@@ -63,7 +63,8 @@ void pe_src_send_capabilities_entry(struct pd_port *pd_port)
 	pd_port->pe_data.cap_counter++;
 }
 
-void pe_src_negotiate_capabilities_entry(struct pd_port *pd_port)
+void pe_src_negotiate_capabilities_entry(
+				struct pd_port *pd_port)
 {
 	pd_handle_first_pd_command(pd_port);
 	pd_dpm_src_evaluate_request(pd_port);
@@ -145,7 +146,8 @@ void pe_src_get_sink_cap_exit(struct pd_port *pd_port)
 	pd_dpm_dr_inform_sink_cap(pd_port);
 }
 
-void pe_src_wait_new_capabilities_entry(struct pd_port *pd_port)
+void pe_src_wait_new_capabilities_entry(
+			struct pd_port *pd_port)
 {
 	/* Wait for new Source Capabilities */
 }
@@ -176,7 +178,7 @@ void pe_src_cbl_send_soft_reset_entry(struct pd_port *pd_port)
 
 	pd_send_cable_soft_reset(pd_port);
 }
-#endif /* CONFIG_PD_SRC_RESET_CABLE */
+#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 
 void pe_src_vdm_identity_request_entry(struct pd_port *pd_port)
 {
@@ -196,7 +198,7 @@ void pe_src_vdm_identity_naked_entry(struct pd_port *pd_port)
 	pd_dpm_inform_cable_id(pd_port, true);
 }
 
-#endif /* CONFIG_USB_PD_SRC_STARTUP_DISCOVER_ID */
+#endif	/* CONFIG_USB_PD_SRC_STARTUP_DISCOVER_ID */
 
 
 #ifdef CONFIG_USB_PD_REV30
@@ -234,7 +236,7 @@ void pe_src_send_source_alert_entry(struct pd_port *pd_port)
 	PE_STATE_WAIT_TX_SUCCESS(pd_port);
 	pd_dpm_send_alert(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 
 /*
  * [PD3.0] Figure 8-76 Source Port Sink Alert State Diagram
@@ -247,7 +249,7 @@ void pe_src_sink_alert_received_entry(struct pd_port *pd_port)
 
 	pd_dpm_inform_alert(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_ALERT_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_ALERT_REMOTE */
 
 /*
  * [PD3.0] Figure 8-78 Source Give Source Capabilities Extended State Diagram
@@ -260,7 +262,7 @@ void pe_src_give_source_cap_ext_entry(struct pd_port *pd_port)
 
 	pd_dpm_send_source_cap_ext(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_SRC_CAP_EXT_LOCAL */
 
 /*
  * [PD3.0] Figure 8-80 Source Give Source Status State Diagram
@@ -273,7 +275,7 @@ void pe_src_give_source_status_entry(struct pd_port *pd_port)
 
 	pd_dpm_send_status(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_STATUS_LOCAL */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_LOCAL */
 
 /*
  * [PD3.0] Figure 8-81 Source Port Get Sink Status State Diagram
@@ -290,7 +292,7 @@ void pe_src_get_sink_status_exit(struct pd_port *pd_port)
 {
 	pd_dpm_inform_status(pd_port);
 }
-#endif /* CONFIG_USB_PD_REV30_STATUS_REMOTE */
+#endif	/* CONFIG_USB_PD_REV30_STATUS_REMOTE */
 
 /*
  * [PD3.0] Figure 8-84 Source Give Source PPS Status State Diagram
@@ -304,6 +306,6 @@ void pe_src_give_pps_status_entry(struct pd_port *pd_port)
 	/* TODO */
 	PD_BUG_ON(1);
 }
-#endif /* CONFIG_USB_PD_REV30_PPS_SOURCE */
+#endif	/* CONFIG_USB_PD_REV30_PPS_SOURCE */
 
-#endif /* CONFIG_USB_PD_REV30 */
+#endif	/* CONFIG_USB_PD_REV30 */

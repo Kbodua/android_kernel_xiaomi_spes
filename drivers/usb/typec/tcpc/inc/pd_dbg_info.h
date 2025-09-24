@@ -29,6 +29,6 @@ static inline int pd_dbg_info(const char *fmt, ...)
 }
 static inline void pd_dbg_info_lock(void) {}
 static inline void pd_dbg_info_unlock(void) {}
-#endif /* CONFIG_PD_DBG_INFO */
+#endif	/* CONFIG_PD_DBG_INFO */
 
 #endif /* PD_DBG_INFO_H_INCLUDED */

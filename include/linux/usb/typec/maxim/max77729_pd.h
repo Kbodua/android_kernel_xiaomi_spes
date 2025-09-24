@@ -90,17 +90,17 @@ struct pdic_notifier_struct {
 
 
 typedef union sec_pdo_object {
-	uint32_t	data;
+	uint32_t		data;
 	struct {
-		uint8_t	bdata[4];
+		uint8_t		bdata[4];
 	} BYTES;
 	struct {
 		uint32_t	reserved:30,
 				type:2;
 	} BITS_supply;
 	struct {
-		uint32_t	max_current:10,		/* 10mA units */
-				voltage:10,		/* 50mV units */
+		uint32_t	max_current:10,        /* 10mA units */
+				voltage:10,            /* 50mV units */
 				peak_current:2,
 				reserved:2,
 				unchuncked_extended_messages_supported:1,
@@ -109,7 +109,7 @@ typedef union sec_pdo_object {
 				unconstrained_power:1,
 				usb_suspend_supported:1,
 				dual_role_power:1,
-				supply:2;		/* Fixed supply : 00b */
+				supply:2;			/* Fixed supply : 00b */
 	} BITS_pdo_fixed;
 	struct {
 		uint32_t	max_current:10,		/* 10mA units */
@@ -118,7 +118,7 @@ typedef union sec_pdo_object {
 				supply:2;		/* Variable Supply (non-Battery) : 10b */
 	} BITS_pdo_variable;
 	struct {
-		uint32_t	max_allowable_power:10,	/* 250mW units */
+		uint32_t	max_allowable_power:10,		/* 250mW units */
 				min_voltage:10,		/* 50mV units  */
 				max_voltage:10,		/* 50mV units  */
 				supply:2;		/* Battery : 01b */
@@ -132,7 +132,7 @@ typedef union sec_pdo_object {
 				reserved3:2,
 				pps_power_limited:1,
 				pps_supply:2,
-				supply:2;	/* APDO : 11b */
+				supply:2;		/* APDO : 11b */
 	} BITS_pdo_programmable;
 } U_SEC_PDO_OBJECT;
 

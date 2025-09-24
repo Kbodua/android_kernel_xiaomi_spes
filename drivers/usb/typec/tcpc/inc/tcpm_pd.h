@@ -35,7 +35,7 @@
 #define MAX_EXTENDED_MSG_LEN	260
 #else
 #define MAX_EXTENDED_MSG_LEN	26
-#endif /* CONFIG_USB_PD_REV30_CHUNKING */
+#endif	/* CONFIG_USB_PD_REV30_CHUNKING */
 
 /* PD30 Data Message Data Object */
 
@@ -103,7 +103,7 @@
 #define ADO(type, fixed, swap)	\
 	(((type) << 24) | ((fixed) << 20) | ((swap) << 16))
 
-#define ADO_GET_STATUS_ONCE_MASK	ADO(\
+#define ADO_GET_STATUS_ONCE_MASK    ADO(\
 		ADO_ALERT_BAT_CHANGED|ADO_ALERT_SRC_IN_CHANGED,\
 		0xff, 0xff)
 

@@ -16,21 +16,21 @@
 #define __LINUX_MAXIM_CCIC_ALTERNATE_MODE_H__
 
 typedef union { /* new defined union for MD05 Op Code Command Data */
-	uint8_t		DATA;
+	uint8_t        DATA;
 	struct {
-		uint8_t	BDATA[1];
+		uint8_t     BDATA[1];
 	} BYTES;
 	struct {
-		uint8_t		Num_Of_VDO:3,
+		uint8_t	Num_Of_VDO:3,
 				Cmd_Type:2,
 				Reserved:3;
 	} BITS;
 } SEND_VDM_BYTE_DATA;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	Number_of_obj:3,
@@ -44,9 +44,9 @@ typedef union {
 } UND_DATA_MSG_HEADER_Type;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	VDM_command:5,
@@ -61,9 +61,9 @@ typedef union {
 } UND_DATA_MSG_VDM_HEADER_Type;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	USB_Vendor_ID:16,
@@ -78,7 +78,7 @@ typedef union {
 typedef union {
 	uint32_t	DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t		BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	Cert_TID:20,
@@ -87,20 +87,20 @@ typedef union {
 } UND_CERT_STAT_VDO_Type;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
-		uint32_t	Device_Version:16,
-				Product_ID:16;
+		uint32_t    Device_Version:16,
+			    Product_ID:16;
 	} BITS;
 } UND_PRODUCT_VDO_Type;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	USB_Superspeed_Signaling_Support:3,
@@ -122,13 +122,13 @@ typedef union {
 } UND_CABLE_VDO_Type;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
-		uint32_t	SVID_1:16,
-				SVID_0:16;
+		uint32_t    SVID_1:16,
+			    SVID_0:16;
 	} BITS;
 } UND_VDO1_Type;
 
@@ -190,10 +190,10 @@ typedef union {
 	} BYTES;
 	struct {
 		uint32_t	ORDER_OF_CURRENT_UVDM_SET:4,
-				RESERVED:9,
-				COMMAND_TYPE:2,
-				DATA_TYPE:1,
-				PID:16;
+					RESERVED:9,
+					COMMAND_TYPE:2,
+					DATA_TYPE:1,
+					PID:16;
 	} BITS;
 } UND_SEC_UNSTRUCTURED_VDM_RESPONSE_HEADER_Type;
 
@@ -214,8 +214,8 @@ typedef struct {
 } VDO_MESSAGE_Type;
 
 /* For DP */
-#define TypeC_POWER_SINK_INPUT	0
-#define TypeC_POWER_SOURCE_OUTPUT	1
+#define TypeC_POWER_SINK_INPUT     0
+#define TypeC_POWER_SOURCE_OUTPUT     1
 #define TypeC_DP_SUPPORT	(0xFF01)
 
 /* For Dex */
@@ -224,64 +224,63 @@ typedef struct {
 
 /* For DP VDM Modes VDO Port_Capability */
 typedef enum {
-	num_Reserved_Capable = 0,
-	num_UFP_D_Capable = 1,
-	num_DFP_D_Capable = 2,
+	num_Reserved_Capable        = 0,
+	num_UFP_D_Capable           = 1,
+	num_DFP_D_Capable           = 2,
 	num_DFP_D_and_UFP_D_Capable = 3
 } Num_DP_Port_Capability_Type;
 
 /* For DP VDM Modes VDO Receptacle_Indication */
 typedef enum {
-	num_USB_TYPE_C_PLUG = 0,
-	num_USB_TYPE_C_Receptacle = 1
+	num_USB_TYPE_C_PLUG        = 0,
+	num_USB_TYPE_C_Receptacle  = 1
 } Num_DP_Receptacle_Indication_Type;
 
 
 /* For DP_Status_Update Port_Connected */
 typedef enum {
-	num_Adaptor_Disable = 0,
-	num_Connect_DFP_D = 1,
-	num_Connect_UFP_D = 2,
+	num_Adaptor_Disable         = 0,
+	num_Connect_DFP_D           = 1,
+	num_Connect_UFP_D           = 2,
 	num_Connect_DFP_D_and_UFP_D = 3
 } Num_DP_Port_Connected_Type;
 
 /* For DP_Configure Select_Configuration */
 typedef enum {
-	num_Cfg_for_USB = 0,
-	num_Cfg_UFP_U_as_DFP_D = 1,
-	num_Cfg_UFP_U_as_UFP_D = 2,
-	num_Cfg_Reserved = 3
+	num_Cfg_for_USB             = 0,
+	num_Cfg_UFP_U_as_DFP_D      = 1,
+	num_Cfg_UFP_U_as_UFP_D      = 2,
+	num_Cfg_Reserved            = 3
 } Num_DP_Sel_Configuration_Type;
 
 typedef enum { /* There is another Macro definitions which are similiar to this */
-	REQ = 0,
-	ACK = 1,
-	NAK = 2,
-	BUSY = 3
+	REQ			= 0,
+	ACK			= 1,
+	NAK 			= 2,
+	BUSY 			= 3
 } VDM_CMD_TYPE;
 
 typedef enum {
-	Reserved = 0,
-	Discover_Identity = 1,
-	Discover_SVIDs = 2,
-	Discover_Modes = 3,
-	Enter_Mode = 4,
-	Exit_Mode = 5,
-	Attention = 6,
-	Configure = 17
+	Reserved		= 0,
+	Discover_Identity	= 1,
+	Discover_SVIDs 		= 2,
+	Discover_Modes	 	= 3,
+	Enter_Mode 		= 4,
+	Exit_Mode		= 5,
+	Attention		= 6,
+	Configure		= 17
 } VDM_HEADER_COMMAND;
 
 typedef enum {
-	Version_1_0 = 0,
-	Version_2_0 = 1,
-	Reserved1 = 2,
-	Reserved2 = 3
+	Version_1_0		= 0,
+	Version_2_0		= 1,
+	Reserved1		= 2,
+	Reserved2		= 3
 } STRUCTURED_VDM_VERSION;
-
 typedef union {
 	uint32_t	DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	Port_Capability:2,
@@ -295,27 +294,27 @@ typedef union {
 } UND_VDO_MODE_DP_CAPABILITY_Type;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t    DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
-		uint32_t	Port_Connected:2,
-				Power_Low:1,
-				Enabled:1,
-				Multi_Function_Preference:1,
-				USB_Configuration_Req:1,
-				Exit_DP_Mode_Req:1,
-				HPD_State:1,
-				HPD_Interrupt:1,
-				Reserved:23;
+		uint32_t    Port_Connected:2,
+			    Power_Low:1,
+			    Enabled:1,
+			    Multi_Function_Preference:1,
+			    USB_Configuration_Req:1,
+			    Exit_DP_Mode_Req:1,
+			    HPD_State:1,
+			    HPD_Interrupt:1,
+			    Reserved:23;
 	} BITS;
 } UND_VDO_DP_STATUS_UPDATES_Type;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	SEL_Configuration:2,
@@ -342,32 +341,32 @@ typedef union {
 } UND_DP_CONFIG_UPDATE_Type;
 
 typedef struct {
-	UND_DATA_MSG_HEADER_Type		MSG_HEADER;
+	UND_DATA_MSG_HEADER_Type			MSG_HEADER;
 	UND_DATA_MSG_VDM_HEADER_Type		DATA_MSG_VDM_HEADER;
 	UND_VDO_MODE_DP_CAPABILITY_Type		DATA_MSG_MODE_VDO_DP;
 } DIS_MODE_DP_CAPA_Type;
 
 typedef struct {
-	UND_DATA_MSG_HEADER_Type		MSG_HEADER;
+	UND_DATA_MSG_HEADER_Type			MSG_HEADER;
 	UND_DATA_MSG_VDM_HEADER_Type		DATA_MSG_VDM_HEADER;
 	UND_VDO_DP_STATUS_UPDATES_Type		DATA_DP_STATUS_UPDATE;
 } DP_STATUS_UPDATE_Type;
 
 typedef struct {
-	UND_DATA_MSG_HEADER_Type		MSG_HEADER;
+	UND_DATA_MSG_HEADER_Type			MSG_HEADER;
 	UND_DATA_MSG_VDM_HEADER_Type		DATA_MSG_VDM_HEADER;
 	UND_VDO_DP_STATUS_UPDATES_Type		DATA_MSG_DP_STATUS;
 } DIS_ATTENTION_MESSAGE_DP_STATUS_Type;
 
 enum VDM_MSG_IRQ_State {
-	VDM_DISCOVER_ID		= (1 << 0),
-	VDM_DISCOVER_SVIDS	= (1 << 1),
-	VDM_DISCOVER_MODES	= (1 << 2),
-	VDM_ENTER_MODE		= (1 << 3),
-	VDM_EXIT_MODE		= (1 << 4),
-	VDM_ATTENTION		= (1 << 5),
-	VDM_DP_STATUS_UPDATE	= (1 << 6),
-	VDM_DP_CONFIGURE	= (1 << 7),
+	VDM_DISCOVER_ID		=	(1 << 0),
+	VDM_DISCOVER_SVIDS	=	(1 << 1),
+	VDM_DISCOVER_MODES	=	(1 << 2),
+	VDM_ENTER_MODE		=	(1 << 3),
+	VDM_EXIT_MODE		=	(1 << 4),
+	VDM_ATTENTION		=	(1 << 5),
+	VDM_DP_STATUS_UPDATE	=	(1 << 6),
+	VDM_DP_CONFIGURE	=	(1 << 7),
 };
 
 #define ALTERNATE_MODE_NOT_READY	(1 << 0)
@@ -409,10 +408,10 @@ enum VDM_MSG_IRQ_State {
 #define SEC_UVDM_SHORT_DATA		0x0
 #define SEC_UVDM_LONG_DATA		0x1
 #define SEC_UVDM_ININIATOR		0x0
-#define SEC_UVDM_RESPONDER_ACK		0x1
-#define SEC_UVDM_RESPONDER_NAK		0x2
-#define SEC_UVDM_RESPONDER_BUSY		0x3
-#define UNSTRUCTURED_VDM		0x0
+#define SEC_UVDM_RESPONDER_ACK	0x1
+#define SEC_UVDM_RESPONDER_NAK	0x2
+#define SEC_UVDM_RESPONDER_BUSY	0x3
+#define UNSTRUCTURED_VDM	0x0
 #define STRUCTURED_VDM 			1
 /*For DP Pin Assignment */
 #define DP_PIN_ASSIGNMENT_NODE	0x00000000
@@ -424,9 +423,9 @@ enum VDM_MSG_IRQ_State {
 #define DP_PIN_ASSIGNMENT_F	0x00000020	/* ( 1 << 5 ) */
 
 
-#define CCIC_NOTIFY_LOW		0x0
-#define CCIC_NOTIFY_HIGH	0x1
-#define CCIC_NOTIFY_IRQ		0x2
+#define CCIC_NOTIFY_LOW     0x0
+#define CCIC_NOTIFY_HIGH    0x1
+#define CCIC_NOTIFY_IRQ     0x2
 
 
 enum uvdm_rx_type {
@@ -436,9 +435,9 @@ enum uvdm_rx_type {
 };
 
 typedef union sec_uvdm_header {
-	uint32_t	data;
+	uint32_t		data;
 	struct {
-		uint8_t	bdata[4];
+		uint8_t		bdata[4];
 	} BYTES;
 	struct {
 		uint32_t	data:8,
@@ -453,9 +452,9 @@ typedef union sec_uvdm_header {
 typedef U_SEC_UVDM_HEADER U_SEC_UVDM_RESPONSE_HEADER;
 
 typedef union sec_tx_data_header {
-	uint32_t	data;
+	uint32_t		data;
 	struct {
-		uint8_t	bdata[4];
+		uint8_t		bdata[4];
 	} BYTES;
 	struct {
 		uint32_t	data_size_of_current_set:8,
@@ -466,9 +465,9 @@ typedef union sec_tx_data_header {
 } U_SEC_TX_DATA_HEADER;
 
 typedef union sec_data_tx_tailer {
-	uint32_t	data;
+	uint32_t		data;
 	struct {
-		uint8_t	bdata[4];
+		uint8_t		bdata[4];
 	} BYTES;
 	struct {
 		uint32_t	checksum:16,
@@ -477,9 +476,9 @@ typedef union sec_data_tx_tailer {
 } U_SEC_TX_DATA_TAILER;
 
 typedef union sec_data_rx_header {
-	uint32_t	data;
+	uint32_t		data;
 	struct {
-		uint8_t	bdata[4];
+		uint8_t		bdata[4];
 	} BYTES;
 	struct {
 		uint32_t	reserved:18,
@@ -490,9 +489,9 @@ typedef union sec_data_rx_header {
 } U_SEC_RX_DATA_HEADER;
 
 typedef union {
-	uint32_t	DATA;
+	uint32_t        DATA;
 	struct {
-		uint8_t	BDATA[4];
+		uint8_t     BDATA[4];
 	} BYTES;
 	struct {
 		uint32_t	VDM_command:5,
@@ -512,25 +511,25 @@ typedef union {
 #define SEC_UVDM_RX_HEADER_NAK	0x1
 
 #define MAXIM_ENABLE_ALTERNATE_SRCCAP 0x1
-#define MAXIM_ENABLE_ALTERNATE_VDM	0x2
+#define MAXIM_ENABLE_ALTERNATE_VDM	  0x2
 #define MAXIM_ENABLE_ALTERNATE_SRC_VDM	0x3
 #define MAXIM_DISABLE_ALTERNATE_SRC_VDM	0x0
 
 typedef union {
-	uint32_t	DATA;
-	uint8_t		BYTES[4];
+	uint32_t DATA;
+	uint8_t  BYTES[4];
 	struct {
-		uint32_t	Vdm_Flag_Reserve_b0:1,		/* b0 */
-				Vdm_Flag_Discover_ID:1,		/* b1 */
-				Vdm_Flag_Discover_SVIDs:1,	/* b2 */
-				Vdm_Flag_Discover_MODEs:1,	/* b3 */
-				Vdm_Flag_Enter_Mode:1,		/* b4 */
-				Vdm_Flag_Exit_Mode:1,		/* b5 */
-				Vdm_Flag_Attention:1,		/* b6 */
-				Vdm_Flag_Reserved:9,		/* b7 - b15 */
-				Vdm_Flag_DP_Status_Update:1,	/* b16 */
-				Vdm_Flag_DP_Configure:1,	/* b17 */
-				Vdm_Flag_Reserved2:14;		/* b18 - b31 */
+	    uint32_t	Vdm_Flag_Reserve_b0:1,		/* b0 */
+			Vdm_Flag_Discover_ID:1,		/* b1 */
+			Vdm_Flag_Discover_SVIDs:1,	/* b2 */
+			Vdm_Flag_Discover_MODEs:1,	/* b3 */
+			Vdm_Flag_Enter_Mode:1,		/* b4 */
+			Vdm_Flag_Exit_Mode:1,		/* b5 */
+			Vdm_Flag_Attention:1,		/* b6 */
+			Vdm_Flag_Reserved:9,		/* b7 - b15 */
+			Vdm_Flag_DP_Status_Update:1,	/* b16 */
+			Vdm_Flag_DP_Configure:1,	/* b17 */
+			Vdm_Flag_Reserved2:14;		/* b18 - b31 */
 	} BITS;
 } MAX77729_VDM_MSG_IRQ_STATUS_Type;
 

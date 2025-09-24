@@ -10,7 +10,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -38,7 +38,7 @@ static const u8 max77729_mask_reg[] = {
 };
 
 static struct i2c_client *get_i2c(struct max77729_dev *max77729,
-				  enum max77729_irq_source src)
+				enum max77729_irq_source src)
 {
 	switch (src) {
 	case SYS_INT:
@@ -127,7 +127,8 @@ static void max77729_irq_sync_unlock(struct irq_data *data)
 		u8 mask_reg = max77729_mask_reg[i];
 		struct i2c_client *i2c = get_i2c(max77729, i);
 
-		if (mask_reg == MAX77729_REG_INVALID || IS_ERR_OR_NULL(i2c))
+		if (mask_reg == MAX77729_REG_INVALID ||
+				IS_ERR_OR_NULL(i2c))
 			continue;
 		max77729->irq_masks_cache[i] = max77729->irq_masks_cur[i];
 
@@ -147,8 +148,7 @@ irq_to_max77729_irq(struct max77729_dev *max77729, int irq)
 static void max77729_irq_mask(struct irq_data *data)
 {
 	struct max77729_dev *max77729 = irq_get_chip_data(data->irq);
-	const struct max77729_irq_data *irq_data =
-		irq_to_max77729_irq(max77729, data->irq);
+	const struct max77729_irq_data *irq_data = irq_to_max77729_irq(max77729, data->irq);
 
 	if (irq_data->group >= MAX77729_IRQ_GROUP_NR)
 		return;
@@ -159,8 +159,7 @@ static void max77729_irq_mask(struct irq_data *data)
 static void max77729_irq_unmask(struct irq_data *data)
 {
 	struct max77729_dev *max77729 = irq_get_chip_data(data->irq);
-	const struct max77729_irq_data *irq_data =
-		irq_to_max77729_irq(max77729, data->irq);
+	const struct max77729_irq_data *irq_data = irq_to_max77729_irq(max77729, data->irq);
 
 	if (irq_data->group >= MAX77729_IRQ_GROUP_NR)
 		return;
@@ -203,7 +202,7 @@ static irqreturn_t max77729_irq_thread(int irq, void *data)
 	u8 ic_alt_mode = 0;
 
 	/* pr_info("%s: irq gpio pre-state(0x%02x)\n", __func__, */
-			/* gpio_get_value(max77729->irq_gpio)); */
+				/* gpio_get_value(max77729->irq_gpio)); */
 
 #if defined(CONFIG_QCOM_IFPMIC_SUSPEND)
 	max77729->doing_irq = 1;
@@ -211,7 +210,7 @@ static irqreturn_t max77729_irq_thread(int irq, void *data)
 	ret = wait_event_timeout(max77729->suspend_wait,
 			!max77729->suspended, msecs_to_jiffies(200));
 	if (!ret) {
-		pr_info("%s suspend_wait timeout\n", __func__);
+		pr_info("%s: suspend_wait timeout\n", __func__);
 		max77729->doing_irq = 0;
 		return IRQ_NONE;
 	}
@@ -220,9 +219,9 @@ static irqreturn_t max77729_irq_thread(int irq, void *data)
 	ret = max77729_read_reg(max77729->i2c,
 			MAX77729_PMIC_REG_INTSRC, &irq_src);
 	if (ret) {
-		pr_err("%s:%s Failed to read interrupt source: %d\n",
-				MFD_DEV_NAME, __func__, ret);
-				max77729->doing_irq = 0;
+		pr_err("%s: %s: Failed to read interrupt source: %d\n",
+			MFD_DEV_NAME, __func__, ret);
+			max77729->doing_irq = 0;
 		return IRQ_NONE;
 	}
 
@@ -231,8 +230,8 @@ static irqreturn_t max77729_irq_thread(int irq, void *data)
 
 	if (irq_src & MAX77729_IRQSRC_CHG) {
 	/* CHG_INT */
-		ret = max77729_read_reg(max77729->charger,
-				MAX77729_CHG_REG_INT, &irq_reg[CHG_INT]);
+		ret = max77729_read_reg(max77729->charger, MAX77729_CHG_REG_INT,
+				&irq_reg[CHG_INT]);
 
 		if (max77729->enable_nested_irq) {
 			irq_reg[USBC_INT] |= max77729->usbc_irq;
@@ -244,12 +243,13 @@ static irqreturn_t max77729_irq_thread(int irq, void *data)
 		/* mask chgin to prevent chgin infinite interrupt
 		 * chgin is unmasked chgin isr
 		 */
-		if (irq_reg[CHG_INT] & max77729_irqs[MAX77729_CHG_IRQ_CHGIN_I].mask) {
+		if (irq_reg[CHG_INT] &
+				max77729_irqs[MAX77729_CHG_IRQ_CHGIN_I].mask) {
 			max77729_read_reg(max77729->charger,
-					MAX77729_CHG_REG_INT_MASK, &reg_data);
+				MAX77729_CHG_REG_INT_MASK, &reg_data);
 			reg_data |= (1 << 6);
 			max77729_write_reg(max77729->charger,
-					MAX77729_CHG_REG_INT_MASK, reg_data);
+				MAX77729_CHG_REG_INT_MASK, reg_data);
 		}
 	}
 
@@ -257,18 +257,16 @@ static irqreturn_t max77729_irq_thread(int irq, void *data)
 	if (irq_src & MAX77729_IRQSRC_FG) {
 		/* pr_err("[%s] fuelgauge interrupt\n", __func__); */
 		/* pr_debug("[%s]IRQ_BASE(%d), NESTED_IRQ(%d)\n", */
-				/* __func__, max77729->irq_base, */
-				/* max77729->irq_base + MAX77729_FG_IRQ_ALERT); */
+			/* __func__, max77729->irq_base, max77729->irq_base + MAX77729_FG_IRQ_ALERT); */
 		handle_nested_irq(max77729->irq_base + MAX77729_FG_IRQ_ALERT);
 		goto done;
 	}
 
 	if (irq_src & MAX77729_IRQSRC_TOP) {
 		/* SYS_INT */
-		ret = max77729_read_reg(max77729->i2c,
-				MAX77729_PMIC_REG_SYSTEM_INT, &irq_reg[SYS_INT]);
-		pr_info("%s: topsys interrupt(0x%02x)\n",
-				__func__, irq_reg[SYS_INT]);
+		ret = max77729_read_reg(max77729->i2c, MAX77729_PMIC_REG_SYSTEM_INT,
+				&irq_reg[SYS_INT]);
+		pr_info("%s: topsys interrupt(0x%02x)\n", __func__, irq_reg[SYS_INT]);
 	}
 
 	if ((irq_src & MAX77729_IRQSRC_USBC) && max77729->cc_booting_complete) {
@@ -278,25 +276,24 @@ static irqreturn_t max77729_irq_thread(int irq, void *data)
 		ret = max77729_read_reg(max77729->muic, MAX77729_USBC_REG_VDM_INT_M,
 				&irq_vdm_mask);
 		if (irq_reg[USBC_INT] & BIT_VBUSDetI) {
-			ret = max77729_read_reg(max77729->muic,
-					REG_BC_STATUS, &bc_status0);
-			ret = max77729_read_reg(max77729->muic,
-					REG_CC_STATUS0, &cc_status0);
+			ret = max77729_read_reg(max77729->muic, REG_BC_STATUS, &bc_status0);
+			ret = max77729_read_reg(max77729->muic, REG_CC_STATUS0, &cc_status0);
 			vbvolt = (bc_status0 & BIT_VBUSDet) >> FFS(BIT_VBUSDet);
 			ccstat = (cc_status0 & BIT_CCStat) >> FFS(BIT_CCStat);
 			if (cc_No_Connection == ccstat && vbvolt == VB_LOW) {
 				pre_ccstati = irq_reg[CC_INT];
 				irq_reg[CC_INT] |= 0x1;
-				pr_info("[MAX77729] set the cc_stat int [work-around]: %x, %x\n",
-						pre_ccstati,irq_reg[CC_INT]);
+				pr_info("%s: [MAX77729] set the cc_stat int [work-around]: %x, %x\n",
+						__func__, pre_ccstati,irq_reg[CC_INT]);
 			}
 		}
 		ret = max77729_bulk_read(max77729->muic, MAX77729_USBC_REG_USBC_STATUS1,
 				8, dump_reg);
-		pr_err("[MAX77729] irq_reg, complete [%x], %x, %x, %x, %x, %x\n", max77729->cc_booting_complete,
+		pr_err("%s: [MAX77729] irq_reg, complete [%x], %x, %x, %x, %x, %x\n", __func__, max77729->cc_booting_complete,
 				irq_reg[USBC_INT], irq_reg[CC_INT], irq_reg[PD_INT], irq_reg[VDM_INT], irq_vdm_mask);
-		pr_err("[MAX77729] dump_reg, %x, %x, %x, %x, %x, %x, %x, %x\n", dump_reg[0], dump_reg[1],
-				dump_reg[2], dump_reg[3], dump_reg[4], dump_reg[5], dump_reg[6], dump_reg[7]);
+		pr_err("%s: [MAX77729] dump_reg, %x, %x, %x, %x, %x, %x, %x, %x\n", __func__,
+				dump_reg[0], dump_reg[1], dump_reg[2], dump_reg[3],
+				dump_reg[4], dump_reg[5], dump_reg[6], dump_reg[7]);
 	}
 
 	if (max77729->cc_booting_complete) {
@@ -344,13 +341,13 @@ int max77729_irq_init(struct max77729_dev *max77729)
 	int cur_irq;
 
 	if (!max77729->irq_gpio) {
-		dev_warn(max77729->dev, "No interrupt specified.\n");
+		dev_warn(max77729->dev, "%s: No interrupt specified.\n", __func__);
 		max77729->irq_base = 0;
 		return 0;
 	}
 
 	if (!max77729->irq_base) {
-		dev_err(max77729->dev, "No interrupt base specified.\n");
+		dev_err(max77729->dev, "%s: No interrupt base specified.\n", __func__);
 		return 0;
 	}
 
@@ -362,7 +359,7 @@ int max77729_irq_init(struct max77729_dev *max77729)
 
 	ret = gpio_request(max77729->irq_gpio, "if_pmic_irq");
 	if (ret) {
-		dev_err(max77729->dev, "%s: failed requesting gpio %d\n",
+		dev_err(max77729->dev, "%s: failed requesting gpio: %d\n",
 				__func__, max77729->irq_gpio);
 		return ret;
 	}
@@ -375,8 +372,8 @@ int max77729_irq_init(struct max77729_dev *max77729)
 	/* Mask individual interrupt sources */
 	for (i = 0; i < MAX77729_IRQ_GROUP_NR; i++) {
 		struct i2c_client *i2c;
-		/* MUIC IRQ 0: MASK 1: NOT MASK => NOT USE */
-		/* Other IRQ 1: MASK 0: NOT MASK */
+		/* MUIC IRQ 0:MASK 1:NOT MASK => NOT USE */
+		/* Other IRQ 1:MASK 0:NOT MASK */
 		max77729->irq_masks_cur[i] = 0xff;
 		max77729->irq_masks_cache[i] = 0xff;
 
@@ -407,16 +404,16 @@ int max77729_irq_init(struct max77729_dev *max77729)
 	}
 
 	/* Unmask max77729 interrupt */
-	ret = max77729_read_reg(max77729->i2c,
-			MAX77729_PMIC_REG_INTSRC_MASK, &i2c_data);
+	ret = max77729_read_reg(max77729->i2c, MAX77729_PMIC_REG_INTSRC_MASK,
+			&i2c_data);
 	if (ret) {
-		pr_err("%s:%s fail to read muic reg\n", MFD_DEV_NAME, __func__);
+		pr_err("%s: %s: fail to read muic reg\n", MFD_DEV_NAME, __func__);
 		return ret;
 	}
 	i2c_data |= 0xF;	/* mask muic interrupt */
 
-	max77729_write_reg(max77729->i2c,
-			MAX77729_PMIC_REG_INTSRC_MASK, i2c_data);
+	max77729_write_reg(max77729->i2c, MAX77729_PMIC_REG_INTSRC_MASK,
+			i2c_data);
 
  	max77729_write_word(max77729->fuelgauge, 0x1d, 0x2350); //disable alert fg for some abnormal shutdown, reboot
 
@@ -424,27 +421,27 @@ int max77729_irq_init(struct max77729_dev *max77729)
 			IRQF_TRIGGER_LOW | IRQF_ONESHOT,
 			"max77729-irq", max77729);
 	if (ret) {
-		dev_err(max77729->dev, "Failed to request IRQ %d: %d\n",
-			max77729->irq, ret);
+		dev_err(max77729->dev, "%s: Failed to request IRQ %d: %d\n",
+			__func__, max77729->irq, ret);
 		return ret;
 	}
 
 
 	/* Unmask max77729 interrupt */
-	ret = max77729_read_reg(max77729->i2c,
-			MAX77729_PMIC_REG_INTSRC_MASK, &i2c_data);
+	ret = max77729_read_reg(max77729->i2c, MAX77729_PMIC_REG_INTSRC_MASK,
+			&i2c_data);
 	if (ret) {
-		pr_err("%s:%s fail to read muic reg\n", MFD_DEV_NAME, __func__);
+		pr_err("%s: %s: fail to read muic reg\n", MFD_DEV_NAME, __func__);
 		return ret;
 	}
 
 	i2c_data &= ~(MAX77729_IRQSRC_CHG);	/* Unmask charger interrupt */
-	/* i2c_data &= ~(MAX77729_IRQSRC_FG);	[> Unmask fg interrupt <] */
+	//i2c_data &= ~(MAX77729_IRQSRC_FG);	/* Unmask fg interrupt */
 	i2c_data |= MAX77729_IRQSRC_USBC;	/* mask usbc interrupt */
 	/* i2c_data |= MAX77729_IRQSRC_CHG;	[> mask usbc interrupt <] */
 
-	max77729_write_reg(max77729->i2c,
-			MAX77729_PMIC_REG_INTSRC_MASK, i2c_data);
+	max77729_write_reg(max77729->i2c, MAX77729_PMIC_REG_INTSRC_MASK,
+			i2c_data);
 
 	/* pr_info("%s:%s max77729_PMIC_REG_INTSRC_MASK=0x%02x\n", */
 			/* MFD_DEV_NAME, __func__, i2c_data); */
