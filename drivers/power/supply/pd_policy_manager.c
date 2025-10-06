@@ -65,7 +65,7 @@ static const struct pdpm_config pm_config = {
 	.fc2_disable_sw	= true,
 };
 
-#define LOG_INTERVAL (HZ)
+#define LOG_INTERVAL (3 * HZ)
 
 #define pdpm_dbg(fmt, ...)					\
 do {								\
@@ -689,7 +689,7 @@ static void usbpd_pm_evaluate_src_caps_maxim(struct usbpd_pm *pdpm)
 	int i;
 
 	pdpm->pdo = usbpd_fetch_pdo();
-	pdpm_info("usbpd_pm_evaluate_src_caps: 0x%x\n", (char *)pdpm->pdo);
+	//pdpm_info("usbpd_pm_evaluate_src_caps: 0x%x\n", (char *)pdpm->pdo);
 
 	pdpm->apdo_max_volt = pm_config.min_adapter_volt_required;
 	pdpm->apdo_max_curr = pm_config.min_adapter_curr_required;
@@ -852,8 +852,8 @@ static int usbpd_update_ibus_curr(struct usbpd_pm *pdpm)
 	return ret;
 }
 #endif
-/*static void usbpd_pm_disconnect(struct usbpd_pm *pdpm);
-static void usb_psy_pd_active_update(struct usbpd_pm *pdpm)
+
+/*static void usb_psy_pd_active_update(struct usbpd_pm *pdpm)
 {
 	int ret;
 	union power_supply_propval val = {0,};
@@ -1006,8 +1006,7 @@ static int usbpd_pm_fc2_charge_algo(struct usbpd_pm *pdpm)
 		fc2_taper_timer = 0;
 	}
 
-	/*TODO: customer can add hook here to check system level
-		* thermal mitigation*/
+	/*TODO: customer can add hook here to check system level thermal mitigation*/
 
 	steps = min(sw_ctrl_steps, hw_ctrl_steps);
 	if (pdpm->cp.ibat_curr > 0 && ibus_total > 0 && time_delta < QUICK_RAISE_VOLT_INTERVAL_S) {
@@ -1085,10 +1084,10 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 	case PD_PM_STATE_FC2_ENTRY:
 		if (pm_config.fc2_disable_sw) {
 			usbpd_pm_enable_sw(pdpm, false);
-			/* if (pdpm->sw.charge_enabled) { */
-				/* usbpd_pm_enable_sw(pdpm, false); */
-				/* usbpd_pm_check_sw_enabled(pdpm); */
-			/* } */
+			/* if (pdpm->sw.charge_enabled) {
+				usbpd_pm_enable_sw(pdpm, false);
+				usbpd_pm_check_sw_enabled(pdpm);
+			} */
 			if (!pdpm->sw.charge_enabled)
 				usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_ENTRY_1);
 		} else {
@@ -1098,7 +1097,7 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 	case PD_PM_STATE_FC2_ENTRY_1:
 		pdpm->request_voltage = pdpm->cp.vbat_volt * 2 + BUS_VOLT_INIT_UP;
 		pdpm->request_current = min(pdpm->apdo_max_curr, pm_config.bus_curr_lp_lmt);
-		usbpd_select_pdo(pdpm,pdpm->request_voltage, pdpm->request_current);
+		usbpd_select_pdo(pdpm, pdpm->request_voltage, pdpm->request_current);
 		pdpm_info("request_voltage: %d, request_current: %d\n", pdpm->request_voltage, pdpm->request_current);
 		usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_ENTRY_2);
 		tune_vbus_retry = 0;
@@ -1108,12 +1107,12 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 		if (pdpm->cp.vbus_error_low || pdpm->cp.vbus_volt < pdpm->cp.vbat_volt * 2 + BUS_VOLT_INIT_UP - 50) {
 			tune_vbus_retry++;
 			pdpm->request_voltage += 20;
-			usbpd_select_pdo(pdpm,pdpm->request_voltage, pdpm->request_current);
+			usbpd_select_pdo(pdpm, pdpm->request_voltage, pdpm->request_current);
 			pdpm_info("vbus low, request_volt: %d, request_curr: %d\n", pdpm->request_voltage, pdpm->request_current);
 		} else if (pdpm->cp.vbus_error_high || pdpm->cp.vbus_volt > pdpm->cp.vbat_volt * 2 + BUS_VOLT_INIT_UP + 200) {
 			tune_vbus_retry++;
 			pdpm->request_voltage -= 20;
-			usbpd_select_pdo(pdpm,pdpm->request_voltage,pdpm->request_current);
+			usbpd_select_pdo(pdpm, pdpm->request_voltage, pdpm->request_current);
 			pdpm_info("vbus high, request_volt: %d, request_cur: %d\n", pdpm->request_voltage, pdpm->request_current);
 		} else {
 			pdpm_info("adapter volt tune ok, retry %d times\n", tune_vbus_retry);
@@ -1159,7 +1158,7 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 			stop_sw = true;
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
 			break;
-		} else if (ret == PM_ALGO_RET_OTHER_FAULT || ret == PM_ALGO_RET_TAPER_DONE) {
+		} else if (ret == PM_ALGO_RET_OTHER_FAULT) {
 			pdpm_info("Move to switch charging: %d\n", ret);
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
 			break;
@@ -1168,8 +1167,12 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 			recover = true;
 			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
 			break;
+		} else if (ret == PM_ALGO_RET_TAPER_DONE) {
+			pdpm_info("Move to switch charging, taper is done: %d\n", ret);
+			usbpd_pm_move_state(pdpm, PD_PM_STATE_FC2_EXIT);
+			break;
 		} else {
-			usbpd_select_pdo(pdpm,pdpm->request_voltage, pdpm->request_current);
+			usbpd_select_pdo(pdpm, pdpm->request_voltage, pdpm->request_current);
 			pdpm_info("request_voltage: %d, request_current: %d\n",
 					pdpm->request_voltage, pdpm->request_current);
 		}
@@ -1184,14 +1187,7 @@ static int usbpd_pm_sm(struct usbpd_pm *pdpm)
 		}
 		break;
 	case PD_PM_STATE_FC2_EXIT:
-		/* select default 5V for taper done */
-		ret = usbpd_pm_fc2_charge_algo(pdpm);
-		if (ret == PM_ALGO_RET_TAPER_DONE) {
-			usbpd_select_pdo(pdpm, 5000, 3000);
-		} else {
-			usbpd_select_pdo(pdpm, 9000, 2000); // 9V-2A
-		}
-
+		usbpd_select_pdo(pdpm, 9000, 2000); // 9V-2A
 		if (pdpm->fcc_votable)
 			vote(pdpm->fcc_votable, BQ_TAPER_FCC_VOTER, false, 0);
 

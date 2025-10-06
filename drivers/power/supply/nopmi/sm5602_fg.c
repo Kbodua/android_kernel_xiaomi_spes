@@ -879,27 +879,32 @@ static int __calculate_battery_temp_ex(struct sm_fg_chip *sm, u16 uval)
 	}
 
 	val = uval;
-#ifdef ENABLE_NTC_COMPENSATION
-	curr = fg_read_current(sm); //fg_read_current(sm) must return mA
-	if (curr <= 0) {
-		rtrace = 0;
-	} else if (curr <= 1500) {
-		rtrace = sm->rtrace;
-	} else if (curr <= 3000) {
-		rtrace = sm->rtrace * 2;
-	} else if (curr <= 4500) {
-		rtrace = sm->rtrace * 3;
-	} else {
-		rtrace = 7200;
-	}
-	//rtrace: uohm: 7300uohm = 7.3mohm
 
-	len_meas_data = sizeof(tex_meas_uV) / sizeof(int);
-	code_meas = interp_adc_to_meas(len_meas_data, val, tex_meas_adc_code, tex_meas_uV);
-	//Charging: Vthem = Vntc-I*Rtrace, Discharging: Vthem = Vntc+I*Rtrace
-	temp_mv = (code_meas) - (curr * rtrace) / 1000;
-	code_adc = interp_meas_to_adc(len_meas_data, temp_mv, tex_meas_uV, tex_meas_adc_code);
-	val = code_adc;
+#ifdef ENABLE_NTC_COMPENSATION
+	/* only apply NTC compensation if current > 0. */
+	curr = fg_read_current(sm); // must return mA
+	if (curr > 0) {
+		/* rtrace: uohm: 7200uohm = 7.2mohm */
+		if (curr <= 1500) {
+			rtrace = sm->rtrace;
+		} else if (curr <= 3000) {
+			rtrace = sm->rtrace * 2;
+		} else if (curr <= 4500) {
+			rtrace = sm->rtrace * 3;
+		} else {
+			rtrace = 7200;
+		}
+
+		len_meas_data = sizeof(tex_meas_uV) / sizeof(int);
+		code_meas = interp_adc_to_meas(len_meas_data, val, tex_meas_adc_code, tex_meas_uV);
+		/*
+		 * Charging: Vthem = Vntc - I * Rtrace
+		 * Discharging: Vthem = Vntc + I * Rtrace
+		*/
+		temp_mv = (code_meas) - (curr * rtrace) / 1000;
+		code_adc = interp_meas_to_adc(len_meas_data, temp_mv, tex_meas_uV, tex_meas_adc_code);
+		val = code_adc;
+	}
 #endif
 
 	if (val >= sm->battery_temp_table[0]) {
@@ -1426,7 +1431,7 @@ static int fg_cal_carc(struct sm_fg_chip *sm)
 		pr_err("could not read, ret=%d\n", ret);
 		return ret;
 	} else {
-		pr_info("0x06=0x%x, 0x28=0x%x, 0x83=0x%x, 0x84=0x%x, 0x86=0x%x, 0x87=0x%x, 0x93=0x%x, 0x82=0x%x\n",
+		pr_debug("0x06=0x%x, 0x28=0x%x, 0x83=0x%x, 0x84=0x%x, 0x86=0x%x, 0x87=0x%x, 0x93=0x%x, 0x82=0x%x\n",
 				data[0], data[1], data[2],data[3], data[4],data[5], data[6], data[7]);
 	}
 
@@ -1683,7 +1688,7 @@ static int fg_get_property(struct power_supply *psy,
 		if (sm->param.batt_soc >= 0)
 			val->intval = sm->param.batt_soc / 10;
 		else if ((ret >= 0) && (sm->param.batt_soc == -EINVAL))
-			val->intval = (sm->batt_soc >= 970) ? 100 : clamp(DIV_ROUND_CLOSEST(sm->batt_soc * 10, 97), 0, 99);
+			val->intval = (sm->batt_soc >= 970) ? 100 : DIV_ROUND_CLOSEST(sm->batt_soc * 1000, 970) / 10;
 		else
 			val->intval = 50;
 		mutex_unlock(&sm->data_lock);
@@ -2114,8 +2119,8 @@ static void battery_soc_smooth_tracking_new(struct sm_fg_chip *sm)
 	}
 
 	/* Map system_soc value according to raw_soc */
-	raw_soc = sm->param.batt_raw_soc * 10;
-	system_soc = (raw_soc >= 9700) ? 100 : clamp(DIV_ROUND_CLOSEST(raw_soc, 97), 0, 99);
+	raw_soc = sm->param.batt_raw_soc;
+	system_soc = (raw_soc >= 970) ? 100 : DIV_ROUND_CLOSEST(raw_soc * 1000, 970) / 10;
 
 	pr_info("charge_type: %d, charging_status: %d, raw_soc: %d, system_soc: %d\n",
 			charge_type, charging_status, raw_soc, system_soc);
@@ -3835,13 +3840,13 @@ static int sm5602_get_psy(struct sm_fg_chip *sm)
 
 	sm->usb_psy = power_supply_get_by_name("usb");
 	if (!sm->usb_psy) {
-		pr_err("usb psy not found, defer probe\n");
+		pr_err("usb psy not found, force probe\n");
 		return -EINVAL;
 	}
 
 	sm->batt_psy = power_supply_get_by_name("battery");
 	if (!sm->batt_psy) {
-		pr_err("bms psy not found, defer probe\n");
+		pr_err("bms psy not found, force probe\n");
 		return -EINVAL;
 	}
 
@@ -3892,18 +3897,18 @@ static int sm5602_notifier_call(struct notifier_block *nb,
 	struct power_supply *psy = v;
 	struct sm_fg_chip *sm = container_of(nb, struct sm_fg_chip, nb);
 	union power_supply_propval pval = {0, };
+	bool prev_present;
 	int rc;
 
 	if (ev != PSY_EVENT_PROP_CHANGED)
 		return NOTIFY_OK;
 
 	rc = sm5602_get_psy(sm);
-	if (rc < 0) {
+	if (rc < 0)
 		return NOTIFY_OK;
-	}
 
 	//if (strcmp(psy->desc->name, "usb") != 0)
-	if (strcmp(psy->desc->name, "usb") != 0)
+	if (psy != sm->usb_psy)
 		return NOTIFY_OK;
 
 	if (sm->usb_psy) {
@@ -3914,13 +3919,18 @@ static int sm5602_notifier_call(struct notifier_block *nb,
 			return -EINVAL;
 		}
 
-		if (pval.intval) {
-			sm->usb_present = true;
+		prev_present = sm->usb_present;
+		sm->usb_present = !!pval.intval;
+
+		if (sm->usb_present && !prev_present) {
+			//sm->usb_present = true;
 			pm_stay_awake(sm->dev);
-		} else {
+			pr_info("USB connected, stay awake\n");
+		} else if (!sm->usb_present && prev_present) {
 			sm->batt_sw_fc = false;
-			sm->usb_present = false;
+			//sm->usb_present = false;
 			pm_relax(sm->dev);
+			pr_info("USB disconnected, relax wakelock\n");
 		}
 	}
 

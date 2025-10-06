@@ -21,10 +21,10 @@
 #include <linux/device.h>
 #include <linux/spinlock.h>
 
-#define ow_info	pr_info
-#define ow_dbg	pr_debug
-#define ow_err	pr_err
-#define ow_log	pr_notice
+#define ow_info	pr_info_ratelimited
+#define ow_dbg	pr_debug_ratelimited
+#define ow_err	pr_err_ratelimited
+#define ow_log	pr_info_ratelimited
 
 #define DRV_STRENGTH_16MA		(0x7 << 6)
 #define DRV_STRENGTH_12MA		(0x5 << 6)
@@ -38,13 +38,13 @@
 #define OUTPUT_LOW				0x0 //0x1
 
 #define ONE_WIRE_CONFIG_OUT		\
-	writel_relaxed(GPIO_ENABLE | DRV_STRENGTH_16MA | GPIO_OUTPUT | GPIO_PULL_UP, g_onewire_data->gpio_cfg_reg)// OUT
+	writel_relaxed(GPIO_ENABLE | DRV_STRENGTH_16MA | GPIO_OUTPUT | GPIO_PULL_UP, g_onewire_data->gpio_cfg_reg) // OUT
 #define ONE_WIRE_CONFIG_IN		\
-	writel_relaxed(GPIO_ENABLE | DRV_STRENGTH_16MA | GPIO_INPUT | GPIO_PULL_UP, g_onewire_data->gpio_cfg_reg)// IN
+	writel_relaxed(GPIO_ENABLE | DRV_STRENGTH_16MA | GPIO_INPUT | GPIO_PULL_UP, g_onewire_data->gpio_cfg_reg) // IN
 #define ONE_WIRE_OUT_HIGH		\
-	writel_relaxed(OUTPUT_HIGH, g_onewire_data->gpio_in_out_reg)// OUT: 1
+	writel_relaxed(OUTPUT_HIGH, g_onewire_data->gpio_in_out_reg) // OUT: 1
 #define ONE_WIRE_OUT_LOW		\
-	writel_relaxed(OUTPUT_LOW, g_onewire_data->gpio_in_out_reg)// OUT: 0
+	writel_relaxed(OUTPUT_LOW, g_onewire_data->gpio_in_out_reg) // OUT: 0
 
 struct onewire_gpio_data {
 	struct platform_device *pdev;
@@ -473,10 +473,10 @@ static int onewire_gpio_probe(struct platform_device *pdev)
 					(uintptr_t)onewire_data->onewire_gpio_level_addr, 0x4);
 	onewire_data->gpio_cfg_reg = devm_ioremap(&pdev->dev,
 					(uintptr_t)onewire_data->onewire_gpio_cfg_addr, 0x4);
-	ow_log("onewire_gpio_level_addr is %x; onewire_gpio_cfg_addr is %x\n",
+	ow_log("onewire_gpio_level_addr is 0x%lx; onewire_gpio_cfg_addr is 0x%lx\n",
 					(uintptr_t)(onewire_data->onewire_gpio_level_addr),
 					(uintptr_t)(onewire_data->onewire_gpio_cfg_addr));
-	ow_log("onewire_data->gpio_cfg_reg is %x; onewire_data->gpio_in_out_reg is %x'\n",
+	ow_log("onewire_data->gpio_cfg_reg is 0x%lx; onewire_data->gpio_in_out_reg is 0x%lx'\n",
 					(uintptr_t)(onewire_data->gpio_cfg_reg),
 					(uintptr_t)(onewire_data->gpio_in_out_reg));
 

@@ -633,7 +633,7 @@ int nopmi_chg_jeita_init(struct nopmi_chg_jeita_st *nopmi_chg_jeita)
 
 	pr_info("start..\n");
 	if (!nopmi_chg_jeita->sw_jeita) {
-		nopmi_chg_jeita->sw_jeita = kmalloc(sizeof(struct sw_jeita_data), GFP_KERNEL);
+		nopmi_chg_jeita->sw_jeita = kzalloc(sizeof(struct sw_jeita_data), GFP_KERNEL);
 		if (!nopmi_chg_jeita->sw_jeita) {
 			pr_err("Failed to allocate memory\n");
 			return -ENOMEM;

@@ -969,7 +969,7 @@ static int rt1711_set_cc(struct tcpc_device *tcpc, int pull)
 	uint8_t data;
 	int rp_lvl = TYPEC_CC_PULL_GET_RP_LVL(pull), pull1, pull2;
 
-	RT1711_INFO("\n");
+	//RT1711_INFO("\n");
 	pull = TYPEC_CC_PULL_GET_RES(pull);
 	if (pull == TYPEC_CC_DRP) {
 		data = TCPC_V10_REG_ROLE_CTRL_RES_SET(

@@ -142,7 +142,7 @@ struct cp_device {
 	int vbus_error_low;
 	int vbus_error_high;
 
-	int bat_temp; 
+	int bat_temp;
 	int bus_temp;
 	int die_temp;
 };

@@ -498,11 +498,12 @@ static void pd_core_power_flags_init(struct pd_port *pd_port)
 
 	for (i = 0; i < ARRAY_SIZE(supported_dpm_caps); i++) {
 		if (of_property_read_bool(np,
-			supported_dpm_caps[i].prop_name))
+			supported_dpm_caps[i].prop_name)) {
 			pd_port->dpm_caps |=
 				supported_dpm_caps[i].val;
 			pr_info("%s dpm_caps: %s\n", __func__,
 				supported_dpm_caps[i].prop_name);
+		}
 	}
 
 	if (of_property_read_u32(np, "pr_check", &val) == 0)
