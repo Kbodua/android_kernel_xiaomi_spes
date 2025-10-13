@@ -1,51 +1,49 @@
-
 name: Build Spes Kernel with KernelSU
 
 on:
-  workflow_dispatch:   # Run manually from Actions tab
+  workflow_dispatch:  # allows manual trigger from Actions tab
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout Kernel Source
-      uses: actions/checkout@v4
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
 
-    - name: Install Build Dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y bc bison flex git clang lld llvm zip make python3 ccache curl
+      - name: Install Build Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y bc bison flex git clang lld llvm zip make python3 ccache curl wget
 
-    - name: Clone KernelSU
-      run: |
-        git clone https://github.com/tiann/KernelSU.git kernel/KernelSU --depth=1
+      - name: Clone KernelSU
+        run: |
+          git clone https://github.com/tiann/KernelSU.git kernel/KernelSU --depth=1
 
-    - name: Setup Build Environment
-      run: |
-        export ARCH=arm64
-        export SUBARCH=arm64
-        export PATH=/usr/lib/llvm-17/bin:$PATH
-        export CC=clang
-        export KBUILD_BUILD_USER=github
-        export KBUILD_BUILD_HOST=actions
-        make O=out spes-perf_defconfig
+      - name: Set up Proton Clang
+        run: |
+          git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
 
-   - name: Set up Clang
-  run: |
-    git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
+      - name: Setup Build Environment
+        run: |
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export PATH=$PWD/clang/bin:$PATH
+          export KBUILD_BUILD_USER=github
+          export KBUILD_BUILD_HOST=actions
+          make O=out spes-perf_defconfig
 
-- name: Build Kernel
-  run: |
-    export ARCH=arm64
-    export SUBARCH=arm64
-    export CROSS_COMPILE=aarch64-linux-android-
-    export PATH=$GITHUB_WORKSPACE/clang/bin:$PATH
-    make O=out spes-perf_defconfig
-    make -j$(nproc) O=out
+      - name: Build Kernel
+        run: |
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export PATH=$PWD/clang/bin:$PATH
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          make O=out -j$(nproc)
 
-    - name: Upload Compiled Kernel
-      uses: actions/upload-artifact@v4
-      with:
-        name: Image.gz-dtb
-        path: out/arch/arm64/boot/Image.gz-dtb
+      - name: Upload Compiled Kernel
+        uses: actions/upload-artifact@v4
+        with:
+          name: Spes-Kernel
+          path: out/arch/arm64/boot/Image.gz-dtb
