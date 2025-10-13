@@ -1,0 +1,46 @@
+
+name: Build Spes Kernel with KernelSU
+
+on:
+  workflow_dispatch:   # Run manually from Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v4
+
+    - name: Install Build Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y bc bison flex git clang lld llvm zip make python3 ccache curl
+
+    - name: Clone KernelSU
+      run: |
+        git clone https://github.com/tiann/KernelSU.git kernel/KernelSU --depth=1
+
+    - name: Setup Build Environment
+      run: |
+        export ARCH=arm64
+        export SUBARCH=arm64
+        export PATH=/usr/lib/llvm-17/bin:$PATH
+        export CC=clang
+        export KBUILD_BUILD_USER=github
+        export KBUILD_BUILD_HOST=actions
+        make O=out spes_defconfig
+
+    - name: Compile Kernel
+      run: |
+        export ARCH=arm64
+        export SUBARCH=arm64
+        export PATH=/usr/lib/llvm-17/bin:$PATH
+        export CC=clang
+        make -j$(nproc) O=out
+
+    - name: Upload Compiled Kernel
+      uses: actions/upload-artifact@v4
+      with:
+        name: Image.gz-dtb
+        path: out/arch/arm64/boot/Image.gz-dtb
