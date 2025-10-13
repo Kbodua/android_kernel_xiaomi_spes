@@ -5,7 +5,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Compile Kernel
+    runs-on: ubuntu-22.04   # ✅ Use Ubuntu 22.04 for clang compatibility
 
     env:
       KERNEL_REPO: https://github.com/Kbodua/android_kernel_xiaomi_spes.git
@@ -16,13 +17,16 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
+      - name: Install Build Dependencies
         run: |
           sudo apt update
-          sudo apt install -y bc bison flex git clang lld llvm make zip
+          sudo apt install -y \
+            bc bison build-essential flex git clang lld llvm zip wget curl \
+            libncurses-dev libssl-dev ccache python3
 
       - name: Clone Proton Clang
         run: |
+          echo "🔽 Cloning Proton Clang..."
           git clone --depth=1 ${{ env.CLANG_REPO }} ${{ env.CLANG_DIR }}
 
       - name: Set Up Build Environment
@@ -32,8 +36,7 @@ jobs:
           export PATH=$PWD/${{ env.CLANG_DIR }}/bin:$PATH
           export KBUILD_BUILD_USER=UnrulyBoss
           export KBUILD_BUILD_HOST=GitHub
-
-          echo "✅ Environment setup complete"
+          echo "✅ Environment setup complete."
 
       - name: Build Kernel
         run: |
@@ -45,9 +48,9 @@ jobs:
 
           echo "🏗️ Starting kernel build..."
           make O=out ARCH=arm64 spes-perf_deconfig
-          make O=out ARCH=arm64 CC=clang -j$(nproc)
+          make O=out ARCH=arm64 CC=clang LD=ld.lld -j$(nproc)
 
-      - name: Upload Kernel Image
+      - name: Upload Compiled Kernel
         uses: actions/upload-artifact@v4
         with:
           name: Spes-Kernel-Reze
