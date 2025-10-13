@@ -31,7 +31,7 @@ jobs:
           export PATH=$PWD/clang/bin:$PATH
           export KBUILD_BUILD_USER=github
           export KBUILD_BUILD_HOST=actions
-          make O=out spes-perf_defconfig
+          spes-perf_deconfig: Rename local version to Reze
 
       - name: Build Kernel
         run: |
