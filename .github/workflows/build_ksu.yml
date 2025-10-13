@@ -1,61 +1,49 @@
-name: Build Spes Kernel with KernelSU
+name: Build Spes Kernel
 
 on:
-  workflow_dispatch:  # allows you to manually trigger from Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    env:
-      KERNEL_REPO: https://github.com/UnrulyBoss/android_kernel_xiaomi_spes.git
-      CLANG_REPO: https://github.com/kdrag0n/proton-clang.git
-      CLANG_PATH: ${{ github.workspace }}/proton-clang
+    name: Build Kernel
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout Kernel Source
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Install Build Dependencies
         run: |
           sudo apt update
-          sudo apt install -y git bc bison flex make clang lld llvm zip curl
+          sudo apt install -y bc bison flex git clang lld llvm make zip curl
 
-      - name: Clone Proton Clang Toolchain
-        run: |
-          echo "🔧 Cloning Proton Clang toolchain..."
-          git clone --depth=1 ${{ env.CLANG_REPO }} ${{ env.CLANG_PATH }}
-
-      - name: Setup Build Environment
+      - name: Set up Build Environment
         run: |
           export ARCH=arm64
           export SUBARCH=arm64
-          export PATH=${{ env.CLANG_PATH }}/bin:$PATH
           export KBUILD_BUILD_USER=UnrulyBoss
           export KBUILD_BUILD_HOST=GitHub
-          echo "✅ Build environment configured."
+          echo "Environment setup complete ✅"
 
       - name: Build Kernel
         run: |
           export ARCH=arm64
           export SUBARCH=arm64
-          export PATH=${{ env.CLANG_PATH }}/bin:$PATH
           export KBUILD_BUILD_USER=UnrulyBoss
           export KBUILD_BUILD_HOST=GitHub
+          export CC=clang
 
           echo "🏗️ Starting kernel build..."
           mkdir -p out
 
-          # Use your defconfig
+          # Use the defconfig you mentioned earlier
           make O=out ARCH=arm64 spes-perf_defconfig
 
-          # Compile kernel
+          # Compile kernel using system Clang
           make O=out ARCH=arm64 CC=clang -j$(nproc)
 
-          echo "✅ Kernel build completed successfully."
-
-      - name: Upload Compiled Kernel
+      - name: Upload Compiled Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Spes-Kernel
+          name: Spes-Kernel-ARM64
           path: out/arch/arm64/boot/Image.gz-dtb
