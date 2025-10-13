@@ -34,13 +34,13 @@ jobs:
           spes-perf_deconfig: Rename local version to Reze
 
       - name: Build Kernel
-        run: |
-          export ARCH=arm64
-          export SUBARCH=arm64
-          export PATH=$PWD/clang/bin:$PATH
-          export CROSS_COMPILE=aarch64-linux-gnu-
-          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-          make O=out ARCH=arm64 spes_defconfig
+      run: |
+    export ARCH=arm64
+    export SUBARCH=arm64
+    export KBUILD_BUILD_USER=UnrulyBoss
+    export KBUILD_BUILD_HOST=GitHub
+    make O=out ARCH=arm64 spes-perf_defconfig
+    make O=out ARCH=arm64 -j$(nproc)
 
       - name: Upload Compiled Kernel
         uses: actions/upload-artifact@v4
