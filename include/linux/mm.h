@@ -15,6 +15,7 @@
 #include <linux/atomic.h>
 #include <linux/debug_locks.h>
 #include <linux/mm_types.h>
+#include <linux/mmap_lock.h>
 #include <linux/range.h>
 #include <linux/pfn.h>
 #include <linux/percpu-refcount.h>
@@ -28,6 +29,7 @@
 #include <linux/overflow.h>
 #include <linux/sched.h>
 #include <linux/android_kabi.h>
+#include <linux/sizes.h>
 
 struct mempolicy;
 struct anon_vma;
@@ -72,7 +74,7 @@ extern int mmap_rnd_compat_bits __read_mostly;
 #endif
 
 #include <asm/page.h>
-#include <asm/pgtable.h>
+#include <linux/pgtable.h>
 #include <asm/processor.h>
 
 /*
@@ -2440,8 +2442,7 @@ int __must_check write_one_page(struct page *page);
 void task_dirty_inc(struct task_struct *tsk);
 
 /* readahead.c */
-#define VM_MAX_READAHEAD	128	/* kbytes */
-#define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
+#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 
 int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
 			pgoff_t offset, unsigned long nr_to_read);
